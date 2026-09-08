@@ -27,6 +27,23 @@ Seks Playwright-tests er defineret: layout/navigation og API-fejlvisning på des
 
 Lokal browserkørsel er blokeret af miljøet: standardbrowserens download fejlede, og en alternativ Chromium-binær kunne ikke eksekveres (EACCES). Ingen af de seks tests nåede ind i selve browserkontrollen. De må derfor ikke rapporteres som bestået lokalt. CI-workflowet installerer browseren på GitHub-runneren og kører samme testpakke.
 
+## Bekræftet i GitHub Actions
+
+Kørsel: https://github.com/kristoffermvplast/Lagerstyring/actions/runs/34262034769
+Testet kodecommit: `13a66992fb885c1baf8122bf9fa4264a28320775` på `main`.
+
+- Ren installation med `npm ci`: bestået.
+- `npm run check`: bestået (typekontrol, 18 automatiske tests og begge produktionsbuilds).
+- Chromium-installation på GitHub-runner: bestået.
+- `npm run test:e2e`: bestået, alle seks Playwright-tests på desktop/tablet/mobil.
+- Samlet job: success.
+
+Browserbegrænsningen ovenfor gælder kun lokal Work-kørsel. Den færdige kode er browserverificeret i CI.
+
+## Genoptagelse efter afbrudt kørsel
+
+Ved genoptagelse indeholdt main kun initialiseringscommit `738387fa5810fdc693d86d4edd49ede20b75384f`. Det fulde fundament fandtes allerede som commit `13a66992fb885c1baf8122bf9fa4264a28320775`, men branch-referencen var ikke opdateret. main blev fast-forwardet til dette eksisterende commit. Der blev ikke genskabt kode eller kørt migration igen. Supabases eksisterende migration og rollegrænser blev genkontrolleret med læseforespørgsler.
+
 ## Ikke verificeret
 
 - Hosted databaseforbindelse fra den selvstændige backend (runtime-hemmelighed mangler).
