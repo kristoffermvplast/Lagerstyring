@@ -16,3 +16,14 @@ jobs:
       - run: npm run check
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
+      - name: Build backend runtime image
+        run: docker build -f apps/api/Dockerfile -t lager-api-check .
+      - name: Verify diagnostic script exists and loads in runtime without secrets
+        shell: bash
+        run: |
+          set +e
+          output=$(docker run --rm lager-api-check node scripts/verify-database.cjs 2>&1)
+          result=$?
+          set -e
+          test "$result" -eq 1
+          test "$output" = "DATABASE_URL_MISSING: Required backend secret is absent."

@@ -5,15 +5,21 @@ const { Pool } = require('pg');
 const { loadConfig, databaseTls } = require('../apps/api/dist/config.js');
 const { createApp } = require('../apps/api/dist/app.js');
 
+const { diagnostic } = require('./database-diagnostics.cjs');
+let stage = 'configuration';
 async function verify() {
+  if (!process.env.DATABASE_URL) throw new Error('DATABASE_URL_MISSING');
   const config = loadConfig();
+  console.log('configuration: PASS (restricted username and TLS configuration validated)');
+  stage = 'tls_setup';
   if (!config.DATABASE_URL) throw new Error('DATABASE_URL_MISSING');
   if (config.DATABASE_SSL_MODE !== 'require') throw new Error('TLS_REQUIRED');
   const pool = new Pool({ connectionString: config.DATABASE_URL, ssl: databaseTls(config), max: 1, connectionTimeoutMillis: 5000, query_timeout: 5000 });
   // Handle asynchronous idle connection failures without logging potentially sensitive errors.
-  pool.on('error', () => { process.exitCode = 1; });
+  pool.on('error', error => { console.error(diagnostic(error, 'idle_connection')); process.exitCode = 1; });
   let app;
   try {
+    stage = 'connection_and_role_query';
     const { rows } = await pool.query(`
       select current_user = 'app_backend' as identity_ok,
         not (r.rolsuper or r.rolbypassrls or r.rolcreatedb or r.rolcreaterole or r.rolreplication) as restricted_role,
@@ -33,6 +39,7 @@ async function verify() {
       console.log(`${name}: ${passed === true ? 'PASS' : 'FAIL'}`);
     }
     if (Object.values(rows[0]).some(value => value !== true)) throw new Error('ROLE_CHECK_FAILED');
+    stage = 'nest_readiness';
     // Exercise the actual NestJS readiness controller on a local ephemeral port.
     app = await createApp({ ...config, NODE_ENV: 'test', HOST: '127.0.0.1' });
     await app.listen(0, '127.0.0.1');
@@ -50,13 +57,6 @@ async function verify() {
 }
 
 verify().catch(error => {
-  // Only emit fixed messages; database driver exceptions can contain connection details.
-  const known = {
-    DATABASE_URL_MISSING: 'DATABASE_URL mangler i backendmiljøet.',
-    TLS_REQUIRED: 'Hosted verifikation kræver DATABASE_SSL_MODE=require.',
-    ROLE_CHECK_FAILED: 'Databaserollen har ikke præcis de forventede grænser.',
-    READINESS_FAILED: 'NestJS readiness blev ikke godkendt.',
-  };
-  console.error(known[error?.message] ?? 'Forbindelsen kunne ikke verificeres. Kontrollér netværk, secret og CA-konfiguration.');
+  console.error(diagnostic(error, stage));
   process.exitCode = 1;
 });
