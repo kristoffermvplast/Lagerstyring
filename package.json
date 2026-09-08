@@ -19,7 +19,8 @@
     "db:start": "supabase start",
     "db:reset:local": "supabase db reset --local",
     "db:stop": "supabase stop",
-    "pretest": "npm run build -w @lager/api"
+    "pretest": "npm run build -w @lager/api",
+    "verify:database": "npm run build -w @lager/api && node scripts/verify-database.cjs"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",
