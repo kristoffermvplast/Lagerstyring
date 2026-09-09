@@ -2,7 +2,11 @@
 
 Backend: https://lagerstyring-production-9671.up.railway.app
 
-Brugeren rapporterer live=200 og ready=503. Det bekræfter ikke i sig selv TLS eller databaseadgang. Railway-værktøjerne er endnu ikke tilgængelige i denne Work-samtale; aktiv deployment og miljøvariabler kan derfor ikke inspiceres her.
+**Endelig status: Fase 1 afsluttet.** Brugeren har kørt den fulde Railway-verifikation med alle obligatoriske kontroller bestået, inklusive NestJS live/ready HTTP 200. Se [fuldt resultat og evidens](phase-1-completion.md).
+
+## Historisk fejlfinding før afslutning
+
+Brugeren rapporterede oprindeligt live=200 og ready=503. Det bekræfter ikke i sig selv TLS eller databaseadgang. Railway-værktøjerne er endnu ikke tilgængelige i denne Work-samtale; aktiv deployment og miljøvariabler kan derfor ikke inspiceres her.
 
 ## Runtime-rettelse
 
@@ -35,7 +39,7 @@ CI bygger det faktiske Docker-image og kontrollerer, at scriptet kan indlæses o
 
 Kun faste tilladte fejltekster udskrives; vilkårlige code/message/detail/stack-felter udskrives aldrig. Scriptet foretager kun læsninger. Der ændres ingen passwords, roller, grants eller data.
 
-Fase 1 forbliver åben, indtil den faktiske Railway-container består database- og readiness-kontrollen. Fase 2 er ikke startet.
+Afslutningskravet om bestået database- og readiness-kontrol i Railway er nu opfyldt ifølge brugerens fulde runtime-resultat. Fase 2 er ikke startet.
 
 ## CI-opfølgning 2026-09-09
 
@@ -47,7 +51,9 @@ CI-run https://github.com/kristoffermvplast/Lagerstyring/actions/runs/3435347365
 
 Offentlig kontrol fra Work samme dag: /api/health/live HTTP 200 med status ok; /api/health/ready HTTP 503. Den deployede Railway-commit er ikke verificeret. Scriptet er endnu ikke kørt med Railways DATABASE_URL, og hosted TLS/rolle/schema-rettigheder er derfor ikke godkendt. Ingen database- eller secret-ændringer udført.
 
-## CA-konfiguration efter TLS_CERTIFICATE_FAILED
+## CA-konfiguration og historik efter TLS_CERTIFICATE_FAILED
+
+CA-, login- og TLS-verifikationen er nu bestået. Nedenstående bevarer det tidligere fejlsøgningsstadie og opsætningsvejledningen.
 
 Brugeren har nu kørt scriptet i Railway: configuration PASS, TLS_CERTIFICATE_FAILED. Scriptets tilstedeværelse er dermed bekræftet af brugeren; login og databaseprivilegier er endnu ikke verificeret. Fejlkategorien kan skyldes CA, hostname eller gyldighed, så tilføjelse af CA er ikke i sig selv bevis for løst TLS-problem.
 

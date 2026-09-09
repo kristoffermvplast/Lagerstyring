@@ -2,6 +2,8 @@
 
 Webbaseret lager- og produktionssystem. **Kun Fase 1 – Fundament er implementeret.**
 
+**Fase 1 er afsluttet og godkendt.** Se [det endelige Railway/Supabase-resultat](docs/phase-1-completion.md).
+
 React + TypeScript + Vite → NestJS → Supabase PostgreSQL. Supabase Auth og Storage anvendes i de relevante senere faser.
 
 ## Åbn lokalt

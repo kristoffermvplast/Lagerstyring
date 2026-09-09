@@ -1,5 +1,9 @@
 # Fase 1 – leverance
 
+## Status
+
+Fase 1 er afsluttet og godkendt 2026-09-09. Se [endelig Railway/Supabase-verifikation](phase-1-completion.md).
+
 ## Implementeret
 
 - npm-workspace med adskilt frontend og backend; eksakte dependencies og lockfile.
@@ -33,14 +37,13 @@
 Projekt: Produktionssystem / puwyontrchonoepisgun.
 Migration: 20260908175849_phase_1_foundation.
 
-Oprettet: schemas app og app_private; roller app_owner (NOLOGIN), app_runtime (NOLOGIN) og app_backend (LOGIN uden password). app_owner er schemaejer. app_backend arver app_runtime, som kun har USAGE på app. Browserroller har ingen schemaadgang. Fremtidige objekter ejet af app_owner er lukkede som standard.
+Oprettet: schemas app og app_private; roller app_owner (NOLOGIN), app_runtime (NOLOGIN) og app_backend (LOGIN, oprindeligt uden password i migrationen; runtime-password er efterfølgende provisioneret uden for Git). app_owner er schemaejer. app_backend arver app_runtime, som kun har USAGE på app. Browserroller har ingen schemaadgang. Fremtidige objekter ejet af app_owner er lukkede som standard.
 
 Der er **nul forretningstabeller og nul forretningsdata**. Supabases Auth-/Storage-schemaer er ikke ændret. Der er ingen nye buckets, brugere eller integrationer.
 
 ## Begrænsninger
 
-- Hosted NestJS-databaseforbindelse kræver stadig sikker provisioning af app_backend-password og DATABASE_URL. MCP-administration giver ikke Node-processen denne hemmelighed.
-- Ingen online deployment. Lokal kørsel er beskrevet i README.
+- Backend er online på Railway, og app_backend-forbindelsen er verificeret gennem brugerens containerkørsel. Frontend-hosting er endnu ikke etableret. Lokal kørsel er beskrevet i README.
 - Login, tenants/permissions, RLS på forretningstabeller og alle forretningsfunktioner hører til senere faser.
 - Docker-image og fuld lokal Supabase-stak er ikke kørt i Work-miljøet, hvor Docker mangler.
 - Separate hosted development/test/production-projekter og driftsplatform er ikke oprettet.

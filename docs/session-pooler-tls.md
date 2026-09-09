@@ -1,5 +1,9 @@
 # Phase 1: Session Pooler TLS verification
 
+## Final status
+
+The operator has now run the full verifier in Railway. All mandatory client TLS, role/schema and NestJS health checks passed. PostgreSQL-side SSL remains informational false. Phase 1 is closed; see [final evidence](phase-1-completion.md). Phase 2 has not started.
+
 ## Finding (2026-09-09)
 
 The operator reported successful configuration, login as app_backend, restricted
@@ -60,8 +64,8 @@ Then run the full role and NestJS connectivity/readiness verification:
 node /app/scripts/verify-database.cjs
 ```
 
-Check the active deployment's commit in Railway before running. The agent has
-not independently verified deployment activation or executed this hosted check.
+Check the active deployment's commit in Railway before running. The operator has completed this hosted check successfully. The agent has
+not independently verified deployment activation or executed the container command.
 Do not change TLS, role grants or credentials to address the old false negative.
 
 ## Validation
@@ -69,7 +73,7 @@ Do not change TLS, role grants or credentials to address the old false negative.
 Local npm run check passed: 24 tests, typechecking and both production builds.
 Transport regression tests cover missing/plaintext sockets, certificate
 non-authorization, hostname mismatch and outdated protocol rejection. Hosted
-TLS handshake and updated readiness results remain pending the operator's run.
+TLS handshake and updated readiness have now passed in the operator's Railway run.
 Local npm run test:e2e was attempted; all six cases were blocked at browser
 launch because the Playwright Chromium executable is absent. GitHub CI installs
 the browser and runs these tests plus Docker runtime smoke checks.

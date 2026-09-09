@@ -1,6 +1,10 @@
 # Verifikation af Fase 1
 
-## Bekræftet lokalt
+## Endelig status
+
+Fase 1 er afsluttet. [Afslutningsrapporten](phase-1-completion.md) dokumenterer bestået Railway/Supabase-runtime-kontrol og CI på 299c60d. Afsnittene nedenfor bevarer den oprindelige testhistorik.
+
+## Oprindeligt bekræftet lokalt
 
 - TypeScript-kontrol: API og frontend bestået.
 - Produktionsbuild: API og frontend bestået.
@@ -44,10 +48,6 @@ Browserbegrænsningen ovenfor gælder kun lokal Work-kørsel. Den færdige kode 
 
 Ved genoptagelse indeholdt main kun initialiseringscommit `738387fa5810fdc693d86d4edd49ede20b75384f`. Det fulde fundament fandtes allerede som commit `13a66992fb885c1baf8122bf9fa4264a28320775`, men branch-referencen var ikke opdateret. main blev fast-forwardet til dette eksisterende commit. Der blev ikke genskabt kode eller kørt migration igen. Supabases eksisterende migration og rollegrænser blev genkontrolleret med læseforespørgsler.
 
-## Ikke verificeret
+## Resterende afgrænsninger
 
-- Hosted databaseforbindelse fra den selvstændige backend (runtime-hemmelighed mangler).
-- Docker-image, fuld Docker/Supabase-stak, Auth og Storage.
-- Produktionshosting, TLS-terminering, secret manager og backup/gendannelse.
-
-Disse begrænsninger skal håndteres før et egentligt driftsmiljø kan erklæres klar.
+Hosted databaseforbindelse og klient-TLS er nu verificeret i Railway af brugeren; Docker-build og runtime-smoke-tests er dækket af CI. Fuld lokal Docker/Supabase-stak, Auth/Storage-funktioner, frontend-hosting og backup/gendannelse er ikke verificeret. Se afslutningsrapporten for afgrænsning.
