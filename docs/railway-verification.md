@@ -36,3 +36,7 @@ CI bygger det faktiske Docker-image og kontrollerer, at scriptet kan indlæses o
 Kun faste tilladte fejltekster udskrives; vilkårlige code/message/detail/stack-felter udskrives aldrig. Scriptet foretager kun læsninger. Der ændres ingen passwords, roller, grants eller data.
 
 Fase 1 forbliver åben, indtil den faktiske Railway-container består database- og readiness-kontrollen. Fase 2 er ikke startet.
+
+## CI-opfølgning 2026-09-09
+
+Run 34281163420 på f4fed22 bestod build og 20 tests, men én browser-test startede før API'et svarede. Docker-trinene blev derfor ikke kørt. Playwright venter nu særskilt på API-liveness og frontend før browser-tests. Ingen health-assertions er fjernet, og der bruges fortsat den rigtige lokale NestJS-proces. Den efterfølgende CI-kørsel skal verificere både browser-tests og runtime-image.
