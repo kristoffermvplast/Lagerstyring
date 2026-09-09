@@ -21,6 +21,7 @@ function diagnostic(error, stage) {
   if (Object.hasOwn(codes, error?.code)) return codes[error.code];
   const messages = {
     DATABASE_URL_MISSING: 'DATABASE_URL_MISSING: Required backend secret is absent.',
+    TLS_CLIENT_CHECK_FAILED: 'TLS_CLIENT_CHECK_FAILED: Active client connection did not pass encryption, certificate and hostname checks.',
     TLS_REQUIRED: 'TLS_REQUIRED: Hosted verification requires DATABASE_SSL_MODE=require.',
     ROLE_CHECK_FAILED: 'ROLE_CHECK_FAILED: Inspect the preceding PASS/FAIL checks for identity, membership and schema rights.',
     READINESS_FAILED: 'READINESS_FAILED: NestJS readiness check did not pass.',

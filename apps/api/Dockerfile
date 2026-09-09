@@ -18,6 +18,7 @@ COPY --from=build --chown=node:node /app/apps/api/package.json ./apps/api/packag
 COPY --from=build --chown=node:node /app/apps/api/dist ./apps/api/dist
 COPY --chown=node:node scripts/verify-database.cjs scripts/verify-database.cjs
 COPY --chown=node:node scripts/database-diagnostics.cjs scripts/database-diagnostics.cjs
+COPY --chown=node:node scripts/database-tls-check.cjs scripts/database-tls-check.cjs
 USER node
 EXPOSE 3001
 CMD ["node", "apps/api/dist/main.js"]
