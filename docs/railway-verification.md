@@ -46,3 +46,22 @@ Run 34281163420 på f4fed22 bestod build og 20 tests, men én browser-test start
 CI-run https://github.com/kristoffermvplast/Lagerstyring/actions/runs/34353473651 på aac1b855ca354ecb63705c40695f7abf8509e30b bestod 2026-09-09: typecheck, 20 tests, begge builds, browser-tests, Docker-build og runtime-scriptets test uden secrets. Runtime-scriptet er dermed til stede og kan indlæses i det byggede image.
 
 Offentlig kontrol fra Work samme dag: /api/health/live HTTP 200 med status ok; /api/health/ready HTTP 503. Den deployede Railway-commit er ikke verificeret. Scriptet er endnu ikke kørt med Railways DATABASE_URL, og hosted TLS/rolle/schema-rettigheder er derfor ikke godkendt. Ingen database- eller secret-ændringer udført.
+
+## CA-konfiguration efter TLS_CERTIFICATE_FAILED
+
+Brugeren har nu kørt scriptet i Railway: configuration PASS, TLS_CERTIFICATE_FAILED. Scriptets tilstedeværelse er dermed bekræftet af brugeren; login og databaseprivilegier er endnu ikke verificeret. Fejlkategorien kan skyldes CA, hostname eller gyldighed, så tilføjelse af CA er ikke i sig selv bevis for løst TLS-problem.
+
+Supabase anviser download af CA fra projektets Database Settings → SSL Configuration:
+https://supabase.com/docs/guides/platform/ssl-enforcement
+
+Railway Variables på backend-servicen:
+
+- DATABASE_CA_PEM: hele indholdet af det offentlige CA-certifikat hentet fra Supabase-projektet, med rigtige linjeskift og BEGIN/END CERTIFICATE-linjerne. Ingen citationstegn omkring og ingen private keys. Brug ikke et certifikat opsamlet fra en uverificeret forbindelse.
+- DATABASE_CA_FILE: /app/certs/supabase-ca.crt
+- DATABASE_SSL_MODE: require (vores applikationsindstilling beholder rejectUnauthorized=true; den er ikke libpq's sslmode=require).
+
+Docker opretter /app/certs ejet af node med mode 0700. Backend og verifier bruger samme databaseTls-funktion: validerer PEM-format, CA-markering og gyldighed; skriver til den faste sti med mode 0600; læser filen via DATABASE_CA_FILE. Andre skrivestier afvises. Ved genstart dannes filen igen fra runtime-variablen. Hvis DATABASE_CA_PEM er tom, kan DATABASE_CA_FILE stadig pege på et på forhånd monteret CA-certifikat. Der downloades intet ved opstart, og intet CA-indhold logges.
+
+Certifikatet er offentligt, men skal komme fra en betroet kilde. PEM-validering beviser ikke certifikatets oprindelse. Det konkrete Supabase CA-certifikat er endnu ikke leveret til Work eller indsat i Railway af agenten. Ingen passwords/connection strings ændres. Der tilføjes ingen globale TLS-overrides, ingen rejectUnauthorized=false og ingen ændringer i Supabase SSL enforcement.
+
+Når variablerne er gemt og Railway har deployet den nye kode, åbn en ny shell i den aktive container og kør fra /app: node scripts/verify-database.cjs. Ved fortsat certifikatfejl kontrolleres det officielle hostname og certifikatets gyldighed frem for at slække på TLS. Railway-deployment kan fortsat ikke inspiceres direkte fra denne samtale.

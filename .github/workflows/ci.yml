@@ -27,3 +27,14 @@ jobs:
           set -e
           test "$result" -eq 1
           test "$output" = "DATABASE_URL_MISSING: Required backend secret is absent."
+      - name: Verify CA materialization as runtime user with strict TLS
+        run: |
+          docker run --rm lager-api-check node -e '
+            const fs = require("node:fs");
+            const { rootCertificates } = require("node:tls");
+            const { loadConfig, databaseTls, validateCaPem } = require("./apps/api/dist/config.js");
+            const pem = rootCertificates.find(p => { try { validateCaPem(p); return true; } catch { return false; } });
+            const path = "/app/certs/supabase-ca.crt";
+            const result = databaseTls(loadConfig({ DATABASE_CA_PEM: pem, DATABASE_CA_FILE: path }));
+            if (process.getuid() === 0 || result.rejectUnauthorized !== true || fs.readFileSync(path, "utf8") !== result.ca || (fs.statSync(path).mode & 0o777) !== 0o600) process.exit(1);
+          '

@@ -11,6 +11,7 @@ RUN npm run build -w @lager/api && npm prune --omit=dev
 FROM node:24-bookworm-slim AS runtime
 ENV NODE_ENV=production HOST=0.0.0.0 PORT=3001
 WORKDIR /app
+RUN mkdir -p /app/certs && chown node:node /app/certs && chmod 700 /app/certs
 COPY --from=build --chown=node:node /app/package.json /app/package-lock.json ./
 COPY --from=build --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/apps/api/package.json ./apps/api/package.json

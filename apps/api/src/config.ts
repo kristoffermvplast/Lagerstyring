@@ -1,4 +1,5 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { X509Certificate } from 'node:crypto';
 import { z } from 'zod';
 
 const schema = z.object({
@@ -9,6 +10,7 @@ const schema = z.object({
   DATABASE_URL: z.string().default(''),
   DATABASE_SSL_MODE: z.enum(['require', 'disable']).default('require'),
   DATABASE_CA_FILE: z.string().default(''),
+  DATABASE_CA_PEM: z.string().default(''),
   DATABASE_POOL_MAX: z.coerce.number().int().min(1).max(20).default(5),
   SUPABASE_URL: z.string().url().optional(),
 });
@@ -41,8 +43,28 @@ export type AppConfig = ReturnType<typeof loadConfig>;
 
 export function databaseTls(config: AppConfig) {
   if (config.DATABASE_SSL_MODE === 'disable') return false as const;
+  if (config.DATABASE_CA_PEM) {
+    // Fixed writable runtime location; never allow an environment-controlled write path.
+    if (config.DATABASE_CA_FILE !== '/app/certs/supabase-ca.crt') throw new Error('Invalid CA destination');
+    const pem = validateCaPem(config.DATABASE_CA_PEM);
+    writeFileSync(config.DATABASE_CA_FILE, pem, { mode: 0o600 });
+  }
   return {
     rejectUnauthorized: true,
-    ...(config.DATABASE_CA_FILE ? { ca: readFileSync(config.DATABASE_CA_FILE, 'utf8') } : {}),
+    ...(config.DATABASE_CA_FILE ? { ca: validateCaPem(readFileSync(config.DATABASE_CA_FILE, 'utf8')) } : {}),
   };
+}
+
+export function validateCaPem(input: string): string {
+  try {
+    const pem = input.trim();
+    if (!/^-----BEGIN CERTIFICATE-----[\s\S]+-----END CERTIFICATE-----$/.test(pem) || pem.includes('PRIVATE KEY')) throw new Error();
+    const blocks = pem.match(/-----BEGIN CERTIFICATE-----[\s\S]*?-----END CERTIFICATE-----/g) ?? [];
+    if (!blocks.length || blocks.join('').replace(/\s/g, '') !== pem.replace(/\s/g, '')) throw new Error();
+    for (const block of blocks) {
+      const certificate = new X509Certificate(block);
+      if (!certificate.ca || Date.parse(certificate.validFrom) > Date.now() || Date.parse(certificate.validTo) <= Date.now()) throw new Error();
+    }
+    return pem + '\n';
+  } catch { throw new Error('Invalid CA certificate'); }
 }
