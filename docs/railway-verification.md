@@ -40,3 +40,9 @@ Fase 1 forbliver åben, indtil den faktiske Railway-container består database- 
 ## CI-opfølgning 2026-09-09
 
 Run 34281163420 på f4fed22 bestod build og 20 tests, men én browser-test startede før API'et svarede. Docker-trinene blev derfor ikke kørt. Playwright venter nu særskilt på API-liveness og frontend før browser-tests. Ingen health-assertions er fjernet, og der bruges fortsat den rigtige lokale NestJS-proces. Den efterfølgende CI-kørsel skal verificere både browser-tests og runtime-image.
+
+### Bekræftet resultat
+
+CI-run https://github.com/kristoffermvplast/Lagerstyring/actions/runs/34353473651 på aac1b855ca354ecb63705c40695f7abf8509e30b bestod 2026-09-09: typecheck, 20 tests, begge builds, browser-tests, Docker-build og runtime-scriptets test uden secrets. Runtime-scriptet er dermed til stede og kan indlæses i det byggede image.
+
+Offentlig kontrol fra Work samme dag: /api/health/live HTTP 200 med status ok; /api/health/ready HTTP 503. Den deployede Railway-commit er ikke verificeret. Scriptet er endnu ikke kørt med Railways DATABASE_URL, og hosted TLS/rolle/schema-rettigheder er derfor ikke godkendt. Ingen database- eller secret-ændringer udført.
