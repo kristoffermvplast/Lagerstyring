@@ -1,5 +1,10 @@
 # Fase 2 – Authentication og rettigheder
 
+## Aktuel status: afsluttet
+
+Fase 2 er afsluttet efter brugerens beståede live Auth- og cross-company isolationstest samt efterfølgende read-only kontrol af den uændrede testvirksomhed. Se `phase-2-verification.md`, afsnittet “Endelig status”, for evidens og præcis testafgrænsning. Tidligere ventepunkter nedenfor er historiske og er erstattet af denne status. Fase 3 er ikke startet.
+
+
 ## Status
 
 Implementeret på den lokale branch phase2-auth fra main fc4ea404aec10447c733437118721271ffff33f6.
