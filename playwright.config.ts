@@ -20,6 +20,7 @@ export default defineConfig({
     },
     {
       command: 'npm run dev -w @lager/web',
+      env: { VITE_SUPABASE_URL: 'http://127.0.0.1:54321', VITE_SUPABASE_PUBLISHABLE_KEY: 'local-test-public-key' },
       url: 'http://127.0.0.1:5173',
       reuseExistingServer: !process.env.CI, timeout: 60000,
     },

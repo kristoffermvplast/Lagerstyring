@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 const db = new PGlite();
 beforeAll(async () => {
-  await db.exec('CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role;');
+  await db.exec('CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role; CREATE SCHEMA auth; CREATE TABLE auth.users(id uuid PRIMARY KEY); CREATE TABLE auth.sessions(id uuid PRIMARY KEY,user_id uuid NOT NULL REFERENCES auth.users);');
   for (const name of readdirSync('supabase/migrations').filter(name => name.endsWith('.sql')).sort()) {
     await db.exec(readFileSync(`supabase/migrations/${name}`, 'utf8'));
   }
@@ -12,9 +12,9 @@ beforeAll(async () => {
 afterAll(() => db.close());
 
 describe('migration security in isolated PostgreSQL engine', () => {
-  it('creates infrastructure only, without business tables', async () => {
+  it('creates only access tables, without warehouse business tables', async () => {
     const { rows } = await db.query("select count(*)::int as count from pg_tables where schemaname in ('app','app_private')");
-    expect(rows).toEqual([{ count: 0 }]);
+    expect(rows).toEqual([{ count: 8 }]);
   });
   it('runtime role cannot bypass RLS, own schemas or administer roles', async () => {
     const { rows } = await db.query("select rolsuper, rolbypassrls, rolcreatedb, rolcreaterole from pg_roles where rolname='app_backend'");

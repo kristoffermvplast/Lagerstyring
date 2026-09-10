@@ -57,3 +57,7 @@ Modulær monolit med én database. Ingen mikroservices, køplatform, forretnings
 ## Fortsættelse
 
 Fase 2: Auth/permissions/tenant-RLS. Derefter stamdata, varer, BOM/pakning, placeringer og lagerkerne i den godkendte rækkefølge. Ingen af disse funktioner er startet her.
+
+## Fase 2-udvidelse (lokal, afventer hosted aktivering)
+
+Supabase Auth, sessionskontrol, medlemskaber, permissions og RLS er implementeret lokalt. Fase 1-afsnittene ovenfor er historisk baseline; PhaseOneGuard er erstattet af standardafvisende AccessGuard og eksplicit AuthRequired. Se [Fase 2](phase-2.md) for den aktuelle adgangsarkitektur, præcise privilegieundtagelser og økonomiske aktiveringsgrænse.

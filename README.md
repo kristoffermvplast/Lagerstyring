@@ -1,10 +1,10 @@
 # Lagerstyring
 
-Webbaseret lager- og produktionssystem. **Kun Fase 1 – Fundament er implementeret.**
+Webbaseret lager- og produktionssystem. **Fase 1 er afsluttet. Fase 2 er implementeret lokalt og afventer online-verifikation.**
 
 **Fase 1 er afsluttet og godkendt.** Se [det endelige Railway/Supabase-resultat](docs/phase-1-completion.md).
 
-React + TypeScript + Vite → NestJS → Supabase PostgreSQL. Supabase Auth og Storage anvendes i de relevante senere faser.
+React + TypeScript + Vite → NestJS → Supabase PostgreSQL. Supabase Auth anvendes i Fase 2; Storage-funktioner tilføjes i senere faser.
 
 ## Åbn lokalt
 
@@ -23,7 +23,7 @@ npm run dev
 
 Grundlayoutet kan åbnes uden databasehemmeligheder. API-liveness svarer da 200, mens database-readiness på `/api/health/ready` korrekt svarer 503. Det er ikke bevis for en fungerende hosted databaseforbindelse.
 
-For en faktisk databaseforbindelse: følg [miljø- og databasevejledningen](docs/environments.md). Der er ingen loginfunktion eller forretningsfunktionalitet i Fase 1.
+For en faktisk databaseforbindelse: følg [miljø- og databasevejledningen](docs/environments.md). Se [Fase 2](docs/phase-2.md) for login, rettigheder, konfiguration og afgrænsninger. Lager-/produktionsfunktioner er ikke implementeret.
 
 ## Test og build
 
@@ -40,6 +40,8 @@ npm run test:e2e
 - [Arkitektur og faste principper](docs/architecture.md)
 - [Miljøer, Supabase-forbindelse og drift](docs/environments.md)
 - [Fase 1: leverance, filer og begrænsninger](docs/phase-1.md)
-- [Verifikation](docs/verification.md)
+- [Fase 1-verifikation](docs/verification.md)
+- [Fase 2: authentication og adgang](docs/phase-2.md)
+- [Fase 2-testresultater](docs/phase-2-verification.md)
 
-Fase 2 kræver udtrykkelig godkendelse.
+Fase 2 er godkendt til udvikling under 0 kr.-reglen. Hosted ændringer med mulig merudgift kræver særskilt godkendelse. Fase 3 er ikke startet.

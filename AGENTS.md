@@ -1,6 +1,6 @@
 # Project rules
 
-- Implement only the phase explicitly authorized by the user. Phase 1 is the current scope; do not implement login or business features yet.
+- Implement only the phase explicitly authorized by the user. Phase 2 (authentication and access control) is authorized. Do not implement Phase 3 business features.
 - React/TypeScript/Vite frontend; NestJS backend; Supabase PostgreSQL/Auth/Storage.
 - All business reads and writes go through NestJS. Never introduce browser Data API writes or privileged browser credentials.
 - No hardcoded business master data. Fixtures belong only in tests.
@@ -12,3 +12,5 @@
 - Keep secrets out of Git, frontend bundles, logs and test output.
 - Run npm run check and npm run test:e2e for foundation changes. Keep verification evidence honest about unavailable hosted credentials.
 - Read docs/architecture.md and docs/phase-1.md before extending this foundation.
+
+- Economic boundary: 0 DKK in new/increased external charges without explicit approval. No plan/resource/limit changes, new paid services or credits. Before push/hosted migration/deploy, establish that no extra charge can result or ask approval. Use local test fixtures; never create hosted test tenants without approval.

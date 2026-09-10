@@ -6,3 +6,27 @@
 @media(max-width:800px){.sidebar{transform:translateX(-100%);width:238px;transition:transform .2s}.sidebar.is-open{transform:translateX(0)}.workspace{margin-left:0}.mobile-toggle{display:flex}.mobile-close{display:flex;position:absolute;top:83px;right:10px}.menu-scrim{display:block;position:fixed;inset:0;border:0;background:#18352b66;z-index:19}.topbar{padding:0 20px;height:66px}.breadcrumb{gap:7px}.page-heading{gap:15px}.help-button{font-size:10px}.welcome-card{gap:25px}.nav-item{min-height:44px}}
 @media(max-width:560px){main{padding:28px 20px 22px}.page-heading{align-items:flex-start;flex-direction:column;gap:18px;margin-bottom:24px}.page-heading p:last-child{line-height:1.7;max-width:270px}.welcome-card{grid-template-columns:1fr;padding:27px 25px;gap:27px}.welcome-copy h2{font-size:32px}.welcome-note{line-height:1.7;font-size:10px}.workflow-preview{padding:20px}.area-grid{grid-template-columns:1fr}.area-card{padding:20px 22px 0}.area-card h3{margin-top:14px}.area-card>p{min-height:0}.area-card-footer{font-size:10px}.section-heading{align-items:flex-start;gap:6px;flex-direction:column}.empty-state{align-items:flex-start;padding:20px 17px}.foundation-label{font-size:9px}.breadcrumb>span{display:none}.breadcrumb>svg{display:none}h1{font-size:29px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+/* Phase 2: accessible authentication and tenant access administration. */
+.auth-page{min-height:100vh;display:grid;place-items:center;padding:28px;background:radial-gradient(ellipse at top left,#e6f2e9,transparent 70%),#f5f7f5}
+.auth-card,.access-card{background:white;border:1px solid #dce5df;border-radius:20px;padding:32px;width:100%;max-width:480px;box-shadow:0 12px 40px #18352b08}
+.auth-brand{display:flex;gap:12px;align-items:center;font-size:21px;font-weight:750;color:#1c583e;margin-bottom:26px}
+.auth-card h1{font-size:30px;margin-bottom:12px}.auth-card p{line-height:1.65;margin:14px 0}
+.auth-card form,.access-card form{display:grid;gap:18px;margin-top:24px}
+.auth-card label,.access-card label,.access-nav label{display:grid;gap:8px;font-weight:600;font-size:14px}
+.auth-card input,.access-card input,.access-card select,.access-nav select{min-height:46px;border:1px solid #baccc0;border-radius:9px;padding:10px 12px;background:white;font:inherit;color:#203e2d;max-width:100%;min-width:0;width:100%}
+.access-shell button,.auth-card button{min-height:44px;border-radius:9px;padding:10px 17px;border:1px solid #baccc0;background:#fff;color:#20452e;cursor:pointer;font:inherit;font-weight:600}
+.auth-card .primary,.access-card button[type=submit]{background:#235b40;color:white;border-color:#235b40}
+.auth-card button:disabled,.access-shell button:disabled{opacity:.5;cursor:not-allowed}
+.auth-card .hint{font-size:13px;color:#597463}.auth-page [role=alert],.access-content [role=alert]{color:#a52c28}
+.access-header{display:flex;justify-content:space-between;align-items:center;padding:20px 32px;background:white;border-bottom:1px solid #dce5df}.access-header .auth-brand{margin:0}
+.access-body{display:grid;grid-template-columns:240px minmax(0,1fr);min-height:calc(100vh - 86px)}
+.access-nav{padding:28px 22px;display:flex;flex-direction:column;gap:14px;background:#f0f5f1;border-right:1px solid #dce5df}.access-nav button{text-align:left}.access-nav [aria-current=page]{background:#d9ebdd;border-color:#8fb89a}
+.access-content{padding:36px;min-width:0}.access-content>h1{margin-bottom:24px}.access-content>p{margin-bottom:20px;line-height:1.6}.access-card{max-width:none;margin:24px 0}.access-card h2{margin-bottom:20px;font-size:20px}
+.table-scroll{overflow-x:auto}table{border-collapse:collapse;width:100%;text-align:left}th,td{padding:12px 10px;border-bottom:1px solid #e1e9e3;font-size:14px}th{color:#557160}td.user-id{font-size:12px;overflow-wrap:anywhere;min-width:160px}.access-card .check{display:flex;align-items:center;gap:10px}.check input{width:20px;min-height:20px}.role-row{display:flex;gap:16px;align-items:center;flex-wrap:wrap;padding:12px 0;border-bottom:1px solid #e1e9e3}.role-row span{flex:1;min-width:140px;font-size:13px;color:#597463}
+@media(min-width:900px){.access-card .inline-form{grid-template-columns:2fr 1fr auto;align-items:end}}
+@media(max-width:700px){.access-body{grid-template-columns:1fr}.access-nav{border-right:0;border-bottom:1px solid #dce5df;padding:18px}.access-header{padding:18px}.access-content{padding:24px 16px}.auth-card,.access-card{padding:24px}.auth-page{padding:20px}.auth-card h1{font-size:27px}}
+
+/* Keep the selected role readable; narrow screens scroll the member table inside its card. */
+.access-card td select{min-width:170px}
+
+.access-content{width:100%}

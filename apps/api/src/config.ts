@@ -12,6 +12,7 @@ const schema = z.object({
   DATABASE_CA_FILE: z.string().default(''),
   DATABASE_CA_PEM: z.string().default(''),
   DATABASE_POOL_MAX: z.coerce.number().int().min(1).max(20).default(5),
+  SUPABASE_PUBLISHABLE_KEY: z.string().default(''),
   SUPABASE_URL: z.string().url().optional(),
 });
 
@@ -35,6 +36,20 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env) {
     if (url.search) throw new Error('Configure PostgreSQL options through environment fields, not URL query parameters');
     const loopback = ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname);
     if (config.DATABASE_SSL_MODE === 'disable' && (!loopback || config.NODE_ENV === 'production')) throw new Error('TLS may only be disabled for local development/test');
+  }
+  const key = config.SUPABASE_PUBLISHABLE_KEY;
+  if (key.startsWith('sb_secret_')) throw new Error('Use a public Supabase Auth key');
+  if (key.split('.').length === 3) {
+    try { if (JSON.parse(Buffer.from(key.split('.')[1]!, 'base64url').toString()).role !== 'anon') throw new Error(); }
+    catch { throw new Error('Use a public Supabase Auth key'); }
+  }
+  if (config.SUPABASE_URL) {
+    const authUrl = new URL(config.SUPABASE_URL);
+    if (authUrl.username || authUrl.password || authUrl.search || authUrl.hash || authUrl.pathname !== '/' ||
+        (authUrl.protocol !== 'https:' && !(config.NODE_ENV !== 'production' && authUrl.protocol === 'http:' && ['localhost','127.0.0.1'].includes(authUrl.hostname)))) {
+      throw new Error('Invalid Supabase Auth origin');
+    }
+    config.SUPABASE_URL = authUrl.origin;
   }
   return { ...config, origins };
 }
