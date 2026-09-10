@@ -1,15 +1,17 @@
 -- Phase 2: authentication and access boundaries. Apply once, never from runtime.
 -- No customers, companies, people or other business fixtures are seeded here.
 BEGIN;
-GRANT USAGE ON SCHEMA auth TO app_owner;
-GRANT REFERENCES (id) ON auth.users TO app_owner;
-SET LOCAL ROLE app_owner;
+-- Supabase postgres can reference auth.users but cannot delegate that privilege.
+-- Create the FK as migration administrator, then transfer the application table.
 
 CREATE TABLE app.profiles (
  id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE RESTRICT,
  display_name text NOT NULL DEFAULT '' CHECK (length(display_name) <= 120),
  created_at timestamptz NOT NULL DEFAULT now()
 );
+ALTER TABLE app.profiles OWNER TO app_owner;
+SET LOCAL ROLE app_owner;
+
 CREATE TABLE app.companies (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
  name text NOT NULL CHECK (length(trim(name)) BETWEEN 1 AND 160),
@@ -155,8 +157,6 @@ CREATE TRIGGER role_permissions_audit BEFORE INSERT OR DELETE ON app.role_permis
 REVOKE INSERT ON app.access_audit FROM app_runtime;
 -- Runtime cannot delete history/users or create companies/admin roles.
 RESET ROLE;
-REVOKE REFERENCES (id) ON auth.users FROM app_owner;
-REVOKE USAGE ON SCHEMA auth FROM app_owner;
 -- Only this audited boolean probe reads Supabase-managed session metadata.
 -- postgres owns the function; runtime receives no access to auth tables/schema.
 CREATE FUNCTION app.session_active() RETURNS boolean LANGUAGE sql STABLE SECURITY DEFINER

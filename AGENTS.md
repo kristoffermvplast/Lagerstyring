@@ -14,3 +14,5 @@
 - Read docs/architecture.md and docs/phase-1.md before extending this foundation.
 
 - Economic boundary: 0 DKK in new/increased external charges without explicit approval. No plan/resource/limit changes, new paid services or credits. Before push/hosted migration/deploy, establish that no extra charge can result or ask approval. Use local test fixtures; never create hosted test tenants without approval.
+
+- Work token-efficiently: continue from recorded state; do not repeat passed tests, broad repository reads or analysis without a concrete new reason. Keep progress reports concise.

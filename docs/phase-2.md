@@ -5,7 +5,7 @@
 Implementeret på den lokale branch phase2-auth fra main fc4ea404aec10447c733437118721271ffff33f6.
 Fase 1 er bevaret. Fase 3 er ikke startet. Hosted aktivering og endelig accept af Fase 2 afventer fortsat verifikation.
 
-Økonomisk grænse: 0 kr. i nye eller øgede eksterne udgifter uden brugerens udtrykkelige godkendelse. Der er ikke ændret planer, compute, replicas, spend caps eller købt tjenester/credits. Der er ikke kørt migrationer mod hosted Supabase eller deployet til Railway. Push til main er tilbageholdt, fordi det kan udløse automatisk deployment med ændret forbrug; ingen bekræftet restkvote eller faktureringsgrænse er tilgængelig.
+Økonomisk grænse: 0 kr. i nye eller øgede eksterne udgifter uden brugerens udtrykkelige godkendelse. Der er ikke ændret planer, compute, replicas, spend caps eller købt tjenester/credits. Det særskilt godkendte push er gennemført som 463ba08; brugeren har verificeret Railway på denne commit. Hosted migration er nu kørt på det bekræftede Supabase Free-projekt uden nye betalte ressourcer. Se phase-2-verification.md for aktuel status; yderligere Railway-deployment er ikke udløst.
 
 ## Bygget
 
@@ -23,10 +23,10 @@ Fase 1 er bevaret. Fase 3 er ikke startet. Hosted aktivering og endelig accept a
 
 ## Migration
 
-Ny migration: supabase/migrations/20260909185857_phase_2_auth_access.sql.
-Filnavnet er genereret af Supabase CLI under den første kørsel. En ekstra tom lokal migrationsfil fra afbrydelsen blev fjernet; ingen hosted migrationshistorik ændret.
+Ny migration: supabase/migrations/20260910155545_phase_2_auth_access.sql.
+Den oprindelige CLI-fil havde version 20260909185857. Første hosted forsøg blev rullet tilbage: postgres kan referere til auth.users, men kan ikke delegere privilegiet. Profilens FK oprettes derfor som migrationsadministrator, hvorefter tabellen overdrages til app_owner. Supabase MCP registrerede den vellykkede migration som 20260910155545; den lokale fil er omdøbt til dette faktiske versionsnummer. Hosted migrationshistorik er ikke omskrevet.
 
-Migrationen er kørt i isolerede PGlite-tests efter den eksisterende Fase 1-migration. Hosted migrationer kørt i Fase 2: **ingen**.
+Migrationen er kørt i isolerede PGlite-tests efter den eksisterende Fase 1-migration. Hosted migrationer kørt i Fase 2: **20260910155545_phase_2_auth_access**.
 
 Tabeller: app.profiles, app.companies, app.permissions, app.roles, app.role_permissions, app.memberships, app.revoked_sessions, app.access_audit.
 Alle otte tabeller har RLS. Composite foreign keys binder roller og medlemskaber til samme virksomhed. Profiler refererer til auth.users; historiske profiler kan ikke slettes via kaskade. Supabase-brugere oprettes ikke af migrationen.
@@ -59,7 +59,7 @@ Operator-værktøj (køres kun efter separat hosted aktiveringsafklaring): byg A
 Se phase-2-verification.md for faktiske testresultater. Fixtures indeholder mindst to virksomheder og flere bruger-/sessionstyper, kun i isoleret testdatabase.
 
 Manglende før Fase 2 kan erklæres online-verificeret:
-- Hosted migration og kontrol af roller/RLS mod den faktiske Supabase-instans.
+- Reelt login og isolation gennem Railway med aktive Auth-sessioner. Hosted migration, tabel-RLS og katalogbaseret rettighedskontrol er gennemført.
 - Rigtige Supabase-login, refresh og logout samt Railway readiness efter aktivering.
 - Fysisk mobil/tablet-UX og Safari. Den lokale Chromium-kørsel består nu alle 24 cases; login og adgangsadministration er også kontrolleret visuelt.
 - Parallelle transaktioner på rigtig PostgreSQL (PGlite-tests beviser ikke samtidighed mellem flere serverforbindelser).
@@ -74,3 +74,7 @@ De tidligere blokerede browsercases er kørt, sessions-/virksomhedsskiftdækning
 Næste eksterne trin er kontrolleret aktivering af den eksisterende Fase 2-migration, Auth-konfiguration, første bruger/virksomhed og Railway-deployment, efterfulgt af reelt login/refresh/logout, isolation og readiness. Frontend kan køres lokalt under verifikationen; Vercel er ikke nødvendigt for dette trin.
 
 Den mulige merudgift er forbrug: Railway-build og efterfølgende CPU/RAM/netværk samt Supabase Auth-/database-/trafikforbrug. Ingen planopgradering er nødvendig ud fra koden, men det beviser ikke 0 kr. i merbetaling. Beløbet kan ikke fastsættes uden aktuelle planer, inkluderet forbrug og resterende kvoter. Derfor er online-aktivering ikke udført; den kræver dokumenteret plads inden for eksisterende betaling eller brugerens udtrykkelige godkendelse af et konkret merudgiftsbudget. Ingen Fase 3.
+
+Den rettede migrationsfil og dette statusnotat er indtil videre kun committed lokalt. Main indeholder stadig den oprindelige migrationsfil; næste godkendte push skal synkronisere filnavn og SQL. Migrationen må ikke køres igen.
+
+Aktuel blokering: readiness er nu bekræftet HTTP 200 af brugeren. Hosted optælling viser ingen Auth-brugere, virksomheder eller medlemskaber; første bruger og virksomhedsbootstrap mangler før ægte login-/isolationstest. Synkronisering af migrationsrettelsen til main er nu godkendt inden for den normale eksisterende Railway-deployment.
