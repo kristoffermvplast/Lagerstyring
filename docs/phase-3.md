@@ -4,7 +4,7 @@
 
 Implementeret fra `main` / `470b3f95218ce0d762081c174401d56570f88d14` på den separate branch `phase3-masterdata`. Fase 2 er bevaret. Fase 4 er ikke startet.
 
-Lokal implementering og tests er gennemført; den additive migration er anvendt i det eksisterende Supabase Free-projekt. Koden er endnu ikke pushet/deployet. Online-verifikation af Fase 3-API og brugerflade afventer publicering. Dette er ikke en erklæring om fuld online-aktivering.
+Fase 3 er afsluttet. Railway kører commit `7e7b2afb181392e8003838c9fedec94696cdd01c`, og den additive migration er anvendt i det eksisterende Supabase-projekt. Brugeren har bekræftet `PHASE_3_READ_ONLY_VERIFICATION: PASS`, inklusive login, session, rettigheder, stamdata og virksomhedsisolation. Se [den endelige verifikation](phase-3-verification.md) for testomfanget. Brugerflade og skriveflows er testet lokalt; online-resultatet vedrører læse- og adgangskontrol. Fase 4 afventer særskilt godkendelse.
 
 ## Leverance
 

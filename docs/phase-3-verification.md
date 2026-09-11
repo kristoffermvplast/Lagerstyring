@@ -1,5 +1,21 @@
 # Fase 3 — Verifikation
 
+## Endelig status — Fase 3 afsluttet
+
+Brugeren har efter den aktive Railway-deployment bekræftet, at alle login-, sessions-, rettigheds-, stamdata- og virksomhedsisolationstests består:
+
+`PHASE_3_READ_ONLY_VERIFICATION: PASS`
+
+- Aktiv Railway-commit: `7e7b2afb181392e8003838c9fedec94696cdd01c`, tidligere bekræftet af brugeren.
+- Hosted migration: `20260911171505_phase_3_masterdata`, allerede anvendt; ikke genkørt.
+- Stamdataendpoint uden login: HTTP 401, tidligere verificeret efter deployment.
+- Online-verifikationen omfatter ægte Supabase-login, backendens accept af sessionen, virksomhedsmedlemskab og stamdatapermissions samt læsning og kontrol af virksomhedsafgrænsning for alle otte kartoteker. Adgang til den fremmede virksomhed afvises, og testsessionen ryddes op.
+- Resultatet er brugerens rapport fra den lokale verifikationskørsel. Passwords, tokens og andre secrets er ikke indsamlet eller dokumenteret.
+
+Online-testen er en læse- og adgangstest. Den dokumenterer ikke hosted oprettelse/redigering, en separat hosted læsebruger, hosted frontend eller samtidige PostgreSQL-skriveoperationer. Lokale CRUD-, rettigheds-, RLS- og browsertests samt tidligere CI-resultater er dokumenteret nedenfor; de er ikke genkørt ved afslutningen.
+
+Afslutningen ændrer kun dokumentation. Ingen migrationer, ressourcer, planer eller forbrugsgrænser ændres. Fase 4 er ikke startet. Tidligere afventende status nedenfor er historiske kontrolpunkter og erstattes af denne slutstatus.
+
 ## Lokalt
 
 - TypeScript-typekontrol: API og frontend PASS.
