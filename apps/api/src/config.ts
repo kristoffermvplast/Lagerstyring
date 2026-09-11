@@ -12,6 +12,8 @@ const schema = z.object({
   DATABASE_CA_FILE: z.string().default(''),
   DATABASE_CA_PEM: z.string().default(''),
   DATABASE_POOL_MAX: z.coerce.number().int().min(1).max(20).default(5),
+  ITEM_PHOTOS_ENABLED: z.enum(['true','false']).default('false').transform(v=>v==='true'),
+  SUPABASE_STORAGE_SECRET_KEY: z.string().default(''),
   SUPABASE_PUBLISHABLE_KEY: z.string().default(''),
   SUPABASE_URL: z.string().url().optional(),
 });
@@ -51,6 +53,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env) {
     }
     config.SUPABASE_URL = authUrl.origin;
   }
+  if (config.ITEM_PHOTOS_ENABLED && (!config.SUPABASE_URL || !config.SUPABASE_STORAGE_SECRET_KEY.startsWith('sb_secret_'))) throw new Error('Item photos require a server-only Supabase secret key and origin');
   return { ...config, origins };
 }
 

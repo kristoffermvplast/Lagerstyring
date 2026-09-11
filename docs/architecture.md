@@ -66,3 +66,7 @@ Supabase Auth, sessionskontrol, medlemskaber, permissions og RLS er implementere
 ## Fase 3 — stamdata
 
 Fase 2 er afsluttet på main `470b3f9`. Fase 3 udvider den eksisterende NestJS- og RLS-model med typed stamdatakartoteker og immutable audit for runtime. Se [Fase 3](phase-3.md) og [verifikation](phase-3-verification.md). Hosted migration og kodepublicering er gennemført. Fase 3 er afsluttet med bestået online-læseverifikation og virksomhedsisolation; skriveflows og brugerflade er verificeret lokalt. Fase 4 er ikke startet. Tidligere arkitekturstatusafsnit er historiske.
+
+## Fase 4 — vareidentitet og kartoteker
+
+Fra main `ae73038`: fælles `app.items` med tre typer, tenant-sikre stamdatareferencer, præcise decimalstandarder og eksisterende audit/permissions. Fotos er teknisk forberedt via NestJS og privat Supabase Storage, deaktiveret som standard. Se [Fase 4](phase-4.md) og [verifikation](phase-4-verification.md) for implementering, kørselsvejledning og hosted status. BOM/pakning og senere lagerfunktioner er ikke startet.

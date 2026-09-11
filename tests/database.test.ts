@@ -14,7 +14,7 @@ afterAll(() => db.close());
 describe('migration security in isolated PostgreSQL engine', () => {
   it('creates access and Phase 3 masterdata tables, without inventory transactions', async () => {
     const { rows } = await db.query("select count(*)::int as count from pg_tables where schemaname in ('app','app_private')");
-    expect(rows).toEqual([{ count: 17 }]);
+    expect(rows).toEqual([{ count: 18 }]);
   });
   it('runtime role cannot bypass RLS, own schemas or administer roles', async () => {
     const { rows } = await db.query("select rolsuper, rolbypassrls, rolcreatedb, rolcreaterole from pg_roles where rolname='app_backend'");

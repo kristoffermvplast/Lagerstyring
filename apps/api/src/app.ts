@@ -11,6 +11,8 @@ import { DatabaseService } from './database';
 import { APP_CONFIG, AccessGuard, PUBLIC_ROUTE, SupabaseIdentity } from './auth';
 import { AccessController } from './access';
 import { MasterdataController } from './masterdata';
+import { ItemsController } from './items';
+import { ItemPhotosController, ItemPhotoStorage } from './item-photos';
 
 @Catch()
 class SafeExceptionFilter implements ExceptionFilter {
@@ -54,8 +56,8 @@ class AppModule {}
 export async function createApp(config: AppConfig, database = new DatabaseService(config)) {
   const app = await NestFactory.create<NestExpressApplication>({
     module: AppModule,
-    controllers: [HealthController, AccessController, MasterdataController],
-    providers: [{ provide: DatabaseService, useValue: database }, { provide: APP_CONFIG, useValue: config }, SupabaseIdentity, { provide: APP_GUARD, useClass: AccessGuard }],
+    controllers: [HealthController, AccessController, MasterdataController, ItemsController, ItemPhotosController],
+    providers: [{ provide: DatabaseService, useValue: database }, { provide: APP_CONFIG, useValue: config }, SupabaseIdentity, ItemPhotoStorage, { provide: APP_GUARD, useClass: AccessGuard }],
   }, { logger: config.NODE_ENV === 'test' ? false : ['error', 'warn', 'log'], bodyParser: false });
 
   app.set('trust proxy', false);
@@ -67,6 +69,7 @@ export async function createApp(config: AppConfig, database = new DatabaseServic
     next();
   });
   app.enableCors({ origin: config.origins, credentials: false, methods: ['GET', 'HEAD', 'OPTIONS', 'POST', 'PATCH'], allowedHeaders: ['Content-Type', 'Authorization'] });
+  app.use(/^\/api\/companies\/[^/]+\/items\/(?:product|material|packaging)\/[^/]+\/photo$/, json({ limit: '1500kb' }));
   app.use(json({ limit: '64kb' }));
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new SafeExceptionFilter());

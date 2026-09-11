@@ -42,6 +42,14 @@ export class MasterdataController {
    return {items:rows.rows,total:count.rows[0].total,page:input.page,limit:input.limit};
   });
  }
+ @Get(':kind/:id')
+ async detail(@Req() req:{actor:Actor},@Param('companyId') company:string,@Param('kind') value:string,@Param('id') id:string){
+  const table=kind(value);parse(uuid,id);
+  return this.run(req.actor,company,false,async client=>{
+   const result=await client.query(`select * from app.${table} where company_id=$1 and id=$2`,[company,id]);
+   if(!result.rowCount)throw new NotFoundException();return result.rows[0];
+  });
+ }
  @Get(':kind/:id/history')
  async history(@Req() req:{actor:Actor},@Param('companyId') company:string,@Param('kind') value:string,@Param('id') id:string){
   const table=kind(value);parse(uuid,id);
