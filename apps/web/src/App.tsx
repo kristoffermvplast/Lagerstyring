@@ -5,6 +5,7 @@ import { Boxes } from 'lucide-react';
 import { authClient, accessApi } from './auth-client';
 import { checkApi } from './api';
 import { Masterdata, masterdataPages } from './Masterdata';
+import { Locations } from './Locations';
 import { Recipes } from './Recipes';
 import { Items, itemPages } from './Items';
 
@@ -77,13 +78,14 @@ function Workspace({localLogout}:{localLogout:()=>void}) {
   return <div className="access-shell"><a className="skip-link" href="#content">Gå til indhold</a><header className="access-header"><div className="auth-brand"><Boxes />Lagerstyring</div><button onClick={logout} disabled={busy}>Log ud</button></header>
     <div className="access-body"><aside className="access-nav"><label>Virksomhed<select aria-label="Virksomhed" value={id ?? ''} onChange={e=>{setCompany(e.target.value);setPage('Overblik');cache.removeQueries({queryKey:['members']});cache.removeQueries({queryKey:['roles']});}}>
       {!memberships.length && <option value="">Ingen virksomhed</option>}{memberships.map(m=><option key={m.company_id} value={m.company_id}>{m.name}</option>)}</select></label>
-      {['Overblik',...(canMasterRead?[...Object.keys(itemPages),'Styklister og pakning',...Object.keys(masterdataPages)]:[]),'Min profil',...(canRead?['Adgang']:[])].map(name=><button key={name} aria-current={page===name?'page':undefined} onClick={()=>setPage(name)}>{name}</button>)}</aside>
+      {['Overblik',...(canMasterRead?[...Object.keys(itemPages),'Styklister og pakning','Lagerplaceringer',...Object.keys(masterdataPages)]:[]),'Min profil',...(canRead?['Adgang']:[])].map(name=><button key={name} aria-current={page===name?'page':undefined} onClick={()=>setPage(name)}>{name}</button>)}</aside>
     <main id="content" className="access-content"><h1>{page}</h1>{error && <div role="alert"><p>{error}</p><button onClick={localLogout}>Luk kun sessionen på denne enhed</button><p>Serverens logout er ikke bekræftet, hvis forbindelsen fejlede.</p></div>}{me.isPending && <p role="status">Henter dit arbejdsrum…</p>}{me.error && <p role="alert">{message(me.error)}</p>}{access.error && <p role="alert">{message(access.error)}</p>}
       {me.data && page==='Min profil' && <Profile me={me.data} />}
       {me.data && page==='Overblik' && <section className="auth-card"><h2>Hej{me.data.user.display_name ? `, ${me.data.user.display_name}` : ''}</h2><p>{id ? `Du er logget ind hos ${selected.name}.` : 'Du har endnu ingen aktiv virksomhedsadgang. Kontakt en administrator og oplys dit bruger-ID fra Min profil.'}</p><p>Vælg et kartotek i menuen. Lager og produktion tilføjes i senere faser.</p></section>}
       {id && canMasterRead && masterdataPages[page] && <Masterdata key={id+':'+page} company={id} kind={masterdataPages[page]} title={page} canManage={canMasterManage}/> }
       {id && canMasterRead && itemPages[page] && <Items key={id+':'+page} company={id} kind={itemPages[page]} title={page} canManage={canMasterManage}/> }
       {id && canMasterRead && page==='Styklister og pakning' && <Recipes key={id} company={id} canManage={canMasterManage}/>}
+      {id && canMasterRead && page==='Lagerplaceringer' && <Locations key={id} company={id} canManage={canMasterManage}/>}
       {page==='Adgang' && id && canRead && <Administration key={id} company={id} canManage={canManage} />}
     </main></div></div>;
 }

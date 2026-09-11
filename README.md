@@ -44,4 +44,7 @@ npm run test:e2e
 - [Fase 2: authentication og adgang](docs/phase-2.md)
 - [Fase 2-testresultater](docs/phase-2-verification.md)
 
-Fase 2 er godkendt til udvikling under 0 kr.-reglen. Hosted ændringer med mulig merudgift kræver særskilt godkendelse. Fase 3 er ikke startet.
+Fase 1–5 er afsluttet. Fase 6 er under implementering; se den aktuelle verifikationsstatus nedenfor. Den gældende økonomiske grænse er højst 1 kr. i forventet merudgift pr. konkret handling, når det kan vurderes med rimelig sikkerhed; ellers kræves særskilt godkendelse. Ingen varige ressourceforøgelser uden godkendelse. Fase 7 er ikke startet.
+
+- [Fase 6: hierarkiske lagerplaceringer](docs/phase-6.md)
+- [Fase 6: verifikation og publicering](docs/phase-6-verification.md)

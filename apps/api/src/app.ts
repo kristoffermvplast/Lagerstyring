@@ -11,6 +11,7 @@ import { DatabaseService } from './database';
 import { APP_CONFIG, AccessGuard, PUBLIC_ROUTE, SupabaseIdentity } from './auth';
 import { AccessController } from './access';
 import { MasterdataController } from './masterdata';
+import { LocationsController } from './locations';
 import { RecipesController } from './recipes';
 import { ItemsController } from './items';
 import { ItemPhotosController, ItemPhotoStorage } from './item-photos';
@@ -57,7 +58,7 @@ class AppModule {}
 export async function createApp(config: AppConfig, database = new DatabaseService(config)) {
   const app = await NestFactory.create<NestExpressApplication>({
     module: AppModule,
-    controllers: [HealthController, AccessController, MasterdataController, ItemsController, ItemPhotosController, RecipesController],
+    controllers: [HealthController, AccessController, MasterdataController, ItemsController, ItemPhotosController, RecipesController, LocationsController],
     providers: [{ provide: DatabaseService, useValue: database }, { provide: APP_CONFIG, useValue: config }, SupabaseIdentity, ItemPhotoStorage, { provide: APP_GUARD, useClass: AccessGuard }],
   }, { logger: config.NODE_ENV === 'test' ? false : ['error', 'warn', 'log'], bodyParser: false });
 

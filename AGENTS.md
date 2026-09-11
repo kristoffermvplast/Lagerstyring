@@ -1,6 +1,6 @@
 # Project rules
 
-- Implement only the phase explicitly authorized by the user. Phase 5 (versioned BOM and packing definitions) is authorized. Do not implement Phase 6 locations or later workflows.
+- Implement only the phase explicitly authorized by the user. Phase 6 (hierarchical locations and masterdata location references) is authorized. Do not implement Phase 7 inventory transactions or later workflows.
 - React/TypeScript/Vite frontend; NestJS backend; Supabase PostgreSQL/Auth/Storage.
 - All business reads and writes go through NestJS. Never introduce browser Data API writes or privileged browser credentials.
 - No hardcoded business master data. Fixtures belong only in tests.

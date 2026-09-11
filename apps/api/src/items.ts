@@ -13,7 +13,7 @@ const quantities = ['minimum_stock', 'desired_stock', 'maximum_stock', 'reorder_
 const inputSchema = z.object({
  code: z.string().trim().min(1).max(60), name: z.string().trim().min(1).max(160),
  active: z.boolean().default(true), description: text(4000), notes: text(4000),
- unit_id: reference, customer_id: reference, supplier_id: reference, product_group_id: reference,
+ standard_location_id: reference, unit_id: reference, customer_id: reference, supplier_id: reference, product_group_id: reference,
  material_type_id: reference, standard_machine_id: reference,
  supplier_code: text(100), color: text(120), production_notes: text(4000),
  minimum_stock: decimal, desired_stock: decimal, maximum_stock: decimal,

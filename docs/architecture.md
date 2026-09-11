@@ -76,3 +76,8 @@ Fase 4 er afsluttet med brugerbekræftet `PHASE_4_READ_ONLY_VERIFICATION: PASS`.
 ## Fase 5 — Versionerede styklister og pakning
 
 Fase 5 tilføjer `recipes`, `recipe_revisions` og `recipe_lines` med virksomhedsspecifik RLS, uforanderlige versioner og snapshots samt en BigInt-baseret behovsberegner i NestJS. Aktive BOM-/pakkeopsætninger kan ikke forbruge samme komponent dobbelt. Indlejrede beholdere og tilbehør beregnes uden lagerbogføring. Stamdatarettigheder genbruges; browseren tilgår fortsat kun forretningsdata via NestJS. Ingen nye eksterne ressourcer eller dependencies. Se [Fase 5](phase-5.md) og [aktuel verifikationsstatus](phase-5-verification.md). Fase 5 er afsluttet med brugerbekræftet `PHASE_5_READ_ONLY_VERIFICATION: PASS`. Hosted kontrol af eksisterende publicerede revisioner er forventet NOT_RUN, da der ikke fandtes sådanne revisioner; hosted CRUD er ikke verificeret. Foto er fortsat deaktiveret hosted. Fase 6 er ikke startet.
+
+
+## Fase 6 — Hierarkiske placeringer
+
+Fase 6 bygger videre fra `51e845b` med virksomhedsspecifikke placeringer, beregnede stier, audit, versionskontrol og en privat skrivelås for samtidige hierarkiændringer. Varer/materialer/emballage får valgfri standardplacering; maskiner får valgfri placering. Der indføres ingen lagerbeholdninger eller lagertransaktioner. Se [leverancen](phase-6.md) og [aktuel verifikationsstatus](phase-6-verification.md). Tidligere fasers slutstatus ovenfor er historik. Fase 7 er ikke startet.

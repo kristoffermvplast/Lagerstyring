@@ -9,7 +9,7 @@ const contact = { address:z.string().max(1000).default(''), contact_name:z.strin
 const catalogs = {
  customers:z.object({...base,...contact}).strict(),
  suppliers:z.object({...base,...contact,lead_time_days:z.number().int().min(0).max(3650).nullable().default(null)}).strict(),
- machines:z.object({...base,machine_type_id:z.string().uuid().nullable().default(null)}).strict(),
+ machines:z.object({...base,location_id:z.string().uuid().nullable().default(null),machine_type_id:z.string().uuid().nullable().default(null)}).strict(),
  product_groups:z.object(base).strict(), machine_types:z.object(base).strict(),
  material_types:z.object(base).strict(), pallet_types:z.object(base).strict(),
  units:z.object({...base,symbol:z.string().trim().min(1).max(20),dimension:z.enum(['count','mass','length','volume','package'])}).strict(),
