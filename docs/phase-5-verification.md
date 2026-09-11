@@ -1,8 +1,23 @@
 # Fase 5 — Verifikation og publiceringsstatus
 
-## Status
+## Endelig status — Fase 5 afsluttet
 
-Implementeret og testet lokalt på `phase5-bom-packing` fra `main` / `c81cd72`. Hosted migration er gennemført. **Push, Railway deployment og den afsluttende online-verifikation afventer. Fase 5 er derfor endnu ikke endeligt online-godkendt. Fase 6 er ikke startet.**
+Brugeren har bekræftet resultatet af sin lokale online-verifikation:
+
+`PHASE_5_READ_ONLY_VERIFICATION: PASS`
+
+Login, session, virksomhedstilhørsforhold, permissions, produktreference, BOM, packing, not-found-adfærd og virksomhedsisolation består. Dette er brugerens rapport fra den faktiske online-kørsel; credentials er ikke indsamlet. Railway-committen er tidligere brugerbekræftet som `f6bd87d4d63d05f11449dec1decf46a60cc5094d`, og recipes-ruten er verificeret til HTTP 401 uden login.
+
+Følgende kontroller er forventet ikke kørt:
+
+- `BOM_EXISTING_REVISION: NOT_RUN`
+- `PACKING_EXISTING_REVISION: NOT_RUN`
+
+Der fandtes ingen eksisterende publicerede revisioner, og scriptet oprettede ingen fixtures. Online-resultatet verificerer derfor læseadgang, adgangsgrænser og not-found-adfærd, men ikke læsning eller beregning på eksisterende publicerede revisioner eller hosted CRUD. De tidligere 83 applikationstests, 63 browsertests, CI- og migrationskontroller bevares som separat evidens og er ikke genkørt.
+
+Fase 5 afsluttes på dette grundlag med de beskrevne verifikationsbegrænsninger. Foto forbliver deaktiveret hosted. Denne afslutning ændrer kun dokumentation og medfører ingen eksterne kald, push, deployment, migration eller ressourceændring. Dokumentationen gemmes i en lokal commit på `phase5-bom-packing`; den er endnu ikke overført til `main`. Fase 6 er ikke startet.
+
+Denne slutstatus erstatter de tidligere afventende statusangivelser længere nede, som bevares som historik.
 
 ## Lokal evidens
 

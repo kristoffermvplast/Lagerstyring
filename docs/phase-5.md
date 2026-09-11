@@ -2,6 +2,8 @@
 
 Udgangspunkt: `main` på `c81cd728fd77d8f2bddf86b5daaccbcf3e680e14`. Arbejdet er isoleret på `phase5-bom-packing`. Fase 6 er ikke startet.
 
+Fase 5 er afsluttet med brugerbekræftet `PHASE_5_READ_ONLY_VERIFICATION: PASS`. Kontroller af eksisterende publicerede BOM-/pakkeversioner er forventet NOT_RUN, fordi sådanne versioner ikke fandtes. Se [verifikationen](phase-5-verification.md) for evidens og afgrænsning.
+
 ## Funktioner og brug
 
 Log ind, vælg virksomhed og åbn **Styklister og pakning**. Vælg eller opret varen. Opret en navngiven stykliste eller pakkeopbygning, tilføj linjer, og gem en ny version. En tom opsætning kan gemmes, men kan ikke beregnes eller vælges som standard før første komplette version.
