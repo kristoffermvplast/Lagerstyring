@@ -68,6 +68,9 @@ export class DatabaseService implements OnApplicationShutdown {
           and to_regclass('app.pallet_types') is not null
           and to_regclass('app.masterdata_audit') is not null
           and to_regclass('app.items') is not null
+          and to_regclass('app.recipes') is not null
+          and to_regclass('app.recipe_revisions') is not null
+          and to_regclass('app.recipe_lines') is not null
           as ready
         from pg_roles r where r.rolname = current_user
       `.execute(this.db);

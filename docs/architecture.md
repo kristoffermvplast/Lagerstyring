@@ -72,3 +72,7 @@ Fase 2 er afsluttet på main `470b3f9`. Fase 3 udvider den eksisterende NestJS- 
 Fra main `ae73038`: fælles `app.items` med tre typer, tenant-sikre stamdatareferencer, præcise decimalstandarder og eksisterende audit/permissions. Fotos er teknisk forberedt via NestJS og privat Supabase Storage, deaktiveret som standard. Se [Fase 4](phase-4.md) og [verifikation](phase-4-verification.md) for implementering, kørselsvejledning og hosted status. BOM/pakning og senere lagerfunktioner er ikke startet.
 
 Fase 4 er afsluttet med brugerbekræftet `PHASE_4_READ_ONLY_VERIFICATION: PASS`. Hosted foto er fortsat deaktiveret; hosted skrivetests er ikke omfattet af online-læseresultatet. Fase 5 er ikke startet.
+
+## Fase 5 — Versionerede styklister og pakning
+
+Fase 5 tilføjer `recipes`, `recipe_revisions` og `recipe_lines` med virksomhedsspecifik RLS, uforanderlige versioner og snapshots samt en BigInt-baseret behovsberegner i NestJS. Aktive BOM-/pakkeopsætninger kan ikke forbruge samme komponent dobbelt. Indlejrede beholdere og tilbehør beregnes uden lagerbogføring. Stamdatarettigheder genbruges; browseren tilgår fortsat kun forretningsdata via NestJS. Ingen nye eksterne ressourcer eller dependencies. Se [Fase 5](phase-5.md) og [aktuel verifikationsstatus](phase-5-verification.md). Hosted migration er udført; publicering og online-verifikation afventer. Fase 6 er ikke startet.
