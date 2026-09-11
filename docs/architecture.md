@@ -81,3 +81,5 @@ Fase 5 tilføjer `recipes`, `recipe_revisions` og `recipe_lines` med virksomheds
 ## Fase 6 — Hierarkiske placeringer
 
 Fase 6 bygger videre fra `51e845b` med virksomhedsspecifikke placeringer, beregnede stier, audit, versionskontrol og en privat skrivelås for samtidige hierarkiændringer. Varer/materialer/emballage får valgfri standardplacering; maskiner får valgfri placering. Der indføres ingen lagerbeholdninger eller lagertransaktioner. Se [leverancen](phase-6.md) og [aktuel verifikationsstatus](phase-6-verification.md). Tidligere fasers slutstatus ovenfor er historik. Fase 7 er ikke startet.
+
+Fase 6 er afsluttet med brugerbekræftet `PHASE_6_READ_ONLY_VERIFICATION: PASS`. `LOCATION_EXISTING_RECORD: NOT_RUN` er forventet, da ingen placeringer fandtes, og ingen fixtures blev oprettet. Hosted læsning af eksisterende stier/historik/underplaceringer og hosted CRUD er ikke verificeret. Foto forbliver deaktiveret hosted. Fase 7 er ikke startet.
