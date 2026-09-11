@@ -58,6 +58,15 @@ export class DatabaseService implements OnApplicationShutdown {
           and not has_schema_privilege(current_user, 'app_private', 'USAGE')
           and to_regclass('app.memberships') is not null
           and to_regprocedure('app.session_active()') is not null
+          and to_regclass('app.customers') is not null
+          and to_regclass('app.suppliers') is not null
+          and to_regclass('app.machines') is not null
+          and to_regclass('app.units') is not null
+          and to_regclass('app.product_groups') is not null
+          and to_regclass('app.machine_types') is not null
+          and to_regclass('app.material_types') is not null
+          and to_regclass('app.pallet_types') is not null
+          and to_regclass('app.masterdata_audit') is not null
           as ready
         from pg_roles r where r.rolname = current_user
       `.execute(this.db);

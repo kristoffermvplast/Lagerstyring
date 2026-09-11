@@ -61,3 +61,8 @@ Fase 2: Auth/permissions/tenant-RLS. Derefter stamdata, varer, BOM/pakning, plac
 ## Fase 2-udvidelse (lokal, afventer hosted aktivering)
 
 Supabase Auth, sessionskontrol, medlemskaber, permissions og RLS er implementeret lokalt. Fase 1-afsnittene ovenfor er historisk baseline; PhaseOneGuard er erstattet af standardafvisende AccessGuard og eksplicit AuthRequired. Se [Fase 2](phase-2.md) for den aktuelle adgangsarkitektur, præcise privilegieundtagelser og økonomiske aktiveringsgrænse.
+
+
+## Fase 3 — stamdata
+
+Fase 2 er afsluttet på main `470b3f9`. Fase 3 udvider den eksisterende NestJS- og RLS-model med typed stamdatakartoteker og immutable audit for runtime. Se [Fase 3](phase-3.md) og [verifikation](phase-3-verification.md). Hosted migration er gennemført; kodepublicering og onlineaktivering afventer den økonomiske deploymentgrænse. Tidligere arkitekturstatusafsnit er historiske.

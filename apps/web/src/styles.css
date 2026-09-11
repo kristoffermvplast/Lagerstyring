@@ -30,3 +30,14 @@
 .access-card td select{min-width:170px}
 
 .access-content{width:100%}
+
+/* Phase 3: compact catalog workspace using the existing light theme. */
+.master-toolbar,.master-actions{display:flex;align-items:end;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.master-toolbar label:first-child{flex:1;min-width:200px}.master-toolbar label{display:grid;gap:6px}
+.master-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;border:0;padding:0;margin:0 0 20px;min-width:0}
+.master-fields label{display:grid;gap:6px;min-width:0}.master-fields .check{display:flex}.master-wide{grid-column:1/-1}
+textarea{font:inherit;border:1px solid #cbd5e1;border-radius:8px;padding:10px;width:100%;box-sizing:border-box}
+.master-active,.master-inactive{display:inline-block;padding:4px 10px;border-radius:6px;font-size:.875rem}.master-active{background:#dcfce7;color:#166534}.master-inactive{background:#e2e8f0;color:#334155}
+.master-details{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.master-details dt{font-weight:600}.master-details dd{margin:4px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.access-card caption{text-align:left;font-weight:600;padding:0 0 12px}.access-card details{border-top:1px solid #e2e8f0;padding:12px 0}.access-card summary{cursor:pointer}.access-card details li{overflow-wrap:anywhere}
+@media(max-width:700px){.master-fields,.master-details{grid-template-columns:1fr}.master-toolbar{align-items:stretch}.master-toolbar label{flex:1;min-width:130px}.master-actions button{min-height:44px}}

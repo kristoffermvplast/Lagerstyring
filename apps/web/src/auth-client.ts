@@ -15,6 +15,6 @@ export async function accessApi<T>(path: string, method = 'GET', body?: unknown)
     method, headers: { Authorization: `Bearer ${data.session.access_token}`, 'Content-Type': 'application/json' },
     ...(body === undefined ? {} : { body: JSON.stringify(body) }), signal: AbortSignal.timeout(10000),
   });
-  if (!response.ok) throw new Error(response.status === 401 ? 'Din session er udløbet eller tilbagekaldt. Log ud og ind igen.' : response.status === 403 ? 'Du har ikke adgang til denne handling.' : response.status === 409 ? 'Ændringen kunne ikke gemmes. Genindlæs listen; kontrollér rolle, bruger og sidste administrator.' : 'Handlingen kunne ikke gennemføres. Prøv igen.');
+  if (!response.ok) throw new Error(response.status === 401 ? 'Din session er udløbet eller tilbagekaldt. Log ud og ind igen.' : response.status === 403 ? 'Du har ikke adgang til denne handling.' : response.status === 409 ? 'Ændringen kunne ikke gemmes. Genindlæs listen; kontrollér dubletter, referencer og rettigheder.' : 'Handlingen kunne ikke gennemføres. Prøv igen.');
   return response.json();
 }

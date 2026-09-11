@@ -10,6 +10,7 @@ import { AppConfig } from './config';
 import { DatabaseService } from './database';
 import { APP_CONFIG, AccessGuard, PUBLIC_ROUTE, SupabaseIdentity } from './auth';
 import { AccessController } from './access';
+import { MasterdataController } from './masterdata';
 
 @Catch()
 class SafeExceptionFilter implements ExceptionFilter {
@@ -53,7 +54,7 @@ class AppModule {}
 export async function createApp(config: AppConfig, database = new DatabaseService(config)) {
   const app = await NestFactory.create<NestExpressApplication>({
     module: AppModule,
-    controllers: [HealthController, AccessController],
+    controllers: [HealthController, AccessController, MasterdataController],
     providers: [{ provide: DatabaseService, useValue: database }, { provide: APP_CONFIG, useValue: config }, SupabaseIdentity, { provide: APP_GUARD, useClass: AccessGuard }],
   }, { logger: config.NODE_ENV === 'test' ? false : ['error', 'warn', 'log'], bodyParser: false });
 
