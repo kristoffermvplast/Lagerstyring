@@ -4,7 +4,7 @@
 
 Implementeret fra `main` / `ae7303897a71815e33746c07261cee91338bd7af` på `phase4-items`. Fase 3 genanalyseres ikke. Fase 5 er ikke startet.
 
-Lokal implementering og test er gennemført. Hosted migration `20260911180004_phase_4_items` er anvendt én gang i det eksisterende Supabase Free-projekt. Koden er endnu ikke publiceret til main/Railway; fuld online-verifikation af Fase 4 afventer dette. Foto-funktionen er teknisk implementeret, men deaktiveret som standard og ikke aktiveret hosted.
+Lokal implementering og test er gennemført. Hosted migration `20260911180004_phase_4_items` er anvendt én gang i det eksisterende Supabase Free-projekt. Koden er publiceret til main som `e44839e6b9110f3f22bcf07165efad67eb28236d` med præcis samme filtræ som den lokalt testede `0db912f`. Brugeren har bekræftet den aktive Railway-commit, og alle tre vareruter svarer nu 401 uden login. Fase 4 er afsluttet efter brugerens bekræftelse af `PHASE_4_READ_ONLY_VERIFICATION: PASS`: ægte login, session, virksomhedstilhørsforhold, permissions, læseadgang og isolation for produkter, materialer og emballage består. Foto-funktionen er teknisk implementeret, men deaktiveret som standard og ikke aktiveret hosted.
 
 ## Leverance og datamodel
 
@@ -68,4 +68,4 @@ Brug eksisterende README/miljøopsætning: `npm ci`, `npm run dev`. Vælg Varer,
 
 BOM, materialeforbrug, emballagens forbrugsansvar, pakkeopbygninger og beregnet antal pr. palle hører til Fase 5. Placeringer hører til Fase 6, transaktionsbaseret lager til Fase 7. Vejledende pallemængde i Fase 4 erstatter ikke en pakkeopbygning. Beholdningsejerskab skal senere være pr. beholdning, ikke fejlagtigt én ejer på varekortet. Ingen af disse senere workflows er implementeret.
 
-Fuld Fase 4-onlineafslutning afventer kodepublicering, onlineadgangstest og særskilt afklaring af foto-aktivering. Fase 5 afventer brugerens godkendelse.
+Fase 4 er afsluttet med bestået online-læseverifikation. Hosted CRUD og foto-upload er ikke online-verificeret; lokal testdækning er beskrevet i verifikationsdokumentet. Foto-aktivering kræver fortsat særskilt økonomisk og sikkerhedsmæssig afklaring. Fase 5 afventer brugerens godkendelse.

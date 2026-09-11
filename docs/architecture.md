@@ -70,3 +70,5 @@ Fase 2 er afsluttet på main `470b3f9`. Fase 3 udvider den eksisterende NestJS- 
 ## Fase 4 — vareidentitet og kartoteker
 
 Fra main `ae73038`: fælles `app.items` med tre typer, tenant-sikre stamdatareferencer, præcise decimalstandarder og eksisterende audit/permissions. Fotos er teknisk forberedt via NestJS og privat Supabase Storage, deaktiveret som standard. Se [Fase 4](phase-4.md) og [verifikation](phase-4-verification.md) for implementering, kørselsvejledning og hosted status. BOM/pakning og senere lagerfunktioner er ikke startet.
+
+Fase 4 er afsluttet med brugerbekræftet `PHASE_4_READ_ONLY_VERIFICATION: PASS`. Hosted foto er fortsat deaktiveret; hosted skrivetests er ikke omfattet af online-læseresultatet. Fase 5 er ikke startet.

@@ -1,5 +1,17 @@
 # Fase 4 — Verifikation
 
+## Endelig status — Fase 4 afsluttet
+
+Brugeren har bekræftet det endelige resultat fra sin lokale online-verifikationskørsel:
+
+`PHASE_4_READ_ONLY_VERIFICATION: PASS`
+
+Login, session, virksomhedstilhørsforhold, permissions samt læseadgang og virksomhedsisolation for produkter, materialer og emballage består. Resultatet er brugerens rapport; credentials er ikke indsamlet eller dokumenteret. Den aktive Railway-commit er tidligere bekræftet som `e44839e6b9110f3f22bcf07165efad67eb28236d`, og alle tre vareruter er tidligere verificeret til 401 uden login.
+
+Fase 4 afsluttes på dette grundlag. Online-resultatet omfatter læse- og adgangskontrol, ikke hosted CRUD, en separat hosted læsebruger, publiceret frontend eller foto-upload. Foto er fortsat ikke aktiveret hosted og kræver særskilt afklaring. De 71 applikationstests, 51 browsertests, CI- og migrationsresultater nedenfor bevares som tidligere verificeret evidens og er ikke genkørt.
+
+Afslutningen ændrer kun dokumentation. Ingen kodeændringer, migrationer, push, deployments, foto-aktivering eller ressourceændringer er udført. Denne slutstatus erstatter tidligere afventende status nedenfor, som bevares som historik. Fase 5 er ikke startet.
+
 ## Lokalt
 
 - `npm run check`: PASS. TypeScript for backend/frontend, 71 applikationstests og begge produktionsbuilds.
