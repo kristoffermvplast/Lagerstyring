@@ -52,3 +52,7 @@ Fase 1–8 er afsluttet. Fase 6 har brugerbekræftet `PHASE_6_READ_ONLY_VERIFICA
 ### Phase 7 inventory foundation
 
 Implementation and final verification: [docs/phase-7.md](docs/phase-7.md). Phase 7 is complete: hosted migration, approved main release, route checks and operator-reported authenticated read-only verification pass. The existing-entry detail check is explicitly NOT_RUN because no entry existed; no fixture was created. Inventory uses tenant-scoped ownership, append-only corrections and nonnegative decimal balances; Phase 8 receiving extends this foundation; see [current status](docs/phase-8.md).
+
+### Phase 9 stock transfers
+
+[Implementation and verification status](docs/phase-9.md). Phase 9 is in progress from `aa015ff`; Phase 10 is not started. Hosted photos remain disabled.

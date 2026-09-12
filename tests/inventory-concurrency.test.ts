@@ -5,6 +5,7 @@ import {createRequire} from 'node:module';
 import {seedDatabase,ids} from './helpers/access-fixture';
 const require=createRequire(import.meta.url);
 const {InventoryController}=require('../apps/api/dist/inventory.js');
+const {TransfersController}=require('../apps/api/dist/transfers.js');
 const {ReceivingController}=require('../apps/api/dist/receiving.js');
 const {DatabaseService}=require('../apps/api/dist/database.js');
 const url=process.env.INVENTORY_TEST_DATABASE_URL;
@@ -61,6 +62,21 @@ describe.skipIf(!url)('real PostgreSQL concurrent inventory commands',()=>{
   expect(results.filter(x=>x.status==='fulfilled')).toHaveLength(1);
   const rejected=results.find(x=>x.status==='rejected') as PromiseRejectedResult;expect(rejected.reason.getStatus()).toBe(409);
   expect((await pool.query('select count(*)::int n from app.inventory_entries where idempotency_key=$1',[key])).rows[0].n).toBe(1);
+ });
+
+ it('competing transfers cannot overdraw a shared source and conserve total stock',async()=>{
+  barrier=undefined;
+  const target=(await service.asActor(actor,ids.a,async(db:any)=>(await db.query("insert into app.locations(company_id,code,name) values($1,'DEST','Destination') returning id",[ids.a])).rows[0].id));
+  const before=(await pool.query('select quantity from app.stock_balances where location_id=$1',[location])).rows[0].quantity;
+  const transfer=new TransfersController(service),base={item_id:item,owner_id:owner,from_location_id:location,to_location_id:target,quantity:before};
+  synchronize();const results=await Promise.allSettled([transfer.transfer({actor},ids.a,{...base,idempotency_key:randomUUID()}),transfer.transfer({actor},ids.a,{...base,idempotency_key:randomUUID()})]);
+  expect(results.filter(x=>x.status==='fulfilled')).toHaveLength(1);expect((results.find(x=>x.status==='rejected') as PromiseRejectedResult).reason.code).toBe('23514');
+  expect((await pool.query('select sum(quantity)::text n from app.stock_balances')).rows[0].n).toBe(before);
+  expect((await pool.query('select quantity from app.stock_balances where location_id=$1',[location])).rows[0].quantity).toBe('0.00000000');
+  // Reverse direction, duplicate key: only one movement is posted.
+  const input={...base,idempotency_key:randomUUID(),from_location_id:target,to_location_id:location};synchronize();const duplicate=await Promise.all([transfer.transfer({actor},ids.a,input),transfer.transfer({actor},ids.a,input)]);expect(duplicate[0].id).toBe(duplicate[1].id);
+  expect((await pool.query("select count(*)::int n from app.inventory_entries where kind='transfer'")).rows[0].n).toBe(2);
+  expect((await pool.query('select quantity from app.stock_balances where location_id=$1',[location])).rows[0].quantity).toBe(before);
  });
 
 });

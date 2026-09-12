@@ -93,3 +93,7 @@ See [Phase 7](phase-7.md) for the journal, owner/balance dimensions, append-only
 See [Phase 8](phase-8.md). Receiving uses the immutable inventory journal with one positive line per receipt, typed receipt metadata, supplier snapshots and `inventory.receive` authorization. It reuses the existing atomic balance writer and reversal path. No Phase 9 workflows are included.
 
 Phase 8 is complete with operator-reported `PHASE_8_READ_ONLY_VERIFICATION: PASS`. The existing-receipt detail check remains expected NOT_RUN because no receipt existed and no fixture was created. Hosted verification was read-only; posting and concurrency coverage comes from automated tests. See the final sign-off in [Phase 8](phase-8.md). Hosted photos remain disabled; Phase 9 is not started.
+
+## Phase 9 stock transfers
+
+[Phase 9](phase-9.md) extends the existing journal with balanced, atomic two-location transfers, unchanged item ownership, `inventory.transfer` authorization and reversible immutable history. No new stock store or infrastructure is introduced. Phase 10 is not started.

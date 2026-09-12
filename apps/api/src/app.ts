@@ -1,3 +1,4 @@
+import { TransfersController } from './transfers';
 import 'reflect-metadata';
 import { randomUUID } from 'node:crypto';
 import { ArgumentsHost, CanActivate, Catch, Controller, ExecutionContext, ExceptionFilter, Get, HttpException, Inject, Injectable, Module, ServiceUnavailableException, SetMetadata, UnauthorizedException, ValidationPipe } from '@nestjs/common';
@@ -60,7 +61,7 @@ class AppModule {}
 export async function createApp(config: AppConfig, database = new DatabaseService(config)) {
   const app = await NestFactory.create<NestExpressApplication>({
     module: AppModule,
-    controllers: [ReceivingController,InventoryController,HealthController, AccessController, MasterdataController, ItemsController, ItemPhotosController, RecipesController, LocationsController],
+    controllers: [TransfersController,ReceivingController,InventoryController,HealthController, AccessController, MasterdataController, ItemsController, ItemPhotosController, RecipesController, LocationsController],
     providers: [{ provide: DatabaseService, useValue: database }, { provide: APP_CONFIG, useValue: config }, SupabaseIdentity, ItemPhotoStorage, { provide: APP_GUARD, useClass: AccessGuard }],
   }, { logger: config.NODE_ENV === 'test' ? false : ['error', 'warn', 'log'], bodyParser: false });
 
