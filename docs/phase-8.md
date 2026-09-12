@@ -1,6 +1,6 @@
 # Phase 8 — Receiving
 
-Continues from main `7fb6925`; Phase 9 is not started. Hosted photos remain disabled.
+Phase 8 is complete. Continues from main `7fb6925`; released Railway commit `cf261adb660ce3dbf14f6f37fe17f887f5e3ea86`. Hosted photos remain disabled. Phase 9 is not started. Earlier verification/release entries below are chronological records; the final sign-off supersedes their pending statuses.
 
 ## Scope and design
 
@@ -34,3 +34,43 @@ Implementation, automated checks and hosted migration are complete. Main has not
 Before main push: expected incremental existing Railway usage 0–0.30 DKK, realistic stress case 1–3 DKK, one-off. Basis is 5–10 minutes of overlapping execution at roughly 1–2 vCPU / 1–2 GB, versus 30–60 minutes at 4 vCPU / 8 GB in the stress case; published rates $0.000463/vCPU-minute and $0.000231/GB-minute, conservative conversion/buffer of 10 DKK/USD. These are resource-time scenarios, not measured build billing. Current Railway usage/credits are inaccessible, so the charge cannot reasonably be guaranteed within 1 DKK. Standard public GitHub Actions on the existing runner is free. No ongoing resource increase is proposed. Obtain explicit approval for this main push and its normal automatic runs before proceeding.
 
 After approval: publish the exact tested tree plus documentation/filename alignment; do not rerun the hosted migration. Verify the active Railway commit, then check anonymous receipt routes return 401 and run `node scripts/verify-receiving.cjs` locally. Existing user, `MV Plast` and the existing approved isolation company are sufficient. No credentials in chat. If no existing receipt is available, `RECEIPT_EXISTING_RECORD: NOT_RUN` is expected and must be preserved. No hosted write test or fixture creation is claimed.
+
+## Approved main release
+
+The operator explicitly approved the one push of local `bdfb370`, including normal automatic GitHub Actions/Railway consumption on unchanged resources. Main was fast-forwarded to `cf261adb660ce3dbf14f6f37fe17f887f5e3ea86`. The GitHub-created commit has exactly the approved local tree `3988bd3671b82b257302487011b1c772409bae8c` and parent `5a7df0554502f1ae7a6320db51f35fef5797de81`; only commit identity differs. Main ref and fetched content were verified. No second branch push, migration, manual deployment, secrets/configuration or resource changes occurred.
+
+Automatic main CI: [run 34703306194](https://github.com/kristoffermvplast/Lagerstyring/actions/runs/34703306194). This is the push-triggered workflow, not a manual rerun.
+
+Initial public checks in the release window: `/api/health/live` 200, `/api/health/ready` 200, anonymous receipt list/detail routes 404 (expected 401 after the receiving runtime is active). Health responses do not establish the deployed commit. Railway tools are unavailable and GitHub exposes only its own Actions check; active Railway commit is not verified. No authenticated session was created or credentials requested in chat.
+
+Main CI completed successfully, job `103578757891`: check, real PostgreSQL concurrency, browser tests, Docker build, diagnostic loading and strict TLS/runtime CA checks all passed. The targeted receipt list/detail recheck still returned HTTP 404, not the expected 401. Active Railway revision remains unverified, so authenticated receipt/isolation verification is NOT_RUN pending route availability. No claim of full online Phase 8 completion is made.
+
+Next operator action: confirm whether the existing Railway service's automatic deployment for `cf261adb660ce3dbf14f6f37fe17f887f5e3ea86` is active or failed; share only commit/status, no secrets. Once active, repeat only the blocked route checks and run the existing read-only receiving verification script with local hidden input. Preserve any expected existing-receipt NOT_RUN. This release result is committed locally only, with no additional push/deployment. Photos remain disabled hosted; Phase 9 has not started.
+
+## Targeted route verification after confirmed Railway deployment
+
+The operator confirmed the active Railway commit is `cf261adb660ce3dbf14f6f37fe17f887f5e3ea86`. Only the two previously blocked anonymous receipt routes were rechecked:
+
+- `GET /api/companies/<own-company>/receipts`: HTTP 401 — PASS.
+- `GET /api/companies/<own-company>/receipts/00000000-0000-4000-8000-000000000000`: HTTP 401 — PASS.
+
+The earlier 404 blocker is resolved. No previous CI, migration or health tests were repeated. No hosted configuration, photo setting, business data, migration or deployment was changed.
+
+Remaining gate: the operator runs the existing `scripts/verify-receiving.cjs` with hidden local input (publishable key, email, password, company `MV Plast`, existing isolation company `b64edd83-ef7d-4fa9-93a0-424863a77cec`). Expected final result: `PHASE_8_READ_ONLY_VERIFICATION: PASS`. If no receipt exists, `RECEIPT_EXISTING_RECORD: NOT_RUN (no existing receipt; no fixture created)` is expected and is not counted as a pass. The script creates no business fixtures and cleans up its login session. No authenticated test result is claimed until actual operator output is received. This documentation is committed locally only; Phase 9 has not started.
+
+
+## Final Phase 8 sign-off
+
+Evidence: operator-reported online verification; no already-passing tests were repeated for this documentation update.
+
+`PHASE_8_READ_ONLY_VERIFICATION: PASS`
+
+The operator confirms real login, session handling, permissions, receipt read access, response company scope, not-found behavior and cross-company isolation. This closes the remaining online gate, alongside the previously recorded passing automated tests, hosted migration/rights checks, confirmed Railway revision and anonymous receipt route checks.
+
+Expected exclusion, preserved exactly:
+
+`RECEIPT_EXISTING_RECORD: NOT_RUN (no existing receipt; no fixture created)`
+
+No existing hosted receipt was available for its detail check. This remains NOT_RUN and is not counted as a pass. No fixture was created. Hosted business-data verification was read-only; it does not claim hosted receipt posting or concurrency coverage. Posting, atomic rollback, immutable history, precision and concurrency are covered by the already recorded automated tests.
+
+Phase 8 is now closed. Only documentation changed for this sign-off, saved in a local commit on `phase8-receiving`. No tests, push, migrations, deployments, configuration changes or external resource changes were performed. Publication of this documentation is a separate action under the economic rule. Hosted photos remain disabled. Phase 9 requires explicit approval and has not started.
