@@ -16,11 +16,21 @@ SERIALIZABLE transactions and retry use the existing journal idempotency namespa
 
 ## Verification status
 
-- Local typecheck/build and 118 tests passed before the final count/reversal edge-case addition.
-- PostgreSQL concurrency and browser verification pending on the existing standard public GitHub runner. Local PostgreSQL/Chromium are unavailable; no claim of local execution.
-- Hosted migration and release pending. No online Phase 8 result is claimed.
+- CI on `5a7df0554502f1ae7a6320db51f35fef5797de81` passed: typecheck, 119 unit/API/database/operator-helper tests, build, four real PostgreSQL concurrency tests, 84 desktop/tablet/mobile browser tests, Docker runtime build and strict TLS/diagnostic checks. The four PostgreSQL tests skipped in the normal suite were actually executed and passed in the dedicated PostgreSQL step.
+- Evidence: [GitHub Actions run 34701300884](https://github.com/kristoffermvplast/Lagerstyring/actions/runs/34701300884), job `103573430154`. Local PostgreSQL/Chromium were unavailable; these checks ran on the existing standard public runner. Only documentation and the migration filename alignment changed after the passing code run; migration SQL is identical.
+- Hosted migration `20260912150922_phase_8_receiving` applied once on the existing Free project (13,020,307 bytes before migration). Source filename is aligned with the hosted migration version; SQL unchanged. Six columns, five receipt constraints, RLS, receiving permission and narrow runtime grants verified. Runtime cannot forge supplier snapshots, edit journals or update balances directly; browser schema access remains denied. Zero journal entries; no fixture created. Release and authenticated online verification remain pending.
 - `scripts/verify-receiving.cjs` is a read-only business-data operator check with hidden local credentials, sanitized diagnostics and session cleanup. It checks receipt routes, scope, permission and foreign-company denial. An absent existing receipt is explicitly NOT_RUN; it creates no fixture.
 
 ## Limits
 
 One item per receipt; a delivery containing different items is recorded as separate receipts sharing a reference. No purchase orders, receipt drafts, partial purchase-order fulfillment, batch/serial tracking, individual pallets, transfers or unit conversion. Receiving uses the stock unit, not supplier package conversions. Photos remain disabled hosted. Phase 9 requires separate approval.
+
+Security advisors introduce no new findings. Existing notices remain: private location lock table uses intentional default-deny RLS ([linter explanation](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy)); [leaked password protection](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection) is disabled. No Auth plan/feature was changed.
+
+## Release boundary
+
+Implementation, automated checks and hosted migration are complete. Main has not been updated for Phase 8; no Railway deployment was triggered. The working branch is `phase8-receiving`. The closing evidence and migration filename alignment are committed locally, ready for publication. Phase 8 is not signed off online until the approved main release and operator login/isolation check pass.
+
+Before main push: expected incremental existing Railway usage 0–0.30 DKK, realistic stress case 1–3 DKK, one-off. Basis is 5–10 minutes of overlapping execution at roughly 1–2 vCPU / 1–2 GB, versus 30–60 minutes at 4 vCPU / 8 GB in the stress case; published rates $0.000463/vCPU-minute and $0.000231/GB-minute, conservative conversion/buffer of 10 DKK/USD. These are resource-time scenarios, not measured build billing. Current Railway usage/credits are inaccessible, so the charge cannot reasonably be guaranteed within 1 DKK. Standard public GitHub Actions on the existing runner is free. No ongoing resource increase is proposed. Obtain explicit approval for this main push and its normal automatic runs before proceeding.
+
+After approval: publish the exact tested tree plus documentation/filename alignment; do not rerun the hosted migration. Verify the active Railway commit, then check anonymous receipt routes return 401 and run `node scripts/verify-receiving.cjs` locally. Existing user, `MV Plast` and the existing approved isolation company are sufficient. No credentials in chat. If no existing receipt is available, `RECEIPT_EXISTING_RECORD: NOT_RUN` is expected and must be preserved. No hosted write test or fixture creation is claimed.
