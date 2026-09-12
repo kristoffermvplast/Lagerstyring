@@ -49,6 +49,17 @@ it('blocks incoming stock to inactive locations but permits correction of remain
 it('reconstructs every balance exactly from the immutable ledger including zero balances',async()=>{
  const r=await db.query<any>('select b.quantity=sum(l.quantity) as matches from app.stock_balances b join app.inventory_lines l using(company_id,item_id,owner_id,location_id,unit_id) group by b.company_id,b.item_id,b.owner_id,b.location_id,b.quantity');expect(r.rows.every(x=>x.matches)).toBe(true);
 });
+it('requires whole quantities for count units',async()=>{
+ await actor(async()=>{
+ const u=(await db.query<any>("insert into app.units(company_id,code,name,symbol,dimension) values($1,'PCS','Pieces','pcs','count') returning id",[ids.a])).rows[0].id;
+ const i=(await db.query<any>("insert into app.items(company_id,kind,code,name,unit_id) values($1,'product','P','Product',$2) returning id",[ids.a,u])).rows[0].id;
+ const l=(await db.query<any>("insert into app.locations(company_id,code,name) values($1,'SECOND','Second location') returning id",[ids.a])).rows[0].id;
+ itemCount=i;locationCount=l;
+ });
+ await expect(actor(()=>post([{item_id:itemCount,owner_id:owner,location_id:locationCount,quantity:'0.5'}]))).rejects.toMatchObject({code:'23514'});
+ await actor(()=>post([{item_id:itemCount,owner_id:owner,location_id:locationCount,quantity:'2'}]));
+});
+let itemCount:string,locationCount:string;
 it('blocks ledger rewrites even by its owner and rejects revoked sessions',async()=>{
  await expect(db.exec("update app.inventory_entries set reason='Rewrite'")).rejects.toMatchObject({code:'23514'});
  await expect(db.exec('delete from app.inventory_lines')).rejects.toMatchObject({code:'23514'});

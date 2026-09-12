@@ -51,4 +51,4 @@ Fase 1–6 er afsluttet. Fase 6 har brugerbekræftet `PHASE_6_READ_ONLY_VERIFICA
 
 ### Phase 7 inventory foundation
 
-Implementation and remaining verification gates: [docs/phase-7.md](docs/phase-7.md). The hosted migration and release are pending. Inventory uses tenant-scoped ownership, append-only corrections and nonnegative decimal balances; later receiving workflows are not implemented.
+Implementation and remaining verification gates: [docs/phase-7.md](docs/phase-7.md). The hosted migration is applied; the main release and authenticated online verification are pending. Inventory uses tenant-scoped ownership, append-only corrections and nonnegative decimal balances; later receiving workflows are not implemented.

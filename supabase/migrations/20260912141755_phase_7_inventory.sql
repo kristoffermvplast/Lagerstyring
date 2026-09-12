@@ -38,6 +38,7 @@ CREATE TABLE app.inventory_entries (
  CHECK((kind='reversal')=(reverses_id IS NOT NULL))
 );
 CREATE INDEX inventory_entries_time ON app.inventory_entries(company_id,posted_at DESC,id);
+CREATE INDEX inventory_entries_actor ON app.inventory_entries(actor_id,company_id);
 CREATE TABLE app.inventory_lines (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),company_id uuid NOT NULL,entry_id uuid NOT NULL,
  item_id uuid NOT NULL,owner_id uuid NOT NULL,location_id uuid NOT NULL,unit_id uuid NOT NULL,
