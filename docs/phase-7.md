@@ -1,6 +1,6 @@
 # Phase 7 — Inventory foundation
 
-Status: implemented from main `9845d19`; branch `phase7-inventory` is published. Hosted migration and database-boundary checks pass. Main push, Railway deployment and authenticated online verification are pending. Phase 8 is not started. Hosted photos remain disabled.
+Status: Phase 7 is complete. The operator reported `PHASE_7_READ_ONLY_VERIFICATION: PASS` on the verified Railway commit `fbd6f78a8002a02e1d8c853eba08d944b4dda91b`. The expected existing-entry NOT_RUN is recorded below. Earlier pending statements are historical checkpoints superseded by this final sign-off. Phase 8 is not started. Hosted photos remain disabled.
 
 ## Scope and boundaries
 
@@ -75,6 +75,54 @@ A main push remains separate from the free working-branch CI runs. It triggers t
 
 Planning estimate for that one push/deployment: **0–0.30 DKK expected**, **1–3 DKK realistic stress-case**, one-off. No new recurring resources/subscriptions are proposed. Estimate uses [Railway rates](https://docs.railway.com/pricing/plans) of USD 0.000463/vCPU-minute and 0.000231/GB-minute, normal additional execution of 5–10 minutes at 1–2 vCPU and 1–2 GB, versus 30–60 minutes at 4 vCPU and 8 GB if allowed by existing resources. Budget conversion is 8 DKK/USD plus up to 25% VAT, not a quoted current exchange rate. These are resource-use assumptions, not measurements or a claim that build minutes themselves are separately billed. Included credits can reduce the actual additional bill to zero. Explicit approval is required before the main push when these assumptions cannot be confirmed.
 
-## Handoff
+## Pre-release handoff (superseded by release record below)
 
 Main was verified unchanged at `9845d199b2312f4f83cb658802275837661b98d2` after final CI success. Implementation is on `phase7-inventory` at `3812368`; this documentation-only follow-up is local. Next: approved normal main push/deployment, anonymous route/readiness checks, then operator-run authenticated read-only inventory verification. Do not apply the migration again. Photo configuration remains untouched/disabled hosted. Phase 7 online sign-off is pending; Phase 8 is not started.
+
+## Approved main release — 2026-09-12
+
+The user approved exactly the `b2435cc` push and its normal automatic GitHub Actions/Railway consumption on unchanged resources. Main was fast-forwarded to `fbd6f78a8002a02e1d8c853eba08d944b4dda91b`. GitHub commit creation assigned different author/timestamp metadata: its tree `791eb33695249c5429379c2fca154f05a25e07cb`, parent `3812368f60ebe67bbfb5a2cee28ece15b43acc93` and message exactly match approved local commit `b2435ccdfc1d35606ccfabdda63608b6cceb9e1b`. Both remote metadata and a local Git content comparison were checked. The initial automatic approval review rejection about the differing SHA was resolved by supplying this equivalence evidence before retrying the main update.
+
+[Automatic main CI run 34699406655](https://github.com/kristoffermvplast/Lagerstyring/actions/runs/34699406655). No manual workflow/deployment, migration, resource setting or photo configuration was changed in this release step.
+
+Railway tools are unavailable in this conversation. GitHub does not expose a Railway commit status here; its connector also does not support deployment-list reads. Public endpoints can verify route availability, but cannot prove the running Railway commit. No authenticated online verification is claimed without the operator's login results.
+
+### Release verification result
+
+- Main update: PASS, verified remote SHA and exact content equivalence with the approved commit.
+- Automatic main CI: PASS, all workflow steps completed successfully (run 34699406655). The unchanged implementation's 110 automated tests, 2 real PostgreSQL concurrency tests, 78 browser tests and Docker/TLS checks remain passing.
+- Public `/api/health/live`: HTTP 200.
+- Public `/api/health/ready`: HTTP 200. These were measured during the release window and do not identify the deployed version.
+- Anonymous `/api/companies/<own-company>/inventory/balances`, `/entries`, `/owners`: HTTP 404 both initially and in the targeted recheck after main CI completed. Expected after Phase 7 runtime is active: HTTP 401.
+- Active Railway commit: NOT_VERIFIED. The GitHub check-runs response lists only GitHub Actions; no Railway status is exposed. No claim is made that the new Railway deployment succeeded.
+- Authenticated inventory/isolation verification: NOT_RUN, blocked until the routes are available. Credentials have not been requested in chat and no login session was created.
+
+Next action for the operator: inspect the existing Railway service's automatic deployment for `fbd6f78a8002a02e1d8c853eba08d944b4dda91b`, and report whether it is active or failed (safe status only). Once active, recheck only the blocked inventory routes; then run `scripts/verify-inventory.cjs` locally with the existing Supabase user, `MV Plast` and the already-approved isolation company. Do not create fixtures or repeat migrations. Phase 7 is not yet fully verified online. This release record is committed locally only; there is no second push/deployment.
+
+### Targeted route verification after confirmed Railway deployment
+
+The operator confirmed Railway is running `fbd6f78a8002a02e1d8c853eba08d944b4dda91b`. Only the three previously blocked routes were retested against the public Railway address, without authentication:
+
+- `inventory/balances`: HTTP 401 — PASS.
+- `inventory/entries`: HTTP 401 — PASS.
+- `inventory/owners`: HTTP 401 — PASS.
+
+This resolves the earlier 404 route-availability blocker. Existing successful CI, migration and health tests were not repeated. No deployment, migration, hosted configuration or business data was changed.
+
+Remaining gate: operator runs the existing `scripts/verify-inventory.cjs` with credentials entered locally and hidden. Use company `MV Plast` and the existing approved isolation company `b64edd83-ef7d-4fa9-93a0-424863a77cec`. Expected final result is `PHASE_7_READ_ONLY_VERIFICATION: PASS`; an absent existing journal entry is explicitly NOT_RUN, not a fabricated pass. Await actual output before Phase 7 sign-off. This documentation update is local only.
+
+## Final Phase 7 sign-off
+
+Evidence source: the operator's reported result from the existing online verification script; no tests were repeated for this documentation update.
+
+`PHASE_7_READ_ONLY_VERIFICATION: PASS`
+
+The operator confirms successful real login, session handling, inventory permissions, balances/entries/owners read access, response company scope, not-found behavior and cross-company isolation. Together with the already recorded passing database, API, concurrency, browser, build and runtime checks, this closes the remaining Phase 7 verification gate.
+
+Expected exclusion, preserved exactly:
+
+`INVENTORY_EXISTING_ENTRY: NOT_RUN (no existing entry; no fixture created)`
+
+No existing hosted journal entry was available for the detail check. This remains NOT_RUN; it is not counted as a pass. No fixtures were created. The hosted verification was read-only for business data; it does not claim hosted posting or concurrency coverage. Posting, rollback, immutable history and concurrency are covered by the previously recorded automated tests.
+
+Phase 7 is now closed. No new code, test runs, migrations, pushes, deployments or resource changes were performed for this sign-off. This final documentation is saved in a local commit on `phase7-inventory`; publishing that commit is a separate action under the economic rule. Hosted photos remain disabled. Phase 8 requires explicit user approval.
