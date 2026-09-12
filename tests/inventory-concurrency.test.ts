@@ -5,6 +5,7 @@ import {createRequire} from 'node:module';
 import {seedDatabase,ids} from './helpers/access-fixture';
 const require=createRequire(import.meta.url);
 const {InventoryController}=require('../apps/api/dist/inventory.js');
+const {ReceivingController}=require('../apps/api/dist/receiving.js');
 const {DatabaseService}=require('../apps/api/dist/database.js');
 const url=process.env.INVENTORY_TEST_DATABASE_URL;
 // Deliberately excluded from hosted execution: new empty local test database only.
@@ -43,4 +44,23 @@ describe.skipIf(!url)('real PostgreSQL concurrent inventory commands',()=>{
   const q=(await pool.query('select quantity from app.stock_balances')).rows[0].quantity;expect(['100.00000000','200.00000000']).toContain(q);
   expect((await pool.query('select sum(quantity)::text quantity from app.inventory_lines')).rows[0].quantity).toBe(q);
  });
+ it('concurrent receipt retries add stock exactly once and preserve the journal',async()=>{
+  const receiving=new ReceivingController(service);
+  const before=(await pool.query('select quantity from app.stock_balances')).rows[0].quantity;
+  const body={idempotency_key:randomUUID(),item_id:item,owner_id:owner,location_id:location,quantity:'0.00825001',expected_quantity:'0.01',comment:'Local concurrency test'};
+  synchronize();const results=await Promise.all([receiving.receive({actor},ids.a,body),receiving.receive({actor},ids.a,body)]);
+  expect(results[0].id).toBe(results[1].id);
+  expect(results[0].difference).toBe('-0.00174999');
+  const delta=await pool.query('select (quantity-$1::numeric)::text delta from app.stock_balances',[before]);
+  expect(delta.rows[0].delta).toBe('0.00825001');
+  expect((await pool.query("select count(*)::int n from app.inventory_entries where kind='receipt'")).rows[0].n).toBe(1);
+ });
+ it('receipt and correction cannot share a key with different commands',async()=>{
+  const receiving=new ReceivingController(service),key=randomUUID();synchronize();
+  const results=await Promise.allSettled([post('1',key),receiving.receive({actor},ids.a,{idempotency_key:key,item_id:item,owner_id:owner,location_id:location,quantity:'1'})]);
+  expect(results.filter(x=>x.status==='fulfilled')).toHaveLength(1);
+  const rejected=results.find(x=>x.status==='rejected') as PromiseRejectedResult;expect(rejected.reason.getStatus()).toBe(409);
+  expect((await pool.query('select count(*)::int n from app.inventory_entries where idempotency_key=$1',[key])).rows[0].n).toBe(1);
+ });
+
 });

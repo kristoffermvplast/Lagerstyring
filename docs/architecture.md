@@ -87,3 +87,7 @@ Fase 6 er afsluttet med brugerbekræftet `PHASE_6_READ_ONLY_VERIFICATION: PASS`.
 ## Phase 7 inventory foundation
 
 See [Phase 7](phase-7.md) for the journal, owner/balance dimensions, append-only posting triggers, SERIALIZABLE/idempotent command strategy, permissions, snapshot behavior and completed Phase 7 verification, including the explicitly excluded hosted existing-entry detail check. All inventory routes use NestJS; only its atomic posting path may change physical balances. Receiving and later workflows remain deferred.
+
+## Phase 8 receiving
+
+See [Phase 8](phase-8.md). Receiving uses the immutable inventory journal with one positive line per receipt, typed receipt metadata, supplier snapshots and `inventory.receive` authorization. It reuses the existing atomic balance writer and reversal path. No Phase 9 workflows are included.

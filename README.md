@@ -44,11 +44,11 @@ npm run test:e2e
 - [Fase 2: authentication og adgang](docs/phase-2.md)
 - [Fase 2-testresultater](docs/phase-2-verification.md)
 
-Fase 1–7 er afsluttet. Fase 6 har brugerbekræftet `PHASE_6_READ_ONLY_VERIFICATION: PASS`; kontrol af en eksisterende placering er forventet NOT_RUN, da ingen fandtes. Se verifikationsstatus nedenfor. Den gældende økonomiske grænse er højst 1 kr. i forventet merudgift pr. konkret handling, når det kan vurderes med rimelig sikkerhed; ellers kræves særskilt godkendelse. Ingen varige ressourceforøgelser uden godkendelse. Fase 7 har brugerbekræftet `PHASE_7_READ_ONLY_VERIFICATION: PASS`; eksisterende lagerpostering er forventet NOT_RUN, da ingen fandtes. Fase 8 er ikke startet.
+Fase 1–7 er afsluttet. Fase 6 har brugerbekræftet `PHASE_6_READ_ONLY_VERIFICATION: PASS`; kontrol af en eksisterende placering er forventet NOT_RUN, da ingen fandtes. Se verifikationsstatus nedenfor. Den gældende økonomiske grænse er højst 1 kr. i forventet merudgift pr. konkret handling, når det kan vurderes med rimelig sikkerhed; ellers kræves særskilt godkendelse. Ingen varige ressourceforøgelser uden godkendelse. Fase 7 har brugerbekræftet `PHASE_7_READ_ONLY_VERIFICATION: PASS`; eksisterende lagerpostering er forventet NOT_RUN, da ingen fandtes. Fase 8 er under implementering; se [modtagelse](docs/phase-8.md).
 
 - [Fase 6: hierarkiske lagerplaceringer](docs/phase-6.md)
 - [Fase 6: verifikation og publicering](docs/phase-6-verification.md)
 
 ### Phase 7 inventory foundation
 
-Implementation and final verification: [docs/phase-7.md](docs/phase-7.md). Phase 7 is complete: hosted migration, approved main release, route checks and operator-reported authenticated read-only verification pass. The existing-entry detail check is explicitly NOT_RUN because no entry existed; no fixture was created. Inventory uses tenant-scoped ownership, append-only corrections and nonnegative decimal balances; later receiving workflows are not implemented.
+Implementation and final verification: [docs/phase-7.md](docs/phase-7.md). Phase 7 is complete: hosted migration, approved main release, route checks and operator-reported authenticated read-only verification pass. The existing-entry detail check is explicitly NOT_RUN because no entry existed; no fixture was created. Inventory uses tenant-scoped ownership, append-only corrections and nonnegative decimal balances; Phase 8 receiving extends this foundation; see [current status](docs/phase-8.md).
