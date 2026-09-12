@@ -7,8 +7,9 @@ export const ids = {
  roleA:'30000000-0000-4000-8000-000000000001', roleB:'30000000-0000-4000-8000-000000000002', readRole:'30000000-0000-4000-8000-000000000003',
  session:'40000000-0000-4000-8000-000000000001', sessionB:'40000000-0000-4000-8000-000000000002', sessionRead:'40000000-0000-4000-8000-000000000003',sessionNew:'40000000-0000-4000-8000-000000000004',
 };
-export async function fixture() {
- const db=new PGlite();
+export async function fixture() { return seedDatabase(new PGlite()); }
+// Shared bootstrap for isolated, disposable local PostgreSQL tests only.
+export async function seedDatabase<T extends Pick<PGlite,'exec'|'query'>>(db:T) {
  await db.exec('CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role; CREATE SCHEMA auth; CREATE TABLE auth.users(id uuid PRIMARY KEY); CREATE TABLE auth.sessions(id uuid PRIMARY KEY,user_id uuid NOT NULL REFERENCES auth.users);');
  for(const file of readdirSync('supabase/migrations').filter(p=>p.endsWith('.sql')).sort()) await db.exec(readFileSync(`supabase/migrations/${file}`,'utf8'));
  for(const user of [ids.adminA,ids.adminB,ids.reader,ids.newcomer]) {await db.query('insert into auth.users values($1)',[user]);await db.query('insert into app.profiles(id) values($1)',[user]);}

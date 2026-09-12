@@ -8,7 +8,7 @@ const uuid = z.string().uuid();
 const profileBody = z.object({ displayName: z.string().trim().min(1).max(120) }).strict();
 const memberBody = z.object({ userId: uuid, roleId: uuid }).strict();
 const changeMemberBody = z.object({ roleId: uuid, active: z.boolean(), version: z.number().int().positive() }).strict();
-const roleBody = z.object({ name: z.string().trim().min(1).max(80), permissions: z.array(z.enum(['access.read','access.manage','masterdata.read','masterdata.manage'])).max(4) }).strict();
+const roleBody = z.object({ name: z.string().trim().min(1).max(80), permissions: z.array(z.enum(['access.read','access.manage','masterdata.read','masterdata.manage','inventory.read','inventory.adjust'])).max(6) }).strict();
 function parse<T>(schema: z.ZodType<T>, body: unknown): T {
   const result = schema.safeParse(body);
   if (!result.success) throw new BadRequestException();

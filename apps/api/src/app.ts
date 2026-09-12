@@ -11,6 +11,7 @@ import { DatabaseService } from './database';
 import { APP_CONFIG, AccessGuard, PUBLIC_ROUTE, SupabaseIdentity } from './auth';
 import { AccessController } from './access';
 import { MasterdataController } from './masterdata';
+import { InventoryController } from './inventory';
 import { LocationsController } from './locations';
 import { RecipesController } from './recipes';
 import { ItemsController } from './items';
@@ -21,7 +22,7 @@ class SafeExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const response = host.switchToHttp().getResponse<Response>();
     const code = (exception as { code?: string })?.code;
-    const status = exception instanceof HttpException ? exception.getStatus() : ['23505','23503','23514','40001','40P01'].includes(code ?? '') ? 409 : code === '42501' ? 403 : 500;
+    const status = exception instanceof HttpException ? exception.getStatus() : ['22003','23505','23503','23514','40001','40P01'].includes(code ?? '') ? 409 : code === '42501' ? 403 : 500;
     response.status(status).json({
       statusCode: status,
       message: status === 503 ? 'Service unavailable' : status === 401 ? 'Unauthorized' : status === 404 ? 'Not found' : status >= 500 ? 'Internal server error' : 'Request rejected',
@@ -58,7 +59,7 @@ class AppModule {}
 export async function createApp(config: AppConfig, database = new DatabaseService(config)) {
   const app = await NestFactory.create<NestExpressApplication>({
     module: AppModule,
-    controllers: [HealthController, AccessController, MasterdataController, ItemsController, ItemPhotosController, RecipesController, LocationsController],
+    controllers: [InventoryController,HealthController, AccessController, MasterdataController, ItemsController, ItemPhotosController, RecipesController, LocationsController],
     providers: [{ provide: DatabaseService, useValue: database }, { provide: APP_CONFIG, useValue: config }, SupabaseIdentity, ItemPhotoStorage, { provide: APP_GUARD, useClass: AccessGuard }],
   }, { logger: config.NODE_ENV === 'test' ? false : ['error', 'warn', 'log'], bodyParser: false });
 

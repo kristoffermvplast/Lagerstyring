@@ -14,6 +14,16 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+      - name: Verify concurrent inventory commands in disposable local PostgreSQL
+        shell: bash
+        run: |
+          trap 'docker rm -fv phase7-postgres >/dev/null 2>&1 || true' EXIT
+          docker run -d --name phase7-postgres -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=phase7_inventory_test -p 127.0.0.1:55432:5432 postgres:17
+          for attempt in $(seq 1 30); do
+            if docker exec phase7-postgres pg_isready -U postgres -d phase7_inventory_test; then break; fi
+            sleep 1
+          done
+          INVENTORY_TEST_DATABASE_URL=postgresql://postgres@127.0.0.1:55432/phase7_inventory_test npx vitest run tests/inventory-concurrency.test.ts
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - name: Build backend runtime image
