@@ -10,7 +10,7 @@ Use the machine's configured storage location when present. If none is configure
 
 ## Data and transaction boundaries
 
-Migration `20260913124608_phase_11_material_issue.sql` adds nullable `production_order_id` and trigger-owned `production_snapshot` to `app.inventory_entries`, a company-safe foreign key, constraints, a partial history index and the technical `production.issue` permission. No new tables, balances or business fixtures. Existing inventory entry/line RLS, immutable history, posting engine and nonnegative balance checks are retained.
+Migration `20260913125931_phase_11_material_issue.sql` adds nullable `production_order_id` and trigger-owned `production_snapshot` to `app.inventory_entries`, a company-safe foreign key, constraints, a partial history index and the technical `production.issue` permission. No new tables, balances or business fixtures. Existing inventory entry/line RLS, immutable history, posting engine and nonnegative balance checks are retained.
 
 The new internal guard is owned by NOLOGIN `app_owner`, has a fixed search path and no runtime/browser EXECUTE grant. It checks actor/session/company and permissions before privileged reads. It locks the order, validates component/machine and captures order code/version, machine identity/name and component snapshot. Runtime can supply only the order reference, not the snapshot. Existing transfer validation ensures exactly two balanced lines with the same owner/item and different locations. Posting remains one SERIALIZABLE transaction with bounded retries and the existing unique idempotency key. Cross-command/key reuse with a different payload is rejected.
 
@@ -30,12 +30,26 @@ The production order detail shows material history and a `Send materiale til pro
 - New API tests: 8 PASS (auth/isolation, permission gate, draft gate, precision/conservation, idempotency, snapshot history, order edit protection, invalid inputs/stock references, partial BOM/packing issues, corrective reversals and restricted database grants).
 - Existing affected transfer, production-order and database regression suites: 17 PASS.
 - New online-helper tests: 2 PASS (read-only business requests, isolation expectations, secret-safe output and cleanup).
-- Browser test execution initially blocked because Chromium is absent; download timed out. No application behavior was exercised in that attempt. The new desktop/tablet/mobile tests and the affected existing suites are ready for the existing CI runner.
-- Real PostgreSQL concurrency test added to the existing disposable CI database suite: concurrent duplicate issues, competing orders overdrawing a shared source, and concurrent return-to-draft vs issue. Pending execution; no local PostgreSQL binary is available here.
-- Hosted migration, deployment and online verification: pending. No hosted PASS is claimed.
+- Local browser execution was initially blocked by absent Chromium and a download timeout; it exercised no application behavior. Existing standard GitHub CI then completed all 102 browser tests successfully, including the new material-issue tests on desktop, tablet and mobile.
+- Real PostgreSQL concurrency: all 7 tests PASS in the existing disposable CI database, including concurrent duplicate issues, competing orders overdrawing a shared source, and concurrent return-to-draft vs issue. No local PostgreSQL binary was available here.
+- Hosted migration `20260913125931_phase_11_material_issue` applied once to the existing Free project (database size before migration: 13,282,451 bytes). Post-migration checks PASS: order column and permission present, snapshot INSERT denied to runtime, private guard EXECUTE denied, balance UPDATE denied, inventory RLS enabled, zero hosted issues. The local filename was aligned to the hosted migration version; SQL is unchanged. Deployment and authenticated online verification remain pending.
 
 Run the existing CI workflow on the working branch without Railway deployment. After authorized release, use `node scripts/verify-material-issues.cjs` with hidden local inputs. Expected final line: `PHASE_11_READ_ONLY_VERIFICATION: PASS`. If no production order exists, preserve `MATERIAL_ISSUE_ORDER_FIXTURE: NOT_RUN`; if an order exists without issues, preserve `MATERIAL_ISSUE_EXISTING_RECORD: NOT_RUN`. No hosted fixtures are automatically created; authenticated positive reads require existing data. All business requests are GET; Supabase login and local-session cleanup are the only Auth mutations.
 
 ## Economic and phase limits
 
 Existing Supabase organization Free plan verified during this phase. No new services, replicas, resources, credits, limits, dependencies or paid features. Local work and existing public-repository standard GitHub CI add no external charge. Any main push with Railway deployment requires its separate cost assessment/approval. Hosted photos remain disabled. Phase 12 has not started.
+
+
+## Hosted security review
+
+No new security advisor findings. The two existing findings remain unchanged: intentional default-deny RLS without policies on private `location_tree_locks` ([explanation](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy)), and disabled leaked-password protection ([remediation](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection)). No feature, policy, plan or billing setting was changed to address those pre-existing notices.
+
+Readiness now checks the new order-reference column through information_schema, without reading actor-dependent permission rows. The real readiness query and failure-on-missing-production-table regression passed in the five-test local database suite after this adjustment.
+
+
+## Automated verification complete; release pending
+
+Working-branch CI [34758458769](https://github.com/kristoffermvplast/Lagerstyring/actions/runs/34758458769), job `103726878467`, commit `9062f98ba6bb15424caf35f254947ff9b1ace07f`: SUCCESS. The remote tree matches initial local implementation `d8e77b7`. Results: 146 unit/API/database/helper tests PASS, 7 real PostgreSQL concurrency tests PASS in their separate job step, 102 browser tests PASS, typecheck/build/runtime Docker/diagnostic availability/strict TLS CA checks PASS. The 7 tests skipped in the general unit step were subsequently executed successfully against disposable PostgreSQL. No manual workflow rerun or Railway deployment was initiated.
+
+Subsequent local changes only add the structural readiness column check (API build and five database tests PASS), align the unchanged migration filename with hosted history, and record this evidence. No unrelated passed tests were repeated. The feature is implemented and automatically verified; main publication and authenticated hosted verification remain pending. No material-return, consumption or Phase 12 workflow is implemented.
