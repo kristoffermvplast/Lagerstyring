@@ -75,7 +75,7 @@ export class DatabaseService implements OnApplicationShutdown {
           -- Readiness has no actor: permission rows are intentionally hidden by RLS.
           -- Verify the catalog structure here; permission contents belong in authenticated tests.
           and to_regclass('app.permissions') is not null
-          and to_regclass('app.production_orders') is not null and to_regclass('app.production_registrations') is not null and to_regclass('app.production_closures') is not null
+          and to_regclass('app.production_orders') is not null and to_regclass('app.production_registrations') is not null and to_regclass('app.production_closures') is not null and to_regclass('app.production_waste') is not null
           and to_regclass('app.production_order_audit') is not null
           and to_regclass('app.recipes') is not null
           and to_regclass('app.recipe_revisions') is not null

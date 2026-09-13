@@ -182,4 +182,19 @@ describe.skipIf(!url)('real PostgreSQL concurrent inventory commands',()=>{
   expect((await pool.query('select status from app.production_orders where id=$1',[order.id])).rows[0].status).toBe('completed');
  });
 
+ it('concurrent measured-waste commands deduplicate and competing reversals preserve stock and closure',async()=>{
+  barrier=undefined;
+  const {ProductionWasteController}=require('../apps/api/dist/production-waste.js');const waste=new ProductionWasteController(service);
+  const order=(await pool.query("select * from app.production_orders where code='REG-CONCURRENT'")).rows[0];
+  const issue=(await pool.query("select id from app.inventory_entries where production_order_id=$1 and kind='transfer' and production_return_of is null",[order.id])).rows[0];
+  const before=(await pool.query('select * from app.stock_balances order by company_id,item_id,owner_id,location_id')).rows;
+  const closure=(await pool.query('select snapshot from app.production_closures where order_id=$1',[order.id])).rows[0].snapshot;
+  const body={idempotency_key:randomUUID(),issue_id:issue.id,quantity:'0.125',comment:'Measured after reconciliation'};
+  synchronize();const records=await Promise.all([waste.record({actor},ids.a,order.id,body),waste.record({actor},ids.a,order.id,body)]);expect(records[0].id).toBe(records[1].id);
+  synchronize();const reversed=await Promise.allSettled([waste.reverse({actor},ids.a,order.id,records[0].id,{idempotency_key:randomUUID(),comment:'Measurement correction A'}),waste.reverse({actor},ids.a,order.id,records[0].id,{idempotency_key:randomUUID(),comment:'Measurement correction B'})]);expect(reversed.filter(x=>x.status==='fulfilled')).toHaveLength(1);
+  barrier=undefined;expect((await pool.query('select count(*)::int n from app.production_waste where order_id=$1',[order.id])).rows[0].n).toBe(2);
+  expect((await pool.query('select * from app.stock_balances order by company_id,item_id,owner_id,location_id')).rows).toEqual(before);
+  expect((await pool.query('select snapshot from app.production_closures where order_id=$1',[order.id])).rows[0].snapshot).toEqual(closure);
+ });
+
 });
