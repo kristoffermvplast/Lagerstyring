@@ -1,6 +1,6 @@
 # Phase 13 — Material return and production closure
 
-Status: implemented locally from main `e7eb62ba649e59597a21b1905309b00ca50ae682`; automated CI, hosted migration and online verification pending. Phase 14 has not started. Hosted photos remain disabled.
+Status: implementation and automated verification complete from main `e7eb62ba649e59597a21b1905309b00ca50ae682`; hosted migration, main publication and online verification await approval. Phase 14 has not started. Hosted photos remain disabled.
 
 ## Behavior and phase boundary
 
@@ -49,3 +49,17 @@ No resource, photo, dependency, migration-history reset or hosted fixture change
 ## First CI checkpoint
 
 CI run 34764084254 on `74cbe0c` passed typecheck/build, all 164 unit/API/database/helper tests and all nine real PostgreSQL concurrency tests. Browser checks: 114 PASS, three return-selector checks failed because the select lacked an unambiguous accessible name. The field now has an explicit aria-label; no database/API change. Normal working-branch CI will verify the correction and previously skipped runtime steps. No hosted migration or main deployment has run.
+
+## Hosted migration blocked by automatic approval review
+
+The existing Supabase organization was confirmed Free; database size is 13,405,331 bytes and Phase 13 is absent. Expected additional migration cost on that existing plan is 0 DKK, with no new resources or fixtures. However, automatic approval review rejected `apply_migration` for `phase_13_production_close` on project `puwyontrchonoepisgun`: the persistent production schema/privilege/trigger/constraint changes require explicit hosted-migration authorization, and rollback/cost impact was not established to the reviewer's satisfaction. The migration did not execute. No workaround or retry was attempted.
+
+The migration is wrapped in one transaction: an application failure rolls back its DDL. It creates the closure table and helpers, adds attributed return/closure columns and constraints, and replaces the production-order/inventory guards described above. Existing open-order behavior is covered by the passing regression suite. Reverting after successful application, especially once closure records exist, needs a separately reviewed corrective migration; do not delete history or reset the hosted database. Do not deploy the new readiness check before applying the authorized migration.
+
+Main publication remains blocked separately by the economic rule. Estimated one-off extra Railway usage for one normal existing deployment: 0–0.30 DKK expected, realistic conservative worst-case 1–3 DKK. The estimate uses the unchanged service/deployment pattern, with uncertainty in actual compute time, overlap and remaining included credit; it is not a measured bill or guaranteed cap. [Railway usage pricing](https://railway.com/pricing) lists CPU at $0.00000772/vCPU-second and RAM at $0.00000386/GB-second. No resource change is proposed. Standard public GitHub Actions runtime is free. Explicit approval is needed before the main push because its charge cannot be bounded confidently at 1 DKK.
+
+## Automated verification complete — hosted release pending
+
+CI [34764394909](https://github.com/kristoffermvplast/Lagerstyring/actions/runs/34764394909), job `103742671265`, commit `ee5a179c13a419e89d8a3407e3be9a55124520c1`: SUCCESS. Tree `5ef94db9784a95997ae5ee15aa72f53dca1301c3` matches local implementation/accessible-name correction. All 164 unit/API/database/helper tests PASS; all nine real PostgreSQL concurrency tests PASS in the separate disposable-database step; all 117 desktop/tablet/mobile tests PASS; typecheck/build/Docker runtime/diagnostic availability/strict TLS CA materialization PASS. The nine skips in the general test step were executed in the PostgreSQL step. No test gate was relaxed and no workflow/resources were changed.
+
+Only closing documentation changes follow that tested commit. Hosted migration was rejected before execution and has not been retried. Main remains the Phase 12 release. Phase 13 is **not yet signed off online**. Required next actions, in order: explicit approval and one application of the reviewed hosted migration; verify new database boundaries/advisors and align the migration filename to the recorded hosted version if necessary without changing SQL; explicitly approved main push with its normal automatic deployment; public readiness and close routes; operator-run hidden-input read-only login/isolation helper. Do not claim NOT_RUN existing-order/result checks as PASS. No hosted fixtures or business writes are authorized as part of that helper. Photos remain disabled hosted. Phase 14 has not started.

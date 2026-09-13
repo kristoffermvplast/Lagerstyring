@@ -72,4 +72,4 @@ Implementation and final verification: [docs/phase-7.md](docs/phase-7.md). Phase
 
 ## Phase 13 — material return and production closure
 
-See [Phase 13 scope and verification](docs/phase-13.md). Implementation continues main `e7eb62b`; CI/hosted verification is pending. Material return is linked to the original issue; confirmed closure consumes the net issued amount once without creating finished stock or treating differences as physical waste. Phase 14 is not started. Photos remain disabled hosted.
+See [Phase 13 scope and verification](docs/phase-13.md). Implementation continues main `e7eb62b`; Automated CI verification passes (164 tests, nine PostgreSQL concurrency tests and 117 browser tests); hosted migration/main release await approval. Material return is linked to the original issue; confirmed closure consumes the net issued amount once without creating finished stock or treating differences as physical waste. Phase 14 is not started. Photos remain disabled hosted.
