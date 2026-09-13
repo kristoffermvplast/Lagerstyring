@@ -1,6 +1,8 @@
 # Phase 9 — Stock transfers
 
-Continues from approved main `aa015ff`. Phase 10 is not started; hosted photos remain disabled.
+Phase 9 is complete. Continues from approved main `aa015ff`; verified Railway release: `b93ee5d7bec573e244bbe33ce4a3a48fdd7dd12c`. Phase 10 is not started; hosted photos remain disabled.
+
+The release records below are chronological. Earlier pending gates are superseded by the final verification at the end of this document.
 
 ## Implementation
 
@@ -44,3 +46,40 @@ After approval: publish the reviewed commit to main with its normal automatic ru
 [CI run 34705048817](https://github.com/kristoffermvplast/Lagerstyring/actions/runs/34705048817), job `103583483727`, commit `f50d81f27dd5cbbf8652221f53805bb5ada53379`: all steps PASS, including the corrected source-selection browser flow, build, real PostgreSQL concurrency, Docker runtime, diagnostic loading and strict CA/TLS checks. The source-selector failure is resolved. The hosted migration SQL is unchanged from the tested version; it must not be applied again.
 
 Implementation and pre-release verification are complete. Only this documentation changed after the passing CI run. Remaining work is the economically approved main push/automatic release and authenticated online verification. No Phase 10 work was started; hosted photos remain disabled.
+
+## Approved main release
+
+The operator approved the one push of local `effa0eb`, including normal automatic GitHub Actions/Railway consumption on unchanged resources. Main was fast-forwarded to `b93ee5d7bec573e244bbe33ce4a3a48fdd7dd12c`. The GitHub-created commit has exactly the approved tree `5e37c4e71f102aed9f4cc6e4134d5086c7aa034d` and parent `f50d81f27dd5cbbf8652221f53805bb5ada53379`; only commit identity differs. Automatic approval review initially rejected the different SHA, then allowed the action after read-only verification of tree and parent equivalence. Main ref and fetched content were verified.
+
+Automatic main CI: [run 34728082480](https://github.com/kristoffermvplast/Lagerstyring/actions/runs/34728082480), job `103645727498`. No manual test rerun or deployment was requested. No migrations, secrets/config changes, resource changes or second branch push occurred. Hosted photos remain disabled.
+
+Initial release-window public checks: `/api/health/live` 200 and `/api/health/ready` 200. Anonymous transfer collection and detail routes both returned 404, expected 401 once the new runtime is active. Health responses do not identify the deployed commit. Railway tools are unavailable, so its active revision is not verified. No credentials were requested in chat and no authenticated session was created.
+
+Main CI completed successfully: all check, PostgreSQL concurrency, browser, Docker runtime, diagnostic and strict TLS/CA steps PASS. The targeted anonymous transfer collection/detail recheck still returned 404, not the expected 401. Active Railway revision remains unverified. Authenticated transfer/isolation verification is NOT_RUN pending route availability; no full online Phase 9 completion is claimed.
+
+Next operator action: confirm whether the existing service's automatic Railway deployment for `b93ee5d7bec573e244bbe33ce4a3a48fdd7dd12c` is active or failed. Share only commit/status, no secrets. Once active, recheck only the blocked routes and run `scripts/verify-transfers.cjs` locally with hidden input. Preserve any expected missing-existing-transfer NOT_RUN. This release record is saved in a local documentation commit only; no additional push/deployment is performed. Photos remain disabled hosted. Phase 10 has not started.
+
+## Targeted routes after confirmed Railway deployment
+
+The operator confirmed active Railway commit `b93ee5d7bec573e244bbe33ce4a3a48fdd7dd12c`. Only the previously blocked anonymous transfer routes were rechecked:
+
+- GET transfer collection: HTTP 401 — PASS.
+- GET transfer detail with probe ID `00000000-0000-4000-8000-000000000000`: HTTP 401 — PASS.
+
+This resolves the earlier 404 blocker. Previous CI, migration and health tests were not repeated. No hosted data, configuration, photo setting or resources were changed; no push, migration or deployment was performed.
+
+Remaining gate: operator runs the existing `scripts/verify-transfers.cjs` using hidden local publishable key/email/password, company `MV Plast`, and existing isolation company `b64edd83-ef7d-4fa9-93a0-424863a77cec`. Expected final result: `PHASE_9_READ_ONLY_VERIFICATION: PASS`. If no transfer exists, preserve `TRANSFER_EXISTING_RECORD: NOT_RUN (no existing transfer; no fixture created)` and do not count it as a pass. No business fixture is created. Authenticated verification remains pending until actual operator output is received. This documentation is committed locally only; Phase 10 has not started.
+
+## Final Phase 9 verification and sign-off
+
+The operator reported `PHASE_9_READ_ONLY_VERIFICATION: PASS` from the authenticated online verification. Login, session, permissions, transfer collection reads, response company scope, not-found behavior and cross-company isolation passed. Together with the previously recorded anonymous route checks and automated tests, this completes Phase 9 verification. No already-passed test was rerun for this sign-off.
+
+Expected coverage limitation, preserved exactly:
+
+```text
+TRANSFER_EXISTING_RECORD: NOT_RUN (no existing transfer; no fixture created)
+```
+
+This is not counted as PASS. No existing transfer was available for that detail check, and no hosted business fixture was created. Hosted verification was read-only; transfer posting, atomicity, reversal and concurrency are covered by the previously recorded automated tests, not claimed as hosted write tests.
+
+Only documentation was updated for closure. No code changes, migration runs, push, deployments, hosted configuration changes or resource changes were performed. Hosted photos remain disabled. Phase 9 is closed; Phase 10 requires separate approval.

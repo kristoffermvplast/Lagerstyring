@@ -44,7 +44,7 @@ npm run test:e2e
 - [Fase 2: authentication og adgang](docs/phase-2.md)
 - [Fase 2-testresultater](docs/phase-2-verification.md)
 
-Fase 1–8 er afsluttet. Fase 6 har brugerbekræftet `PHASE_6_READ_ONLY_VERIFICATION: PASS`; kontrol af en eksisterende placering er forventet NOT_RUN, da ingen fandtes. Se verifikationsstatus nedenfor. Den gældende økonomiske grænse er højst 1 kr. i forventet merudgift pr. konkret handling, når det kan vurderes med rimelig sikkerhed; ellers kræves særskilt godkendelse. Ingen varige ressourceforøgelser uden godkendelse. Fase 7 har brugerbekræftet `PHASE_7_READ_ONLY_VERIFICATION: PASS`; eksisterende lagerpostering er forventet NOT_RUN, da ingen fandtes. Fase 8 er afsluttet med brugerbekræftet `PHASE_8_READ_ONLY_VERIFICATION: PASS`. Kontrol af eksisterende modtagelse er forventet NOT_RUN, da ingen fandtes, og ingen fixture blev oprettet. Se [modtagelse og endelig verifikation](docs/phase-8.md). Foto forbliver deaktiveret hosted. Fase 9 er ikke startet.
+Fase 1–9 er afsluttet. Fase 6 har brugerbekræftet `PHASE_6_READ_ONLY_VERIFICATION: PASS`; kontrol af en eksisterende placering er forventet NOT_RUN, da ingen fandtes. Se verifikationsstatus nedenfor. Den gældende økonomiske grænse er højst 1 kr. i forventet merudgift pr. konkret handling, når det kan vurderes med rimelig sikkerhed; ellers kræves særskilt godkendelse. Ingen varige ressourceforøgelser uden godkendelse. Fase 7 har brugerbekræftet `PHASE_7_READ_ONLY_VERIFICATION: PASS`; eksisterende lagerpostering er forventet NOT_RUN, da ingen fandtes. Fase 8 er afsluttet med brugerbekræftet `PHASE_8_READ_ONLY_VERIFICATION: PASS`. Kontrol af eksisterende modtagelse er forventet NOT_RUN, da ingen fandtes, og ingen fixture blev oprettet. Se [modtagelse og endelig verifikation](docs/phase-8.md). Foto forbliver deaktiveret hosted. Fase 9 er afsluttet; Fase 10 er ikke startet.
 
 - [Fase 6: hierarkiske lagerplaceringer](docs/phase-6.md)
 - [Fase 6: verifikation og publicering](docs/phase-6-verification.md)
@@ -55,4 +55,4 @@ Implementation and final verification: [docs/phase-7.md](docs/phase-7.md). Phase
 
 ### Phase 9 stock transfers
 
-[Implementation and verification status](docs/phase-9.md). Phase 9 is in progress from `aa015ff`; Phase 10 is not started. Hosted photos remain disabled.
+[Implementation and verification status](docs/phase-9.md). Phase 9 is complete with operator-reported `PHASE_9_READ_ONLY_VERIFICATION: PASS`. `TRANSFER_EXISTING_RECORD` remains expected NOT_RUN because no transfer existed and no fixture was created. Hosted verification was read-only. Phase 10 is not started. Hosted photos remain disabled.
