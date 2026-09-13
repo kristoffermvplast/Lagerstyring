@@ -75,7 +75,7 @@ it('problem remains separate, explicit return to draft permits changes and prese
  order=await(await call(path()+'/'+order.id+'/status',t,'POST',{version:order.version,status:'planned'})).json();expect((await call(path()+'/'+order.id+'/status',t,'POST',{version:order.version,status:'ready'})).status).toBe(409);
  order=await(await call(path()+'/'+order.id+'/status',t,'POST',{version:order.version,status:'draft'})).json();
  const data={code:order.code,quantity:'505',machine_id:machine,bom_revision_id:bom,packing_revision_id:packing};r=await call(path()+'/'+order.id,t,'PATCH',{version:order.version,data});expect(r.status).toBe(200);order=await r.json();expect(order.snapshot.product.name).toBe('Changed product');expect(order.requirements.packaging[0].quantity).toBe('43');expect(order.requirements.containers[0].remainder).toBe('1');
- expect((await call(path()+'/'+order.id+'/status',t,'POST',{version:order.version,status:'in_production'})).status).toBe(400);
+ expect((await call(path()+'/'+order.id+'/status',t,'POST',{version:order.version,status:'in_production'})).status).toBe(409);
  const history=await(await call(path()+'/'+order.id+'/history',t)).json();expect(history.some((h:any)=>h.after_value.snapshot.product.name==='Original product')).toBe(true);
 });
 it('enforces permissions and company boundaries on all routes and database reads',async()=>{

@@ -122,4 +122,37 @@ describe.skipIf(!url)('real PostgreSQL concurrent inventory commands',()=>{
   const invariant=await pool.query("select not(status='draft' and exists(select 1 from app.inventory_entries where production_order_id=$1)) as safe from app.production_orders where id=$1",[third.id]);expect(invariant.rows[0].safe).toBe(true);
  });
 
+ it('production increments and reversals serialize without lost totals or stock effects',async()=>{
+  barrier=undefined;
+  const {ProductionOrdersController}=require('../apps/api/dist/production-orders.js');
+  const {ProductionRegistrationsController}=require('../apps/api/dist/production-registrations.js');
+  const production=new ProductionOrdersController(service),registrations=new ProductionRegistrationsController(service);
+  const setup=await service.asActor(actor,ids.a,async(db:any)=>{
+   const unit=(await db.query("insert into app.units(company_id,code,name,symbol,dimension) values($1,'REG-PCS','Pieces','stk.','count') returning id",[ids.a])).rows[0].id;
+   const product=(await db.query("insert into app.items(company_id,kind,code,name,unit_id) values($1,'product','REG-P','Registration product',$2) returning id",[ids.a,unit])).rows[0].id;
+   const box=(await db.query("insert into app.items(company_id,kind,code,name,unit_id) values($1,'packaging','REG-B','Box',$2) returning id",[ids.a,unit])).rows[0].id;
+   const machine=(await db.query("insert into app.machines(company_id,code,name) values($1,'REG-M','Machine') returning id",[ids.a])).rows[0].id;
+   const revisions:any={};
+   for(const kind of ['bom','packing']){
+    const recipe=(await db.query('insert into app.recipes(company_id,product_id,kind,name) values($1,$2,$3,$3) returning id',[ids.a,product,kind])).rows[0].id;
+    const revision=(await db.query('insert into app.recipe_revisions(company_id,recipe_id,revision) values($1,$2,1) returning id',[ids.a,recipe])).rows[0].id;
+    await db.query('insert into app.recipe_lines(company_id,revision_id,component_id,kind,quantity) values($1,$2,$3,$4,1)',[ids.a,revision,kind==='bom'?item:box,kind==='bom'?'component':'container']);
+    await db.query('update app.recipe_revisions set sealed=true where id=$1',[revision]);revisions[kind]=revision;
+   }
+   return {product,machine,...revisions};
+  });
+  let order=await production.create({actor},ids.a,{code:'REG-CONCURRENT',product_id:setup.product,machine_id:setup.machine,bom_revision_id:setup.bom,packing_revision_id:setup.packing,quantity:'100',idempotency_key:randomUUID()});
+  for(const status of ['planned','ready','in_production'])order=await production.status({actor},ids.a,order.id,{status,version:order.version});
+  const stockBefore=(await pool.query('select count(*)::int n from app.inventory_entries')).rows[0].n;
+  const body={quantity:'20',idempotency_key:randomUUID()};
+  synchronize();const duplicate=await Promise.all([registrations.create({actor},ids.a,order.id,body),registrations.create({actor},ids.a,order.id,body)]);expect(duplicate[0].id).toBe(duplicate[1].id);
+  synchronize();await Promise.all([registrations.create({actor},ids.a,order.id,{...body,idempotency_key:randomUUID()}),registrations.create({actor},ids.a,order.id,{...body,idempotency_key:randomUUID()})]);
+  barrier=undefined;expect((await registrations.summary({actor},ids.a,order.id)).good_quantity).toBe('60.00000000');
+  synchronize();const reversed=await Promise.allSettled([registrations.reverse({actor},ids.a,order.id,duplicate[0].id,{idempotency_key:randomUUID(),comment:'Correction A'}),registrations.reverse({actor},ids.a,order.id,duplicate[0].id,{idempotency_key:randomUUID(),comment:'Correction B'})]);expect(reversed.filter(x=>x.status==='fulfilled')).toHaveLength(1);
+  barrier=undefined;expect((await registrations.summary({actor},ids.a,order.id)).good_quantity).toBe('40.00000000');
+  synchronize();const race=await Promise.allSettled([registrations.create({actor},ids.a,order.id,{...body,idempotency_key:randomUUID()}),production.problem({actor},ids.a,order.id,{version:order.version,problem:'Stop'})]);
+  barrier=undefined;expect(race[1].status).toBe('fulfilled');expect((await registrations.summary({actor},ids.a,order.id)).good_quantity).toBe(race[0].status==='fulfilled'?'60.00000000':'40.00000000');
+  expect((await pool.query('select count(*)::int n from app.inventory_entries')).rows[0].n).toBe(stockBefore);
+ });
+
 });
