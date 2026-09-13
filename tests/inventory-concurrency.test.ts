@@ -155,4 +155,31 @@ describe.skipIf(!url)('real PostgreSQL concurrent inventory commands',()=>{
   expect((await pool.query('select count(*)::int n from app.inventory_entries')).rows[0].n).toBe(stockBefore);
  });
 
+ it('competing returns and closure serialize without over-return or duplicate consumption',async()=>{
+  barrier=undefined;
+  const {ProductionOrdersController}=require('../apps/api/dist/production-orders.js');
+  const {MaterialIssuesController}=require('../apps/api/dist/material-issues.js');
+  const {ProductionCloseController}=require('../apps/api/dist/production-close.js');
+  const production=new ProductionOrdersController(service),issues=new MaterialIssuesController(service),close=new ProductionCloseController(service);
+  let order=(await pool.query("select * from app.production_orders where code='REG-CONCURRENT'")).rows[0];
+  order=await production.problem({actor},ids.a,order.id,{version:order.version,problem:''});
+  const target=await service.asActor(actor,ids.a,async(db:any)=>(await db.query("insert into app.locations(company_id,code,name) values($1,'CLOSE-PROD','Close production') returning id",[ids.a])).rows[0].id);
+  await post('10');const issue=await issues.issue({actor},ids.a,order.id,{item_id:item,owner_id:owner,from_location_id:location,to_location_id:target,quantity:'8',idempotency_key:randomUUID()});
+  const body={issue_id:issue.id,to_location_id:location,quantity:'5',comment:'Unused material',idempotency_key:randomUUID()};
+  synchronize();const race=await Promise.allSettled([close.returnMaterial({actor},ids.a,order.id,body),close.returnMaterial({actor},ids.a,order.id,{...body,idempotency_key:randomUUID()})]);expect(race.filter(x=>x.status==='fulfilled')).toHaveLength(1);
+  const retry={...body,quantity:'1',idempotency_key:randomUUID()};synchronize();const returns=await Promise.all([close.returnMaterial({actor},ids.a,order.id,retry),close.returnMaterial({actor},ids.a,order.id,retry)]);expect(returns[0].id).toBe(returns[1].id);
+  barrier=undefined;order=await production.status({actor},ids.a,order.id,{status:'reconciliation',version:order.version});
+  let review=await close.review({actor},ids.a,order.id);expect(review.materials[0].remaining_quantity).toBe('2.00000000');
+  let command={idempotency_key:randomUUID(),review_token:review.review_token,rejected_quantity:'0',comment:'Confirmed consumed net',confirm_materials:true};
+  synchronize();const result=await Promise.allSettled([close.complete({actor},ids.a,order.id,command),close.returnMaterial({actor},ids.a,order.id,{...body,quantity:'1',idempotency_key:randomUUID()})]);
+  expect(result.filter(x=>x.status==='fulfilled')).toHaveLength(1);
+  barrier=undefined;if(result[0].status==='rejected'){review=await close.review({actor},ids.a,order.id);command={...command,idempotency_key:randomUUID(),review_token:review.review_token};}
+  synchronize();const duplicate=await Promise.all([close.complete({actor},ids.a,order.id,command),close.complete({actor},ids.a,order.id,command)]);expect(duplicate[0].id).toBe(duplicate[1].id);
+  barrier=undefined;
+  expect((await pool.query('select count(*)::int n from app.production_closures where order_id=$1',[order.id])).rows[0].n).toBe(1);
+  expect((await pool.query("select count(*)::int n from app.inventory_entries where production_order_id=$1 and kind='production_consumption'",[order.id])).rows[0].n).toBe(1);
+  expect((await pool.query('select quantity from app.stock_balances where item_id=$1 and location_id=$2',[item,target])).rows[0].quantity).toBe('0.00000000');
+  expect((await pool.query('select status from app.production_orders where id=$1',[order.id])).rows[0].status).toBe('completed');
+ });
+
 });

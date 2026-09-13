@@ -114,3 +114,7 @@ Phase 10 is complete. Previously recorded automated tests and hosted migration `
 ## Phase 12 production registration
 
 [Phase 12](phase-12.md) adds immutable company-scoped production events with order locking, exact quantities, idempotency, separate recording/correction permissions and RLS. Ready orders can start; running orders cannot return to planning. No stock or consumption side effects. Phase 12 is complete with operator-reported `PHASE_12_READ_ONLY_VERIFICATION: PASS` on confirmed Railway commit `28637bc708d952f39c9f62f6568722493f3e9906`. Login, session, permissions, production-order reads, registration access boundaries, not-found behavior and company isolation passed. `PRODUCTION_REGISTRATION_ORDER_FIXTURE: NOT_RUN (no existing production order; no fixture created)` is expected. Positive registration list/summary/detail reads for an existing order and hosted writes were not exercised; previously documented automated tests remain their coverage. Phase 13 has not started.
+
+## Phase 13 material return and closure
+
+[Phase 13](phase-13.md) adds issue-attributed returns and an immutable reviewed closure. It reuses the stock journal and shared order lock, posts confirmed net consumption once, and atomically closes the order. Production registration and future finished-goods delivery remain separate. Return/closure rights are explicit and manageable through NestJS; stale reviews, cross-company requests and negative stock fail closed. Implementation is local pending CI/hosted verification. Phase 14 has not started; photos remain disabled hosted.

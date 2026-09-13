@@ -1,3 +1,4 @@
+import { ProductionCloseController } from './production-close';
 import { ProductionRegistrationsController } from './production-registrations';
 import { MaterialIssuesController } from './material-issues';
 import { ProductionOrdersController } from './production-orders';
@@ -64,7 +65,7 @@ class AppModule {}
 export async function createApp(config: AppConfig, database = new DatabaseService(config)) {
   const app = await NestFactory.create<NestExpressApplication>({
     module: AppModule,
-    controllers: [ProductionRegistrationsController,MaterialIssuesController,ProductionOrdersController,TransfersController,ReceivingController,InventoryController,HealthController, AccessController, MasterdataController, ItemsController, ItemPhotosController, RecipesController, LocationsController],
+    controllers: [ProductionCloseController,ProductionRegistrationsController,MaterialIssuesController,ProductionOrdersController,TransfersController,ReceivingController,InventoryController,HealthController, AccessController, MasterdataController, ItemsController, ItemPhotosController, RecipesController, LocationsController],
     providers: [{ provide: DatabaseService, useValue: database }, { provide: APP_CONFIG, useValue: config }, SupabaseIdentity, ItemPhotoStorage, { provide: APP_GUARD, useClass: AccessGuard }],
   }, { logger: config.NODE_ENV === 'test' ? false : ['error', 'warn', 'log'], bodyParser: false });
 

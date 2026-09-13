@@ -69,3 +69,7 @@ Implementation and final verification: [docs/phase-7.md](docs/phase-7.md). Phase
 ## Phase 12 production registration
 
 [Implementation and verification](docs/phase-12.md). Incremental good production, exact totals/progress, immutable snapshots and reasoned reversal. Production recording is separate from inventory delivery and consumption. Automated verification PASS: 155 unit/API/database/helper tests, 8 PostgreSQL concurrency tests and 108 browser tests. Phase 12 is complete with operator-reported `PHASE_12_READ_ONLY_VERIFICATION: PASS` on confirmed Railway commit `28637bc708d952f39c9f62f6568722493f3e9906`. Login, session, permissions, production-order reads, registration access boundaries, not-found behavior and company isolation passed. `PRODUCTION_REGISTRATION_ORDER_FIXTURE: NOT_RUN (no existing production order; no fixture created)` is expected. Positive registration list/summary/detail reads for an existing order and hosted writes were not exercised; previously documented automated tests remain their coverage. Photos remain disabled hosted. Phase 13 has not started.
+
+## Phase 13 — material return and production closure
+
+See [Phase 13 scope and verification](docs/phase-13.md). Implementation continues main `e7eb62b`; CI/hosted verification is pending. Material return is linked to the original issue; confirmed closure consumes the net issued amount once without creating finished stock or treating differences as physical waste. Phase 14 is not started. Photos remain disabled hosted.
