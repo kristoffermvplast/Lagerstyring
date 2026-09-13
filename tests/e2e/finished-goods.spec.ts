@@ -6,7 +6,7 @@ async function fixture(page:Page,transfer=true){
  await page.route('http://127.0.0.1:54321/auth/v1/**',r=>r.fulfill({status:200,headers:{'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'*'},json:session}));
  await page.route('**/api/me',r=>r.fulfill({json:{user:{id:user,display_name:'Fixture'},memberships:[{company_id:company,name:'Test A'},{company_id:other,name:'Test B'}]}}));
  await page.route('**/api/companies/*/access',r=>r.fulfill({json:{permissions:[{code:'production.read'},{code:'inventory.read'},...(transfer?['production.deliver','production.delivery.correct','inventory.transfer','masterdata.read','production.manage'].map(code=>({code})):[])]}}));
- let closed=false;const row={id:'50000000-0000-4000-8000-000000000001',code:'CODE',name:'Fixture',active:true,kind:'company',notes:'',version:1};const bodies:any[]=[];
+ let closed=false;const row={id:'50000000-0000-4000-8000-000000000001',code:'CODE',name:'Fixture',active:true,is_storage:true,kind:'company',notes:'',version:1};const bodies:any[]=[];
  await page.route(/\/api\/companies\/[^/]+\/(items|locations)/,r=>r.fulfill({json:r.request().url().includes(row.id)?{...row,path:[row],unit_id:row.id,supplier_id:row.id,standard_location_id:row.id}:{items:[row],total:1}}));
  await page.route(/\/api\/companies\/[^/]+\/inventory/,async r=>{
   const url=new URL(r.request().url());if(r.request().method()==='POST'){bodies.push(r.request().postDataJSON());if(bodies.length===1)return r.fulfill({status:503,json:{message:'Unavailable'}});return r.fulfill({status:201,json:{id:'entry'}});}
