@@ -12,9 +12,9 @@ beforeAll(async () => {
 afterAll(() => db.close());
 
 describe('migration security in isolated PostgreSQL engine', () => {
-  it('creates access and Phase 3–7 masterdata and inventory tables', async () => {
+  it('creates access and Phase 3–10 masterdata, inventory and production tables', async () => {
     const { rows } = await db.query("select count(*)::int as count from pg_tables where schemaname in ('app','app_private')");
-    expect(rows).toEqual([{ count: 27 }]);
+    expect(rows).toEqual([{ count: 29 }]);
   });
   it('runtime role cannot bypass RLS, own schemas or administer roles', async () => {
     const { rows } = await db.query("select rolsuper, rolbypassrls, rolcreatedb, rolcreaterole from pg_roles where rolname='app_backend'");

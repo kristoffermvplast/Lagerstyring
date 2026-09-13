@@ -8,7 +8,7 @@ const uuid = z.string().uuid();
 const profileBody = z.object({ displayName: z.string().trim().min(1).max(120) }).strict();
 const memberBody = z.object({ userId: uuid, roleId: uuid }).strict();
 const changeMemberBody = z.object({ roleId: uuid, active: z.boolean(), version: z.number().int().positive() }).strict();
-const roleBody = z.object({ name: z.string().trim().min(1).max(80), permissions: z.array(z.enum(['access.read','access.manage','masterdata.read','masterdata.manage','inventory.read','inventory.adjust','inventory.receive','inventory.transfer'])).max(8) }).strict();
+const roleBody = z.object({ name: z.string().trim().min(1).max(80), permissions: z.array(z.enum(['access.read','access.manage','masterdata.read','masterdata.manage','inventory.read','inventory.adjust','inventory.receive','inventory.transfer','production.read','production.manage'])).max(10) }).strict();
 function parse<T>(schema: z.ZodType<T>, body: unknown): T {
   const result = schema.safeParse(body);
   if (!result.success) throw new BadRequestException();
@@ -96,7 +96,7 @@ export class AccessController {
   @Post('companies/:companyId/roles')
   async createRole(@Req() req: { actor: Actor }, @Param('companyId') id: string, @Body() body: unknown) {
     const input = parse(roleBody,body);
-    if ((input.permissions.includes('access.manage') && !input.permissions.includes('access.read')) || (input.permissions.includes('masterdata.manage') && !input.permissions.includes('masterdata.read'))) throw new BadRequestException();
+    if ((input.permissions.includes('production.manage') && (!input.permissions.includes('production.read') || !input.permissions.includes('masterdata.read'))) || (input.permissions.includes('access.manage') && !input.permissions.includes('access.read')) || (input.permissions.includes('masterdata.manage') && !input.permissions.includes('masterdata.read'))) throw new BadRequestException();
     return this.database.asActor(req.actor,parse(uuid,id),async client => {
       await authorize(client,'access.manage');
       const result = await client.query('insert into app.roles(company_id,name) values($1,$2) returning id',[id,input.name]);
@@ -108,7 +108,7 @@ export class AccessController {
   @Patch('companies/:companyId/roles/:roleId')
   async changeRole(@Req() req: { actor: Actor }, @Param('companyId') id: string, @Param('roleId') roleId: string, @Body() body: unknown) {
     const input = parse(roleBody,body); parse(uuid,roleId);
-    if ((input.permissions.includes('access.manage') && !input.permissions.includes('access.read')) || (input.permissions.includes('masterdata.manage') && !input.permissions.includes('masterdata.read'))) throw new BadRequestException();
+    if ((input.permissions.includes('production.manage') && (!input.permissions.includes('production.read') || !input.permissions.includes('masterdata.read'))) || (input.permissions.includes('access.manage') && !input.permissions.includes('access.read')) || (input.permissions.includes('masterdata.manage') && !input.permissions.includes('masterdata.read'))) throw new BadRequestException();
     return this.database.asActor(req.actor,parse(uuid,id),async client => {
       await authorize(client,'access.manage');
       const result = await client.query('update app.roles set name=$3 where company_id=$1 and id=$2 and not is_admin returning id',[id,roleId,input.name]);

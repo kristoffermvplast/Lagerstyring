@@ -72,6 +72,8 @@ export class DatabaseService implements OnApplicationShutdown {
           and to_regclass('app.stock_balances') is not null
           and exists(select 1 from information_schema.columns where table_schema='app' and table_name='inventory_entries' and column_name='receipt_expected_quantity')
           and exists(select 1 from app.permissions where code='inventory.transfer')
+          and to_regclass('app.production_orders') is not null
+          and to_regclass('app.production_order_audit') is not null
           and to_regclass('app.recipes') is not null
           and to_regclass('app.recipe_revisions') is not null
           and to_regclass('app.recipe_lines') is not null

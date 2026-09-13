@@ -1,6 +1,6 @@
 # Project rules
 
-- Implement only the phase explicitly authorized by the user. Phase 9 (atomic stock transfers between locations with immutable history and tenant boundaries) is authorized. Do not implement Phase 10 production or later features.
+- Implement only the phase explicitly authorized by the user. Phase 10 (production order planning, snapshots and requirements) is authorized. Do not implement Phase 11 material issue or later workflows.
 - React/TypeScript/Vite frontend; NestJS backend; Supabase PostgreSQL/Auth/Storage.
 - All business reads and writes go through NestJS. Never introduce browser Data API writes or privileged browser credentials.
 - No hardcoded business master data. Fixtures belong only in tests.

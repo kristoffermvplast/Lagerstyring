@@ -99,3 +99,7 @@ Phase 8 is complete with operator-reported `PHASE_8_READ_ONLY_VERIFICATION: PASS
 [Phase 9](phase-9.md) extends the existing journal with balanced, atomic two-location transfers, unchanged item ownership, `inventory.transfer` authorization and reversible immutable history. No new stock store or infrastructure is introduced. Phase 10 is not started.
 
 Phase 9 is complete with operator-reported `PHASE_9_READ_ONLY_VERIFICATION: PASS`: login, session, permissions, transfer reads, response scope, not-found behavior and company isolation passed. `TRANSFER_EXISTING_RECORD` remains expected NOT_RUN because no transfer existed and no fixture was created. Hosted verification was read-only; posting and concurrency coverage comes from the previously recorded automated tests. See the final sign-off in [Phase 9](phase-9.md). Hosted photos remain disabled; Phase 10 is not started.
+
+## Phase 10 production order planning
+
+[Phase 10](phase-10.md) adds tenant-scoped planning documents and immutable order audit. Revision snapshots drive fixed-point requirements, including order-specific packing overrides. `production.read` grants snapshot access; planning additionally requires `production.manage` and `masterdata.read`. SERIALIZABLE transactions, creation idempotency and optimistic versions protect concurrent operations. Internal triggers enforce snapshots, references and supported status transitions. No inventory side effects. Phase 11 is not started; hosted photos remain disabled.

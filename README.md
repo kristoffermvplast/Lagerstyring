@@ -56,3 +56,7 @@ Implementation and final verification: [docs/phase-7.md](docs/phase-7.md). Phase
 ### Phase 9 stock transfers
 
 [Implementation and verification status](docs/phase-9.md). Phase 9 is complete with operator-reported `PHASE_9_READ_ONLY_VERIFICATION: PASS`. `TRANSFER_EXISTING_RECORD` remains expected NOT_RUN because no transfer existed and no fixture was created. Hosted verification was read-only. Phase 10 is not started. Hosted photos remain disabled.
+
+### Phase 10 production order planning
+
+[Implementation and verification status](docs/phase-10.md). Drafts, planning, frozen BOM/packing snapshots and exact requirements; no production stock movements. Phase 10 verification/release is in progress. Phase 11 is not started; hosted photos remain disabled.

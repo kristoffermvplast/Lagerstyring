@@ -79,4 +79,19 @@ describe.skipIf(!url)('real PostgreSQL concurrent inventory commands',()=>{
   expect((await pool.query('select quantity from app.stock_balances where location_id=$1',[location])).rows[0].quantity).toBe(before);
  });
 
+ it('production order creation is idempotent and competing edits cannot lose an update',async()=>{
+  barrier=undefined;
+  const {ProductionOrdersController}=require('../apps/api/dist/production-orders.js');
+  const production=new ProductionOrdersController(service);
+  const product=await service.asActor(actor,ids.a,async(db:any)=>(await db.query("insert into app.items(company_id,kind,code,name) values($1,'product','PROD','Local product') returning id",[ids.a])).rows[0].id);
+  const input={product_id:product,code:'PO-CONCURRENT',quantity:'10',idempotency_key:randomUUID()};
+  synchronize();const duplicate=await Promise.all([production.create({actor},ids.a,input),production.create({actor},ids.a,input)]);
+  expect(duplicate[0].id).toBe(duplicate[1].id);
+  expect((await pool.query('select count(*)::int n from app.production_orders')).rows[0].n).toBe(1);
+  synchronize();const edits=await Promise.allSettled([production.edit({actor},ids.a,duplicate[0].id,{version:1,data:{code:input.code,quantity:'11'}}),production.edit({actor},ids.a,duplicate[0].id,{version:1,data:{code:input.code,quantity:'12'}})]);
+  expect(edits.filter(x=>x.status==='fulfilled')).toHaveLength(1);
+  expect((edits.find(x=>x.status==='rejected') as PromiseRejectedResult).reason.getStatus()).toBe(409);
+  expect((await pool.query('select count(*)::int n from app.production_order_audit')).rows[0].n).toBe(2);
+ });
+
 });
