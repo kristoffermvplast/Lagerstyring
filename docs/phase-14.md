@@ -1,6 +1,6 @@
 # Phase 14 — Material differences and measured physical waste
 
-Status: implementation and automated verification complete from main `11ad3e6379dc0926b9e7ba158324775176110e4c`. Hosted migration is applied once; main publication and online sign-off remain pending. Phase 15 has not started. Hosted photos remain disabled.
+Status: Phase 14 is complete. Implementation and automated verification are recorded below; hosted migration was applied once and main/Railway release is `77b2e1c51f71ee0b4f58a82ceb120be6fd897be2`. Operator-reported `PHASE_14_READ_ONLY_VERIFICATION: PASS` completes online sign-off with the expected absent-order NOT_RUN limitation. Hosted photos remain disabled. Phase 15 has not started.
 
 ## Behavior
 
@@ -87,3 +87,34 @@ CI [34772726694](https://github.com/kristoffermvplast/Lagerstyring/actions/runs/
 First CI `34772405645` had 116 browser PASS and 13 failures in older generic production API mocks; all twelve new Phase 14 browser checks passed. The four old fixture adapters were corrected to return valid empty waste responses. The final CI passes without disabling assertions, relaxing test gates or changing runtime resources/workflows.
 
 Only closing documentation follows the verified implementation. Main remains `11ad3e6`; no main push or manual deployment has been performed. Supabase migration is already applied and must not be repeated. The next step is the specifically approved main push and normal automatic deployment, followed by targeted readiness/route checks and the operator-run authenticated helper. Do not claim online completion yet. Hosted photos remain disabled; Phase 15 has not started.
+
+
+## Approved main publication and initial hosted checks
+
+The user approved the specific publication of `c7e1b22312aeaa28d31ec1fb4b3510be51654cb0`, including ordinary automatic GitHub Actions/Railway usage on unchanged resources. Main was updated to `77b2e1c51f71ee0b4f58a82ceb120be6fd897be2`. Its tree `8a8812edda70df8bb3323573bd90395272b55914` exactly matches the approved commit. Remote ref read-back and a native fetch/tree comparison verified publication. No additional migration, manual deployment or resource/configuration change was performed.
+
+Public read-only checks against the existing Railway address:
+
+- `/api/health/ready`: HTTP 200.
+- Order `/waste`, `/waste/analysis`, `/waste/:id`, and company `/production-analysis`: HTTP 404, expected unauthenticated HTTP 401.
+- One bounded follow-up of only those four failed routes still returned HTTP 404.
+
+Railway deployment inspection tools are unavailable in this session. The active deployment commit therefore remains unconfirmed; 404 alone does not prove its cause. Operator confirmation of active commit `77b2e1c51f71ee0b4f58a82ceb120be6fd897be2` is needed before the next targeted route check. Once available, run the hidden-input `verify-production-waste.cjs` helper for authenticated isolation. No authenticated Phase 14 PASS is claimed. Existing-order and existing-waste NOT_RUN outcomes remain permissible only when the respective fixtures are absent.
+
+This checkpoint is documentation only, retained locally without another push. Hosted photos remain disabled. Phase 14 online sign-off is pending; Phase 15 has not started.
+
+
+## Active deployment — targeted route verification PASS
+
+The operator confirmed Railway commit `77b2e1c51f71ee0b4f58a82ceb120be6fd897be2`. A targeted repeat of only the four previously failing routes returned HTTP 401 for each: order `/waste`, `/waste/analysis`, `/waste/:id`, and company `/production-analysis`. The previous HTTP 404 blocker is resolved. No earlier passing tests were repeated, and no hosted writes, migration, deployment or configuration changes were made.
+
+Authenticated verification still requires the operator to run the existing hidden-input `scripts/verify-production-waste.cjs` using their credentials locally. No authenticated result is claimed yet. Record the final PASS and any expected absent-fixture NOT_RUN results when provided. Photos remain disabled hosted; Phase 15 has not started.
+
+
+## Final online verification — Phase 14 complete
+
+The operator reported `PHASE_14_READ_ONLY_VERIFICATION: PASS` against the confirmed Railway release `77b2e1c51f71ee0b4f58a82ceb120be6fd897be2`. Login, session, permissions, production-order reads, waste-analysis access boundaries, material trend, not-found behavior and company isolation passed. The four anonymous route checks already passed with HTTP 401.
+
+Expected result: `MATERIAL_ANALYSIS_ORDER_FIXTURE: NOT_RUN (no existing production order; no fixture created)`. Positive analysis/history/detail reads for an existing production order were therefore not exercised online. Hosted writes were not exercised by this read-only helper; the previously recorded automated tests remain their evidence. No additional NOT_RUN result is inferred.
+
+This operator-reported final result supersedes the earlier pending checkpoints. No previously passed tests were repeated. Only README, architecture and this phase document were updated for closure; no code changes, migration, push, deployment or resource change was made. The hosted migration remains applied exactly once. Hosted photos remain disabled. Phase 14 is closed; Phase 15 has not started.
