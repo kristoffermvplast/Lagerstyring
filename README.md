@@ -1,6 +1,6 @@
 # Lagerstyring
 
-Webbaseret lager- og produktionssystem. **Fase 1 er afsluttet. Fase 2 er implementeret lokalt og afventer online-verifikation.**
+Webbaseret lager- og produktionssystem. **Fase 1–10 er afsluttet. Fase 11 er ikke startet.**
 
 **Fase 1 er afsluttet og godkendt.** Se [det endelige Railway/Supabase-resultat](docs/phase-1-completion.md).
 
@@ -44,7 +44,7 @@ npm run test:e2e
 - [Fase 2: authentication og adgang](docs/phase-2.md)
 - [Fase 2-testresultater](docs/phase-2-verification.md)
 
-Fase 1–9 er afsluttet. Fase 6 har brugerbekræftet `PHASE_6_READ_ONLY_VERIFICATION: PASS`; kontrol af en eksisterende placering er forventet NOT_RUN, da ingen fandtes. Se verifikationsstatus nedenfor. Den gældende økonomiske grænse er højst 1 kr. i forventet merudgift pr. konkret handling, når det kan vurderes med rimelig sikkerhed; ellers kræves særskilt godkendelse. Ingen varige ressourceforøgelser uden godkendelse. Fase 7 har brugerbekræftet `PHASE_7_READ_ONLY_VERIFICATION: PASS`; eksisterende lagerpostering er forventet NOT_RUN, da ingen fandtes. Fase 8 er afsluttet med brugerbekræftet `PHASE_8_READ_ONLY_VERIFICATION: PASS`. Kontrol af eksisterende modtagelse er forventet NOT_RUN, da ingen fandtes, og ingen fixture blev oprettet. Se [modtagelse og endelig verifikation](docs/phase-8.md). Foto forbliver deaktiveret hosted. Fase 9 er afsluttet; Fase 10 er ikke startet.
+Fase 1–10 er afsluttet. Fase 6 har brugerbekræftet `PHASE_6_READ_ONLY_VERIFICATION: PASS`; kontrol af en eksisterende placering er forventet NOT_RUN, da ingen fandtes. Se verifikationsstatus nedenfor. Den gældende økonomiske grænse er højst 1 kr. i forventet merudgift pr. konkret handling, når det kan vurderes med rimelig sikkerhed; ellers kræves særskilt godkendelse. Ingen varige ressourceforøgelser uden godkendelse. Fase 7 har brugerbekræftet `PHASE_7_READ_ONLY_VERIFICATION: PASS`; eksisterende lagerpostering er forventet NOT_RUN, da ingen fandtes. Fase 8 er afsluttet med brugerbekræftet `PHASE_8_READ_ONLY_VERIFICATION: PASS`. Kontrol af eksisterende modtagelse er forventet NOT_RUN, da ingen fandtes, og ingen fixture blev oprettet. Se [modtagelse og endelig verifikation](docs/phase-8.md). Foto forbliver deaktiveret hosted. Fase 9 og 10 er afsluttet; Fase 11 er ikke startet.
 
 - [Fase 6: hierarkiske lagerplaceringer](docs/phase-6.md)
 - [Fase 6: verifikation og publicering](docs/phase-6-verification.md)
@@ -55,8 +55,8 @@ Implementation and final verification: [docs/phase-7.md](docs/phase-7.md). Phase
 
 ### Phase 9 stock transfers
 
-[Implementation and verification status](docs/phase-9.md). Phase 9 is complete with operator-reported `PHASE_9_READ_ONLY_VERIFICATION: PASS`. `TRANSFER_EXISTING_RECORD` remains expected NOT_RUN because no transfer existed and no fixture was created. Hosted verification was read-only. Phase 10 is not started. Hosted photos remain disabled.
+[Implementation and verification status](docs/phase-9.md). Phase 9 is complete with operator-reported `PHASE_9_READ_ONLY_VERIFICATION: PASS`. `TRANSFER_EXISTING_RECORD` remains expected NOT_RUN because no transfer existed and no fixture was created. Hosted verification was read-only. Phase 10 is complete; Phase 11 is not started. Hosted photos remain disabled.
 
 ### Phase 10 production order planning
 
-[Implementation and verification status](docs/phase-10.md). Drafts, planning, frozen BOM/packing snapshots and exact requirements; no production stock movements. Phase 10 implementation and automated tests pass (135 unit/API/database, 6 concurrency, 96 browser); hosted migration is applied. Main is published at `2abd67b`; automatic CI passes. The operator confirmed the active Railway revision; production-order routes return the expected 401. Online verification remains blocked by readiness 503. Phase 11 is not started; hosted photos remain disabled.
+[Implementation and verification status](docs/phase-10.md). Drafts, planning, frozen BOM/packing snapshots and exact requirements; no production stock movements. Phase 10 implementation and automated tests pass (135 unit/API/database, 6 concurrency, 96 browser); hosted migration is applied. Railway is operator-confirmed at `5141e420ddd026f076a78731e71f08c4ee9b72ec`; readiness is verified HTTP 200 and anonymous production-order routes return 401. Phase 10 is complete with operator-reported `PHASE_10_READ_ONLY_VERIFICATION: PASS`: login, session, permissions, production-order reads, response scope, not-found behavior and company isolation passed. `PRODUCTION_ORDER_EXISTING_RECORD` is expected NOT_RUN because no order existed and no fixture was created. Hosted verification was read-only; write coverage remains the previously documented automated tests. Phase 11 is not started; hosted photos remain disabled.

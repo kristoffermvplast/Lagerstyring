@@ -1,5 +1,7 @@
 # Phase 10 — Production order planning
 
+**Final status: COMPLETE.** Railway `5141e420ddd026f076a78731e71f08c4ee9b72ec`, readiness HTTP 200 and operator-reported `PHASE_10_READ_ONLY_VERIFICATION: PASS`. The final sign-off below supersedes earlier pending release/diagnostic notes, which are retained as historical evidence.
+
 Continues from approved main `952dde2`. Phase 11 has not started. Hosted photos remain disabled.
 
 ## Scope and behavior
@@ -93,3 +95,24 @@ The local fix replaces that row lookup with `to_regclass('app.permissions') IS N
 Validation: API TypeScript build PASS; targeted `tests/database.test.ts` PASS (5 tests). The new regression exercises the real readiness query through Kysely against isolated PostgreSQL as `app_backend` with no actor: the seeded transfer permission is hidden, readiness succeeds, permission rows remain hidden afterwards, and readiness still fails when the production-order table is absent. Local test changes roll back. Unrelated suites and hosted TLS checks were not repeated.
 
 The fix is local pending a separately approved main push and automatic Railway deployment. Hosted readiness 200 and authenticated Phase 10 verification remain pending. Photos remain disabled hosted; Phase 11 has not started.
+
+## Approved readiness-fix publication
+
+The user subsequently approved publishing local `fb3ef3d` with the normal automatic GitHub Actions/Railway flow on unchanged resources. Main now points to `5141e420ddd026f076a78731e71f08c4ee9b72ec`, created through the GitHub connector because native Git had no credentials. Its complete tree `304335cf6d4f5c60b715e9bef184b48d4ffe0af8` is identical to approved local `fb3ef3d`, including the preceding pending diagnostic documentation. The connector commit consolidates that local history onto previous main `2abd67b`; fetched `origin/main` was compared against `fb3ef3d` with no content differences.
+
+Normal automatic CI run: https://github.com/kristoffermvplast/Lagerstyring/actions/runs/34756828223 (in progress at last inspection). Bounded public readiness checks following the push still returned HTTP 503. Railway tools are unavailable, so the active deployment revision cannot be confirmed here. The operator must confirm the automatic deployment has activated `5141e420ddd026f076a78731e71f08c4ee9b72ec` before attributing a continued 503 to the fix. Authenticated online verification remains pending; no secrets requested or fixtures created. No manual deployment, migration, resource change or additional push was performed. This publication note is local only.
+
+The operator has now confirmed Railway is running `5141e420ddd026f076a78731e71f08c4ee9b72ec`. The targeted public `/api/health/ready` check returned HTTP 200 with `{"status":"ready"}`. The readiness blocker is resolved. Previously passed routes, TLS and database checks were not repeated. Remaining authenticated Phase 10 verification uses the existing `scripts/verify-production-orders.cjs`, pinned to that revision, with credentials entered privately by the operator. No authenticated PASS result is claimed yet; full Phase 10 closure remains pending that result. No deployment, migration or resource changes were made. Photos remain disabled hosted; Phase 11 has not started.
+
+
+## Final Phase 10 sign-off
+
+The operator reported `PHASE_10_READ_ONLY_VERIFICATION: PASS` using the existing read-only helper against the confirmed Railway revision `5141e420ddd026f076a78731e71f08c4ee9b72ec`. Login, session, permissions, production-order reads, response scope, not-found behavior and company isolation passed. The preceding targeted readiness check independently returned HTTP 200 with `{"status":"ready"}`.
+
+Expected coverage exception, explicitly preserved:
+
+`PRODUCTION_ORDER_EXISTING_RECORD: NOT_RUN (no existing production order; no fixture created)`
+
+No existing-order detail/snapshot/history verification is claimed from this hosted run. Hosted writes were not exercised; creation, editing, transitions, snapshots and concurrency coverage comes from the previously recorded automated tests. No business fixtures were created by this verification.
+
+Phase 10 is complete within its authorized scope. This finalization changes documentation only. No tests were repeated, no migration/seed/data correction was run, and no push, deployment, resource or configuration change was performed. No new external expenditure was incurred by this documentation update. Hosted photos remain disabled. Phase 11 has not started and requires separate approval.
