@@ -1,6 +1,6 @@
 # Project rules
 
-- Implement only the phase explicitly authorized by the user. Phase 10 (production order planning, snapshots and requirements) is authorized. Do not implement Phase 11 material issue or later workflows.
+- Implement only the phase explicitly authorized by the user. Phase 11 (material issue to production without consumption) is authorized. Do not implement Phase 12 production registration or later workflows.
 - React/TypeScript/Vite frontend; NestJS backend; Supabase PostgreSQL/Auth/Storage.
 - All business reads and writes go through NestJS. Never introduce browser Data API writes or privileged browser credentials.
 - No hardcoded business master data. Fixtures belong only in tests.

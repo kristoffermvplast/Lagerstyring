@@ -94,4 +94,32 @@ describe.skipIf(!url)('real PostgreSQL concurrent inventory commands',()=>{
   expect((await pool.query('select count(*)::int n from app.production_order_audit')).rows[0].n).toBe(2);
  });
 
+ it('material issues serialize against order edits, deduplicate and never overdraw shared stock',async()=>{
+  barrier=undefined;
+  const {MaterialIssuesController}=require('../apps/api/dist/material-issues.js');
+  const {ProductionOrdersController}=require('../apps/api/dist/production-orders.js');
+  const production=new ProductionOrdersController(service),issues=new MaterialIssuesController(service);
+  const setup=await service.asActor(actor,ids.a,async(db:any)=>{
+   const unit=(await db.query('select unit_id from app.items where id=$1',[item])).rows[0].unit_id;
+   const product=(await db.query("insert into app.items(company_id,kind,code,name,unit_id) values($1,'product','ISSUE-P','Issue product',$2) returning id",[ids.a,unit])).rows[0].id;
+   const target=(await db.query("insert into app.locations(company_id,code,name) values($1,'PRODUCTION','Production') returning id",[ids.a])).rows[0].id;
+   const machine=(await db.query("insert into app.machines(company_id,code,name,location_id) values($1,'ISSUE-M','Issue machine',$2) returning id",[ids.a,target])).rows[0].id;
+   const recipe=(await db.query("insert into app.recipes(company_id,product_id,kind,name) values($1,$2,'bom','Issue BOM') returning id",[ids.a,product])).rows[0].id;
+   const bom=(await db.query('insert into app.recipe_revisions(company_id,recipe_id,revision) values($1,$2,1) returning id',[ids.a,recipe])).rows[0].id;
+   await db.query("insert into app.recipe_lines(company_id,revision_id,component_id,kind,quantity) values($1,$2,$3,'component',1)",[ids.a,bom,item]);
+   await db.query('update app.recipe_revisions set sealed=true where id=$1',[bom]);
+   return {product,target,machine,bom};
+  });
+  const make=async(code:string)=>{const o=await production.create({actor},ids.a,{code,product_id:setup.product,machine_id:setup.machine,bom_revision_id:setup.bom,quantity:'10',idempotency_key:randomUUID()});return production.status({actor},ids.a,o.id,{status:'planned',version:o.version});};
+  const order=await make('ISSUE-C1'),second=await make('ISSUE-C2');
+  const body={item_id:item,owner_id:owner,from_location_id:location,to_location_id:setup.target,quantity:'1',idempotency_key:randomUUID()};
+  synchronize();const duplicate=await Promise.all([issues.issue({actor},ids.a,order.id,body),issues.issue({actor},ids.a,order.id,body)]);expect(duplicate[0].id).toBe(duplicate[1].id);
+  const balance=(await pool.query('select quantity from app.stock_balances where item_id=$1 and location_id=$2',[item,location])).rows[0].quantity;
+  synchronize();const race=await Promise.allSettled([issues.issue({actor},ids.a,order.id,{...body,quantity:balance,idempotency_key:randomUUID()}),issues.issue({actor},ids.a,second.id,{...body,quantity:balance,idempotency_key:randomUUID()})]);expect(race.filter(r=>r.status==='fulfilled')).toHaveLength(1);
+  expect((await pool.query('select min(quantity)>=0 as safe from app.stock_balances')).rows[0].safe).toBe(true);
+  barrier=undefined;await post('1');const third=await make('ISSUE-C3');
+  synchronize();await Promise.allSettled([issues.issue({actor},ids.a,third.id,{...body,idempotency_key:randomUUID()}),production.status({actor},ids.a,third.id,{status:'draft',version:third.version})]);
+  const invariant=await pool.query("select not(status='draft' and exists(select 1 from app.inventory_entries where production_order_id=$1)) as safe from app.production_orders where id=$1",[third.id]);expect(invariant.rows[0].safe).toBe(true);
+ });
+
 });

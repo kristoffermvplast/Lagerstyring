@@ -1,0 +1,41 @@
+# Phase 11 — Material to production
+
+## Scope and behavior
+
+Continues main `0c459567ba371aab64b562eaf0b23a45509fe8a1`. A material issue is an existing balanced inventory transfer linked immutably to a production order. Physical stock moves between locations with the same item, owner and unit; total physical stock is conserved. It is not consumption, waste, a reservation, production registration or finished-goods delivery. No Phase 12 functionality is introduced and issuing material does not change production status.
+
+An issue requires `production.read`, `production.issue`, `inventory.read` and `inventory.transfer`. UI location selection additionally requires existing `masterdata.read`. Planned/ready orders with an active machine and no open problem may receive components from their frozen BOM or packing revision. The guard also accepts the reserved `in_production` status for compatibility with later phases, but this phase provides no transition to it. Current component units must match the order snapshot. Extra quantities and repeated partial issues are allowed: theoretical demand is not a physical transfer limit.
+
+Use the machine's configured storage location when present. If none is configured, choose an active storage location for production explicitly. No business location/type is hardcoded. No substitution component outside the order revisions is accepted; return to draft and revise the order before any issue, or reverse existing issues first. Fractional mass uses numeric(20,8); existing stock rules enforce whole count/package units.
+
+## Data and transaction boundaries
+
+Migration `20260913124608_phase_11_material_issue.sql` adds nullable `production_order_id` and trigger-owned `production_snapshot` to `app.inventory_entries`, a company-safe foreign key, constraints, a partial history index and the technical `production.issue` permission. No new tables, balances or business fixtures. Existing inventory entry/line RLS, immutable history, posting engine and nonnegative balance checks are retained.
+
+The new internal guard is owned by NOLOGIN `app_owner`, has a fixed search path and no runtime/browser EXECUTE grant. It checks actor/session/company and permissions before privileged reads. It locks the order, validates component/machine and captures order code/version, machine identity/name and component snapshot. Runtime can supply only the order reference, not the snapshot. Existing transfer validation ensures exactly two balanced lines with the same owner/item and different locations. Posting remains one SERIALIZABLE transaction with bounded retries and the existing unique idempotency key. Cross-command/key reuse with a different payload is rejected.
+
+A compensating reversal uses the existing reasoned inventory correction workflow and requires its existing adjustment permission plus production issue/read and transfer/read permissions. The guard carries forward the original order link and snapshot. This is correction of a mistaken issue, not the later material-return workflow. Return to draft is blocked while any unreversed issue exists, including concurrent status-edit attempts. Corrective reversal must restore all original stock lines atomically and cannot create negative stock. After reversing all issues the order may return to draft; original history remains intact.
+
+The order link records attribution of the movement, not a separate reserved physical balance. Shared production locations continue to show aggregate physical stock by item/owner/location. Order-specific remaining material and consumption reconciliation belong to later phases and must account for issue/reversal history rather than treating those aggregate balances as exclusively owned by an order.
+
+## API and UI
+
+`/api/companies/:companyId/production-orders/:orderId/material-issues` exposes GET paginated history and POST issue; `/options` supplies snapshot components/machine location; `/:id` reads linked entry lines. NestJS validates payloads, verifies order scope, enforces permissions and handles identical retries. No browser database access.
+
+The production order detail shows material history and a `Send materiale til produktion` action. The reused transfer form chooses an existing owner/location balance, filters to revision components, proposes the machine destination, confirms physical movement and retains the same request/key on an uncertain response. Inventory caches are invalidated after success. No photo/config/dependency/infrastructure changes.
+
+## Verification status
+
+- Local API build and typecheck: PASS.
+- New API tests: 8 PASS (auth/isolation, permission gate, draft gate, precision/conservation, idempotency, snapshot history, order edit protection, invalid inputs/stock references, partial BOM/packing issues, corrective reversals and restricted database grants).
+- Existing affected transfer, production-order and database regression suites: 17 PASS.
+- New online-helper tests: 2 PASS (read-only business requests, isolation expectations, secret-safe output and cleanup).
+- Browser test execution initially blocked because Chromium is absent; download timed out. No application behavior was exercised in that attempt. The new desktop/tablet/mobile tests and the affected existing suites are ready for the existing CI runner.
+- Real PostgreSQL concurrency test added to the existing disposable CI database suite: concurrent duplicate issues, competing orders overdrawing a shared source, and concurrent return-to-draft vs issue. Pending execution; no local PostgreSQL binary is available here.
+- Hosted migration, deployment and online verification: pending. No hosted PASS is claimed.
+
+Run the existing CI workflow on the working branch without Railway deployment. After authorized release, use `node scripts/verify-material-issues.cjs` with hidden local inputs. Expected final line: `PHASE_11_READ_ONLY_VERIFICATION: PASS`. If no production order exists, preserve `MATERIAL_ISSUE_ORDER_FIXTURE: NOT_RUN`; if an order exists without issues, preserve `MATERIAL_ISSUE_EXISTING_RECORD: NOT_RUN`. No hosted fixtures are automatically created; authenticated positive reads require existing data. All business requests are GET; Supabase login and local-session cleanup are the only Auth mutations.
+
+## Economic and phase limits
+
+Existing Supabase organization Free plan verified during this phase. No new services, replicas, resources, credits, limits, dependencies or paid features. Local work and existing public-repository standard GitHub CI add no external charge. Any main push with Railway deployment requires its separate cost assessment/approval. Hosted photos remain disabled. Phase 12 has not started.

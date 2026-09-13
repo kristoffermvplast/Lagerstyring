@@ -95,7 +95,7 @@ function Workspace({localLogout}:{localLogout:()=>void}) {
       {id && canMasterRead && masterdataPages[page] && <Masterdata key={id+':'+page} company={id} kind={masterdataPages[page]} title={page} canManage={canMasterManage}/> }
       {id && canMasterRead && itemPages[page] && <Items key={id+':'+page} company={id} kind={itemPages[page]} title={page} canManage={canMasterManage}/> }
       {id && canMasterRead && page==='Styklister og pakning' && <Recipes key={id} company={id} canManage={canMasterManage}/>}
-      {id && canProductionRead && page==='Produktion' && <ProductionOrders key={id} company={id} canManage={canProductionManage&&canMasterRead}/>}
+      {id && canProductionRead && page==='Produktion' && <ProductionOrders key={id} company={id} canManage={canProductionManage&&canMasterRead} canInventoryRead={canInventoryRead} canIssue={canInventoryRead&&canMasterRead&&canTransfer&&(access.data?.permissions.some(p=>p.code==='production.issue')??false)}/>}
       {id && canInventoryRead && page==='Lagerflytning' && <Transfers key={id} company={id} canTransfer={canTransfer} canAdjust={canInventoryAdjust} canMasterRead={canMasterRead}/>}
       {id && canInventoryRead && page==='Modtagelse' && <Receiving key={id} company={id} canReceive={canReceive} canAdjust={canInventoryAdjust} canMasterRead={canMasterRead}/>}
       {id && canInventoryRead && page==='Lager' && <Inventory key={id} company={id} canAdjust={canInventoryAdjust} canMasterRead={canMasterRead}/>}
