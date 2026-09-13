@@ -45,3 +45,7 @@ New coverage includes stale reviews, partial and duplicate returns, owner preser
 ## Economics and release
 
 No resource, photo, dependency, migration-history reset or hosted fixture changes. The existing public repository and standard ubuntu-latest CI were checked; [standard public-repository runner usage is free](https://docs.github.com/en/billing/concepts/product-billing/github-actions). Existing workflow and resource limits stay unchanged. Main push with Railway deployment requires a separate assessment before action; prior phase-specific approvals do not cover it. Hosted migration will be assessed against the existing Supabase plan before applying once.
+
+## First CI checkpoint
+
+CI run 34764084254 on `74cbe0c` passed typecheck/build, all 164 unit/API/database/helper tests and all nine real PostgreSQL concurrency tests. Browser checks: 114 PASS, three return-selector checks failed because the select lacked an unambiguous accessible name. The field now has an explicit aria-label; no database/API change. Normal working-branch CI will verify the correction and previously skipped runtime steps. No hosted migration or main deployment has run.
