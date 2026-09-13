@@ -32,3 +32,15 @@ Hosted migration `20260912161747_phase_9_transfers` applied once to the existing
 Security advisors have no new findings. Existing notices remain: intentional default-deny RLS on private location locks ([explanation](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy)) and disabled [leaked password protection](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection). No Auth feature or plan was changed.
 
 Initial branch CI `34704739579` passed check and concurrency, with 87 browser checks passing. Three transfer browser cases timed out resolving the source selector: its implicit label included option text. The selector now has an explicit stable accessible name, matching the existing pickers. The test assertion is unchanged. Runtime steps were skipped after the browser failure; final CI evidence follows.
+
+## Main publication boundary
+
+Main is unchanged; no Railway deployment has been triggered for Phase 9. Publishing to main requires a separate economic approval: estimated incremental Railway usage 0–0.30 DKK, realistic stress case 1–3 DKK, one-off. Basis: 5–10 minutes of overlapping execution around 1–2 vCPU / 1–2 GB versus a 30–60 minute stress case at 4 vCPU / 8 GB, published rates $0.000463/vCPU-minute and $0.000231/GB-minute and a conservative 10 DKK/USD conversion/buffer. These are resource-time scenarios, not measured build billing. Current Railway usage/credits are inaccessible, so the charge cannot reasonably be bounded within 1 DKK. Existing public GitHub standard CI is free. No permanent resource increase is proposed.
+
+After approval: publish the reviewed commit to main with its normal automatic runs; do not rerun migration `20260912161747`. Confirm the active Railway revision, then verify anonymous transfer list/detail routes return 401 and run `node scripts/verify-transfers.cjs` locally using hidden credentials, company `MV Plast` and the already-approved isolation company. No credentials in chat and no hosted fixtures. If no transfer exists, preserve `TRANSFER_EXISTING_RECORD: NOT_RUN`. Phase 9 cannot be signed off online before actual results arrive. Phase 10 requires separate approval.
+
+## Final pre-release result
+
+[CI run 34705048817](https://github.com/kristoffermvplast/Lagerstyring/actions/runs/34705048817), job `103583483727`, commit `f50d81f27dd5cbbf8652221f53805bb5ada53379`: all steps PASS, including the corrected source-selection browser flow, build, real PostgreSQL concurrency, Docker runtime, diagnostic loading and strict CA/TLS checks. The source-selector failure is resolved. The hosted migration SQL is unchanged from the tested version; it must not be applied again.
+
+Implementation and pre-release verification are complete. Only this documentation changed after the passing CI run. Remaining work is the economically approved main push/automatic release and authenticated online verification. No Phase 10 work was started; hosted photos remain disabled.
