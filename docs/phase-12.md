@@ -1,5 +1,7 @@
 # Phase 12 — Production registration
 
+**Status: complete within the documented verification scope.** Earlier pending notes below are historical checkpoints, superseded by the final sign-off. Phase 13 has not started.
+
 Continues main `1144ff2f5ebf6116ee874099194c6f033bbecebf`. Implementation and automated verification are complete on the working branch; main release awaits economic approval. Phase 13 has not started.
 
 ## Scope and boundaries
@@ -50,3 +52,34 @@ Working-branch CI [34761010615](https://github.com/kristoffermvplast/Lagerstyrin
 Only subsequent changes are documentation and a 100% unchanged migration filename alignment to hosted version `20260913135323`. No code changed after successful CI.
 
 Main push and normal Railway deployment are not performed yet. Expected one-off additional Railway consumption is estimated at 0–0.30 DKK; conservative realistic worst-case 1–3 DKK, depending on actual compute duration, deployment overlap and remaining included credit. This is an estimate, not measured usage or a guaranteed cap. Standard GitHub Actions runner time is free for this public repository. [Railway resource pricing](https://railway.com/pricing) is usage-based; no resource changes are proposed. Since the Railway charge cannot confidently be bounded at 1 DKK, explicit approval is required before the main push. Hosted migration has already been applied once and must not be repeated. After release: anonymous registration list/summary/detail should return 401, readiness 200, followed by the hidden-input read-only verification helper. Phase 12 is not yet signed off online. Phase 13 has not started.
+
+
+## Authorized main publication; hosted route verification pending
+
+The specifically approved local `723923013fcfec702fc9c0bff252837cfdb23d1f` is published on main as `28637bc708d952f39c9f62f6568722493f3e9906`. Both commits have identical tree `9a549eaf7632e97210d43c6908a2fa41ff024e8b` and parent `5e369e6c8863d9d5f6290546e7cf631e103de02e`; only commit metadata differs. Live GitHub main was verified, followed by native fetch and an empty content diff against the approved local commit.
+
+Normal automatic CI [34761925854](https://github.com/kristoffermvplast/Lagerstyring/actions/runs/34761925854) was in progress. Public readiness returned HTTP 200. Registration list, summary and detail GET routes returned HTTP 404 on both the initial and one bounded follow-up anonymous check; expected status after deployment is HTTP 401. The active Railway release is not yet confirmed. No authenticated hosted result is claimed.
+
+Next: operator confirms Railway commit `28637bc708d952f39c9f62f6568722493f3e9906`, then repeat only the targeted route check and run the pinned `scripts/verify-production-registrations.cjs` with hidden local credentials. Phase 12 final online sign-off remains pending. Migration was not rerun. No manual deployments, new hosted fixtures, resource changes or photo activation. Phase 13 has not started. This checkpoint is local and has not triggered an additional push.
+
+
+## Targeted hosted route verification after deployment confirmation
+
+The operator confirmed Railway runs `28637bc708d952f39c9f62f6568722493f3e9906`. The three previously missing anonymous registration GET routes (list, summary and detail) now all return the expected HTTP 401. Targeted route verification: PASS. Previously passed readiness, database/TLS and application tests were not repeated.
+
+Authenticated hosted login/isolation verification still requires the operator to run the pinned `scripts/verify-production-registrations.cjs` locally with hidden credentials and the existing approved isolation company. No authenticated result is claimed yet. No push, migration, deployment, hosted fixture or configuration/resource change was performed in this checkpoint. Photos remain disabled hosted. Phase 13 has not started.
+
+
+## Final Phase 12 sign-off
+
+Phase 12 is complete with operator-reported `PHASE_12_READ_ONLY_VERIFICATION: PASS` on confirmed Railway commit `28637bc708d952f39c9f62f6568722493f3e9906`. Login, session, permissions, production-order reads, registration access boundaries, not-found behavior and company isolation passed. `PRODUCTION_REGISTRATION_ORDER_FIXTURE: NOT_RUN (no existing production order; no fixture created)` is expected. Positive registration list/summary/detail reads for an existing order and hosted writes were not exercised; previously documented automated tests remain their coverage.
+
+The operator supplied the final PASS result; no passed tests were rerun. The preceding independent anonymous checks returned HTTP 401 for all three registration routes. Preserve the following expected limitation explicitly:
+
+```text
+PRODUCTION_REGISTRATION_ORDER_FIXTURE: NOT_RUN (no existing production order; no fixture created)
+```
+
+NOT_RUN is not counted as PASS. No hosted fixture was created, and the read-only helper did not exercise production start, registration or correction writes. Their evidence remains the previously recorded automated tests (155 unit/API/database/helper, 8 PostgreSQL concurrency and 108 browser tests).
+
+This closing task changes only documentation. No push, migration, deployment, hosted configuration change or resource increase was performed. The economic 1 DKK rule remains in effect. Photos remain disabled hosted. Phase 12 is closed; Phase 13 requires separate authorization.
