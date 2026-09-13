@@ -1,6 +1,6 @@
 # Phase 14 — Material differences and measured physical waste
 
-Status: implementation from main `11ad3e6379dc0926b9e7ba158324775176110e4c`; verification in progress. Phase 15 has not started. Hosted photos remain disabled.
+Status: implementation and automated verification complete from main `11ad3e6379dc0926b9e7ba158324775176110e4c`. Hosted migration is applied once; main publication and online sign-off remain pending. Phase 15 has not started. Hosted photos remain disabled.
 
 ## Behavior
 
@@ -64,3 +64,26 @@ Post-migration checks PASS: RLS enabled; browser SELECT blocked; snapshot/item/a
 ## CI checkpoint and browser fixture compatibility
 
 Working-branch CI `34772405645` (`5329e1430dcf6b19e1f6388eb2c897eb71bb403e`) passed code checks and all ten real PostgreSQL concurrency tests. While browser verification runs, inspection found four older production-page fixtures returning a generic order for the new GET waste endpoints. Those fixtures now return the correct empty analysis/history responses. Assertions and application behavior are unchanged. Browser/runtime completion is still pending; a normal working-branch run will verify the corrected fixtures and unchanged migration SQL under its hosted-aligned filename.
+
+
+## Main publication cost gate
+
+The remaining concrete paid action is one push of the Phase 14 release to main and its ordinary automatic Railway deployment on unchanged resources. Expected one-off incremental usage: 0–0.30 DKK; realistic conservative worst-case: 1–3 DKK. This is an estimate, not a measured bill or guaranteed cap. [Railway pricing](https://railway.com/pricing) lists CPU at $0.00000772/vCPU-second and RAM at $0.00000386/GB-second. Actual CPU time, deployment overlap, build duration and remaining included credits are unavailable; the prior small-deployment estimate therefore cannot be confidently bounded at 1 DKK. No ongoing resource allocation increase is proposed.
+
+The repository was confirmed public and its existing ubuntu-latest workflow is unchanged. [Standard public-repository GitHub Actions runtime is free](https://docs.github.com/en/billing/concepts/product-billing/github-actions); no new artifact upload, runner, cache-limit or paid feature is added. Working-branch verification does not deploy Railway main. Supabase migration on the existing Free plan is already applied at expected 0 DKK.
+
+Main push is not performed without the user's concrete economic approval. After that push and its automatic deployment: check readiness and the new anonymous routes for HTTP 401, then use the hidden-input operator helper for authenticated isolation. No manual deployment, extra migration or hosted fixture is needed or authorized by this checkpoint. Phase 14 is not yet signed off online; Phase 15 remains blocked.
+
+
+## Automated verification complete — main publication pending
+
+CI [34772726694](https://github.com/kristoffermvplast/Lagerstyring/actions/runs/34772726694), job `103765150173`, commit `a87da11b45e28476ddbe1604942dc291355206f3`: SUCCESS. Verified tree `b646ddbd58b23883ca818ffea43e2cec369b065f` matches the local implementation, hosted filename alignment and corrected browser fixtures.
+
+- 181 unit/API/database/helper tests PASS; ten concurrency skips in this general step were exercised separately.
+- All ten real PostgreSQL concurrency tests PASS, including duplicate measured-waste commands and competing reversals with unchanged stock/closure.
+- All 129 desktop/tablet/mobile browser tests PASS, including twelve new Phase 14 checks.
+- Typecheck, frontend/backend build, Docker runtime, diagnostic script availability and strict TLS CA materialization PASS.
+
+First CI `34772405645` had 116 browser PASS and 13 failures in older generic production API mocks; all twelve new Phase 14 browser checks passed. The four old fixture adapters were corrected to return valid empty waste responses. The final CI passes without disabling assertions, relaxing test gates or changing runtime resources/workflows.
+
+Only closing documentation follows the verified implementation. Main remains `11ad3e6`; no main push or manual deployment has been performed. Supabase migration is already applied and must not be repeated. The next step is the specifically approved main push and normal automatic deployment, followed by targeted readiness/route checks and the operator-run authenticated helper. Do not claim online completion yet. Hosted photos remain disabled; Phase 15 has not started.

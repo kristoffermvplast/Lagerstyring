@@ -76,4 +76,4 @@ See [Phase 13 scope and verification](docs/phase-13.md). Implementation continue
 
 ## Phase 14 — material differences and measured waste
 
-See [Phase 14 implementation and verification](docs/phase-14.md). Exact theoretical/difference calculations, separate immutable measured-waste observations and reversals, company-scoped analysis history with period/material/product/machine/customer filters. No additional inventory consumption. Local/CI verification and hosted release status are tracked separately. Photos remain disabled hosted; Phase 15 has not started.
+See [Phase 14 implementation and verification](docs/phase-14.md). Exact theoretical/difference calculations, separate immutable measured-waste observations and reversals, company-scoped analysis history with period/material/product/machine/customer filters. No additional inventory consumption. Automated verification PASS: 181 unit/API/database/helper tests, ten PostgreSQL concurrency tests and 129 browser tests. Hosted migration is applied once; main publication and authenticated online verification remain pending. Photos remain disabled hosted; Phase 15 has not started.
