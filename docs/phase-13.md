@@ -1,6 +1,6 @@
 # Phase 13 — Material return and production closure
 
-Status: implementation and automated verification complete from main `e7eb62ba649e59597a21b1905309b00ca50ae682`; hosted migration, main publication and online verification await approval. Phase 14 has not started. Hosted photos remain disabled.
+Status: Phase 13 is complete with operator-reported `PHASE_13_READ_ONLY_VERIFICATION: PASS` on confirmed Railway commit `16c5fc5bb28e38cb83c1933974f01bb954016479`. The expected existing-order NOT_RUN remains a coverage limitation, not a passed check. Phase 14 has not started. Hosted photos remain disabled. Earlier checkpoints below preserve the release history; the final sign-off supersedes their pending statuses.
 
 ## Behavior and phase boundary
 
@@ -18,7 +18,7 @@ No finished-goods inventory or pallets are created. Those remain separate delive
 
 ## Database, security and concurrency
 
-Migration `20260913143951_phase_13_production_close.sql` creates `app.production_closures`, company-safe unique keys/FKs, RLS and column-limited runtime INSERT. Inventory entries gain `production_return_of` and `production_closure_id` with company-safe FKs and indexed lookups. Closure snapshots, author/time and consumption linkage cannot be supplied by runtime. No browser grants or private-function EXECUTE rights are added.
+Migration `20260913150937_phase_13_production_close.sql` creates `app.production_closures`, company-safe unique keys/FKs, RLS and column-limited runtime INSERT. Inventory entries gain `production_return_of` and `production_closure_id` with company-safe FKs and indexed lookups. Closure snapshots, author/time and consumption linkage cannot be supplied by runtime. No browser grants or private-function EXECUTE rights are added.
 
 `app.production_material_state` and `app.production_close_review` are SECURITY INVOKER helpers with explicit tenant and permission validation. Review includes a deterministic fingerprint of the relevant state; this is stale-review detection, **not** an authentication token. Internal NOLOGIN-owner triggers use a fixed search path, explicit actor/tenant/permission checks and the existing order row lock. New closures, returns, original-issue reversals, production registrations and status changes serialize on that order. PostgreSQL SERIALIZABLE transactions and bounded retries handle concurrent requests. Immutable journal posting enforces nonnegative physical stock and preserves stock ownership. Closure document, net consumption and final order state/audit commit or roll back together. Duplicate semantic commands return the original result; changed payloads conflict.
 
@@ -63,3 +63,34 @@ Main publication remains blocked separately by the economic rule. Estimated one-
 CI [34764394909](https://github.com/kristoffermvplast/Lagerstyring/actions/runs/34764394909), job `103742671265`, commit `ee5a179c13a419e89d8a3407e3be9a55124520c1`: SUCCESS. Tree `5ef94db9784a95997ae5ee15aa72f53dca1301c3` matches local implementation/accessible-name correction. All 164 unit/API/database/helper tests PASS; all nine real PostgreSQL concurrency tests PASS in the separate disposable-database step; all 117 desktop/tablet/mobile tests PASS; typecheck/build/Docker runtime/diagnostic availability/strict TLS CA materialization PASS. The nine skips in the general test step were executed in the PostgreSQL step. No test gate was relaxed and no workflow/resources were changed.
 
 Only closing documentation changes follow that tested commit. Hosted migration was rejected before execution and has not been retried. Main remains the Phase 12 release. Phase 13 is **not yet signed off online**. Required next actions, in order: explicit approval and one application of the reviewed hosted migration; verify new database boundaries/advisors and align the migration filename to the recorded hosted version if necessary without changing SQL; explicitly approved main push with its normal automatic deployment; public readiness and close routes; operator-run hidden-input read-only login/isolation helper. Do not claim NOT_RUN existing-order/result checks as PASS. No hosted fixtures or business writes are authorized as part of that helper. Photos remain disabled hosted. Phase 14 has not started.
+
+## Authorized hosted migration and main publication
+
+The user explicitly approved the concrete Phase 13 migration and publication of local `21a70e26a6b47fd133bf1fd567f43b3471d652c9`, including normal automatic GitHub Actions/Railway usage on unchanged resources. The previous automatic-review blocker is resolved by that approval. Migration `20260913150937_phase_13_production_close` was applied exactly once to existing project `puwyontrchonoepisgun`. Its local filename is aligned to hosted history with SQL unchanged (100% rename); this alignment is local and is not another migration execution.
+
+Post-migration checks PASS: closure RLS enabled, permissions present, snapshot/author/history protected, consumption linkage protected, private writer not callable by app_backend, browser SELECT blocked. Hosted closure count is zero; no business fixtures were created. Security advisor has no new findings. Existing notices remain unchanged: [intentional default-deny private location-tree lock RLS](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy) and [disabled leaked-password protection](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection). No configuration/paid feature was changed.
+
+The approved content is published on main as `16c5fc5bb28e38cb83c1933974f01bb954016479`. Its tree `27c6988eee19ba2ed2658b80a9db5b938eea338c` is identical to approved local `21a70e2`. Main ref and a native fetch/content diff were verified. The normal automatic workflow is [34764838075](https://github.com/kristoffermvplast/Lagerstyring/actions/runs/34764838075); no manual rerun or deployment. Earlier successful implementation CI remains the test evidence; no passed tests were rerun manually.
+
+The initial anonymous hosted check returned readiness HTTP 200 but close review/returns/result routes HTTP 404 rather than expected HTTP 401. Deployment has not yet been confirmed on the new commit. Authenticated login/isolation is not claimed. After the active Railway release is confirmed, verify the three routes and run `scripts/verify-production-close.cjs` with hidden local credentials and the existing approved isolation company. Expected `PHASE_13_READ_ONLY_VERIFICATION: PASS`; retain the documented expected NOT_RUN results when no existing order/result exists.
+
+This checkpoint and migration-filename alignment are local only and do not trigger another deployment. Photos remain disabled hosted; no additional migration, fixture, resource change or manual deployment. Phase 14 has not started.
+
+One bounded follow-up returned HTTP 404 for all three close routes again. No further repeated polling or manual deployment was attempted. Next external dependency is operator confirmation that Railway is running `16c5fc5bb28e38cb83c1933974f01bb954016479`; then repeat only these previously missing routes before the authenticated hidden-input verification. Readiness was already 200 and was not repeated. Phase 13 remains pending online sign-off.
+
+## Targeted hosted route verification after deployment confirmation
+
+The operator confirmed Railway runs `16c5fc5bb28e38cb83c1933974f01bb954016479`. Independent anonymous GET checks now return the expected HTTP 401 for all three previously missing close routes: `/review`, `/returns` and `/result`. Targeted route verification: PASS. Already-passed readiness, migration, database/TLS and automated tests were not repeated.
+
+Authenticated hosted verification remains pending the operator's local execution of the self-contained `scripts/verify-production-close.cjs`, pinned to that deployed commit. All credentials are entered invisibly on the operator's machine; none are requested in chat. Use company MV Plast and the existing approved isolation fixture `b64edd83-ef7d-4fa9-93a0-424863a77cec`. The helper performs GET-only business checks and cleans up its local Supabase session. Preserve expected NOT_RUN outcomes if there is no existing order or closure; do not create fixtures. No authenticated PASS is claimed before receiving the result.
+
+This checkpoint changes documentation only, locally. No push, migration, deployment, hosted fixture/configuration change or resource increase. Photos remain disabled hosted. Phase 13 online sign-off remains pending; Phase 14 has not started.
+
+
+## Final Phase 13 sign-off — 2026-09-13
+
+The operator reports `PHASE_13_READ_ONLY_VERIFICATION: PASS` against the confirmed Railway release `16c5fc5bb28e38cb83c1933974f01bb954016479`. Login, session, permissions, production-order reads, close review/returns/result access boundaries, not-found behavior and company isolation passed. This completes the remaining authenticated online verification following the recorded HTTP 401 route checks.
+
+Expected coverage limitation: `PRODUCTION_CLOSE_ORDER_FIXTURE: NOT_RUN (no existing production order; no fixture created)`. No existing order was available to exercise positive close review/returns/result reads; no fixture was created. This is not recorded as PASS. Hosted return/closure writes and completed-result behavior were not exercised by the read-only helper; their coverage remains the previously recorded automated API/database, concurrency and browser tests.
+
+Phase 13 is complete. Existing migration, deployment and automated verification evidence is retained without rerunning passed checks. This finalization changes only README, architecture documentation and this sign-off in a local documentation commit. No push, additional migration, manual deployment, hosted configuration change or resource increase is performed. Hosted photos remain disabled. Phase 14 has not started and requires separate authorization.
