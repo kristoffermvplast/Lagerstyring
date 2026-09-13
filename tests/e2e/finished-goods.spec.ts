@@ -52,3 +52,13 @@ test('delivery preserves exact command after an uncertain response',async({page}
 test('output reversal requires reason and preserves retry identity',async({page})=>{
  const {bodies}=await fixture(page);page.on('dialog',d=>void d.accept('Incorrect output'));await page.getByRole('button',{name:'Modpostér aflevering',exact:true}).click();await expect(page.getByRole('button',{name:'Modpostér aflevering',exact:true})).toBeDisabled();await page.getByRole('button',{name:'Prøv samme aflevering igen',exact:true}).click();await expect(page.getByRole('button',{name:'Modpostér aflevering',exact:true})).toBeEnabled();expect(bodies[0]).toEqual(bodies[1]);
 });
+
+test('pallet navigation shows identified stock and retries a whole-pallet move',async({page})=>{
+ const {row}=await fixture(page);const bodies:any[]=[];
+ await page.route('**/api/companies/*/handling-units**',async r=>{
+  if(r.request().method()==='POST'){bodies.push(r.request().postDataJSON());return r.fulfill({status:bodies.length===1?503:201,json:{id:'move'}});}
+  if(new URL(r.request().url()).pathname.endsWith('/moves'))return r.fulfill({json:{items:[]}});
+  return r.fulfill({json:{total:1,items:[{id:row.id,company_id:company,code:'PAL-TEST',active:true,quantity:'100',location_id:row.id,current_location:{name:'Shelf'},order_id:row.id,snapshot:{order_code:'PO-TEST',product:{name:'Product'},owner:{name:'Owner'},unit:{symbol:'stk.'}}}]}});
+ });
+ await page.getByRole('button',{name:'Pallestyring',exact:true}).click();await expect(page.getByText(/PAL-TEST/)).toBeVisible();await page.getByRole('button',{name:'Vis pallehistorik / flyt',exact:true}).click();await page.getByLabel('Pallens nye placering',{exact:true}).selectOption(row.id);await page.getByLabel('Flyttekommentar',{exact:true}).fill('Move complete pallet');page.on('dialog',d=>void d.accept());await page.getByRole('button',{name:'Flyt hele pallen',exact:true}).click();await expect(page.getByLabel('Flyttekommentar',{exact:true})).toBeDisabled();await page.getByRole('button',{name:'Prøv samme palleflytning igen',exact:true}).click();await expect(page.getByLabel('Flyttekommentar',{exact:true})).toHaveValue('');expect(bodies).toHaveLength(2);expect(bodies[0]).toEqual(bodies[1]);
+});
