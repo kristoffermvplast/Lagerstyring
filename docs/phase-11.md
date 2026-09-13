@@ -1,5 +1,7 @@
 # Phase 11 — Material to production
 
+**Status: complete.** Final operator-reported hosted verification is recorded below; earlier pending notes are historical checkpoints. Phase 12 has not started.
+
 ## Scope and behavior
 
 Continues main `0c459567ba371aab64b562eaf0b23a45509fe8a1`. A material issue is an existing balanced inventory transfer linked immutably to a production order. Physical stock moves between locations with the same item, owner and unit; total physical stock is conserved. It is not consumption, waste, a reservation, production registration or finished-goods delivery. No Phase 12 functionality is introduced and issuing material does not change production status.
@@ -53,3 +55,34 @@ Readiness now checks the new order-reference column through information_schema, 
 Working-branch CI [34758458769](https://github.com/kristoffermvplast/Lagerstyring/actions/runs/34758458769), job `103726878467`, commit `9062f98ba6bb15424caf35f254947ff9b1ace07f`: SUCCESS. The remote tree matches initial local implementation `d8e77b7`. Results: 146 unit/API/database/helper tests PASS, 7 real PostgreSQL concurrency tests PASS in their separate job step, 102 browser tests PASS, typecheck/build/runtime Docker/diagnostic availability/strict TLS CA checks PASS. The 7 tests skipped in the general unit step were subsequently executed successfully against disposable PostgreSQL. No manual workflow rerun or Railway deployment was initiated.
 
 Subsequent local changes only add the structural readiness column check (API build and five database tests PASS), align the unchanged migration filename with hosted history, and record this evidence. No unrelated passed tests were repeated. The feature is implemented and automatically verified; main publication and authenticated hosted verification remain pending. No material-return, consumption or Phase 12 workflow is implemented.
+
+
+## Authorized main publication; hosted verification pending
+
+The specifically approved publication of local `a4d0a85` is on `main` as `b992b6f4791a00f99c247ef3d6a12f6fface2845`. GitHub commit metadata differs; both commits have the identical tree `8ece43b7da9cd0d84db54251bce02b0170defba2` and parent `9062f98ba6bb15424caf35f254947ff9b1ace07f`. The live main ref was verified and a native fetch plus empty tree diff independently confirmed the published content.
+
+Normal automatic CI run [34759756814](https://github.com/kristoffermvplast/Lagerstyring/actions/runs/34759756814) was in progress at this checkpoint. Public readiness returned HTTP 200. The three anonymous material-issue GET routes (list, options, detail) still returned HTTP 404 on the initial check and a bounded follow-up, rather than the required 401. Deployment of the new commit is therefore not yet confirmed; these responses do not establish a code defect. No Railway management tools are available in this session.
+
+Next: confirm the active Railway commit is `b992b6f4791a00f99c247ef3d6a12f6fface2845`, repeat only these route checks, then run `scripts/verify-material-issues.cjs` with the operator's hidden local credentials. Authenticated hosted verification and final Phase 11 closure remain pending. No additional migrations, manual deployments, hosted fixtures, photo activation or resource changes were performed. Phase 12 has not started. This publication note is local and has not triggered another push.
+
+
+## Targeted hosted route verification after deployment confirmation
+
+The operator confirmed Railway runs `b992b6f4791a00f99c247ef3d6a12f6fface2845`. The three previously missing anonymous GET routes now all return the expected HTTP 401: material-issue list, options and detail. Targeted route verification: PASS. No previously passed readiness, database/TLS or application suites were repeated.
+
+Authenticated login/isolation verification still requires the operator to run the pinned `scripts/verify-material-issues.cjs` locally with hidden credentials and the existing approved isolation company. No authenticated result is claimed at this checkpoint. No hosted fixtures, migrations, deployments or configuration changes were made. Photos remain disabled hosted. Phase 12 has not started.
+
+
+## Final Phase 11 sign-off
+
+The operator reports `PHASE_11_READ_ONLY_VERIFICATION: PASS` against the confirmed Railway release `b992b6f4791a00f99c247ef3d6a12f6fface2845`. Login, session, permissions, production-order reads, material-issue access boundaries, not-found behavior and company isolation passed. The three anonymous material-issue routes were independently verified HTTP 401 in the preceding targeted check.
+
+Expected coverage limitation:
+
+```text
+MATERIAL_ISSUE_ORDER_FIXTURE: NOT_RUN (no existing production order; no fixture created)
+```
+
+No existing production order was available. Positive material-issue list/options/detail reads for an existing order and hosted material-issue writes were therefore not verified by this read-only run. These behaviors retain the previously documented automated test coverage; NOT_RUN is not counted as PASS. No fixture was created.
+
+Phase 11 is complete within this documented verification scope. This closing task changed documentation only and accepted the operator-provided result without rerunning passed tests. No push, migration, deployment, hosted configuration change or resource increase was performed. Photos remain disabled hosted. The economic 1 DKK rule remains in effect. Phase 12 has not started and requires separate approval.
