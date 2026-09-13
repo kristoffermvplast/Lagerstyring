@@ -59,4 +59,4 @@ Implementation and final verification: [docs/phase-7.md](docs/phase-7.md). Phase
 
 ### Phase 10 production order planning
 
-[Implementation and verification status](docs/phase-10.md). Drafts, planning, frozen BOM/packing snapshots and exact requirements; no production stock movements. Phase 10 verification/release is in progress. Phase 11 is not started; hosted photos remain disabled.
+[Implementation and verification status](docs/phase-10.md). Drafts, planning, frozen BOM/packing snapshots and exact requirements; no production stock movements. Phase 10 implementation and automated tests pass (135 unit/API/database, 6 concurrency, 96 browser); hosted migration is applied. Main release and authenticated online verification remain pending. Phase 11 is not started; hosted photos remain disabled.

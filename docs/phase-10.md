@@ -40,8 +40,26 @@ Targeted API tests cover idempotency, decimal needs, snapshots, transitions, dra
 
 ## Release and cost boundaries
 
-No new services, dependencies, runners, resource increases, secrets or paid features. Existing public repository standard CI is free; no Railway deployment from the working branch. Main push requires its own economic assessment/approval because normal Railway usage cannot currently be bounded within 1 DKK. Hosted migration and release have not yet been performed for Phase 10.
+No new services, dependencies, runners, resource increases, secrets or paid features. Existing public repository standard CI is free; no Railway deployment from the working branch. Main push requires its own economic assessment/approval because normal Railway usage cannot currently be bounded within 1 DKK. Hosted migration is complete as recorded below. Main release and authenticated online verification remain pending.
 
 ## Deferred
 
 Material issue (Phase 11), production registration, returns/reconciliation, finished stock release, reservations, pallets/QR, capacity scheduling and forecasting. No Phase 11 work is started. Hosted photos stay disabled.
+
+## Completed pre-release verification
+
+[CI run 34729642508](https://github.com/kristoffermvplast/Lagerstyring/actions/runs/34729642508), job `103649939224`, working-branch commit `86082052d58bc9fcdb3e00fe8f5dcef71267fda3`: all steps PASS. Logs confirm 135 unit/API/database/operator-helper tests, six real PostgreSQL concurrency tests and 96 desktop/tablet/mobile browser tests. The six concurrency tests are intentionally skipped in the normal suite and pass in the dedicated PostgreSQL step. Typecheck, frontend/backend build, Docker runtime, diagnostic script loading and strict TLS/CA runtime validation also pass.
+
+Local verification caught and fixed the schema table-count expectation (27 → 29) and an ambiguous PL/pgSQL unit alias in the new transition validation. The targeted database/API/helper tests passed after correction; the final CI run above verifies the combined implementation. No previous online verification was rerun.
+
+Hosted migration `20260913010919_phase_10_production_orders` was applied once to existing Supabase project `puwyontrchonoepisgun`. The CLI-created source filename was aligned with the version assigned by the hosted migration tool; SQL content is identical to the tested version. Do not rerun this migration. The organization remains Free; database size before migration was 13,053,075 bytes. No billable resources, users or fixtures were created.
+
+Hosted read-only checks: both new tables have RLS, both production permissions exist, no runtime DELETE or snapshot UPDATE, no audit INSERT/UPDATE/DELETE, no browser schema usage, no runtime EXECUTE on internal triggers, and trigger ownership is `app_owner`. Orders and order audit both contain zero rows. Security advisors show no new findings: the existing intentional [default-deny private location lock policy notice](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy) and disabled [leaked password protection](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection) are unchanged. No paid Auth feature was enabled.
+
+## Remaining release gate
+
+Implementation and automated verification are complete. Main remains `952dde2`; Phase 10 has not been deployed to Railway. The hosted API/login/isolation helper remains NOT_RUN until the approved release is active. No hosted production write behavior is claimed as verified. Use `node scripts/verify-production-orders.cjs` locally with hidden credentials after release; no credentials in chat. Preserve the expected missing-existing-order NOT_RUN if applicable.
+
+The concrete main push triggers normal GitHub Actions and Railway deployment. Expected incremental cost: 0–0.30 DKK; realistic worst-case scenario: 1–3 DKK, one-off. Basis: 5–10 minutes around 1–2 vCPU/1–2 GB normal resource overlap, versus 30–60 minutes at 4 vCPU/8 GB in the stress scenario, at [Railway resource rates](https://docs.railway.com/pricing/plans) $0.000463/vCPU-minute and $0.000231/GB-minute, using 10 DKK/USD as a conservative conversion/buffer assumption. These are scenarios, not measured deployment billing; current Railway usage/credits are inaccessible, so a reliable ≤1 DKK bound is unavailable. [Public-repository standard GitHub Actions runners are free](https://docs.github.com/en/billing/concepts/product-billing/github-actions); existing runner/cache settings and dependencies are unchanged. Main push requires explicit economic approval. No manual deployment, resource increase or further migration is proposed.
+
+Hosted photos remain disabled. Phase 11 has not started.

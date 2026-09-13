@@ -103,3 +103,5 @@ Phase 9 is complete with operator-reported `PHASE_9_READ_ONLY_VERIFICATION: PASS
 ## Phase 10 production order planning
 
 [Phase 10](phase-10.md) adds tenant-scoped planning documents and immutable order audit. Revision snapshots drive fixed-point requirements, including order-specific packing overrides. `production.read` grants snapshot access; planning additionally requires `production.manage` and `masterdata.read`. SERIALIZABLE transactions, creation idempotency and optimistic versions protect concurrent operations. Internal triggers enforce snapshots, references and supported status transitions. No inventory side effects. Phase 11 is not started; hosted photos remain disabled.
+
+Phase 10 pre-release tests pass; hosted migration `20260913010919_phase_10_production_orders` and restricted database privileges are verified. Main deployment and authenticated online verification remain pending economic release approval. See [Phase 10 evidence](phase-10.md).
