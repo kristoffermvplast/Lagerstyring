@@ -34,7 +34,7 @@ The order page offers a simple analysis table and measured-waste form. Uncertain
 
 ## Schema and access
 
-New migration `20260913172805_phase_14_material_analysis.sql` adds only `app.production_waste`, its constraints/indexes/RLS, two permission codes, a protected preparation trigger, immutable-history trigger and a completion-period index on `app.production_closures`. It does not change the stock writer or closure logic. It runs in one transaction as existing NOLOGIN `app_owner`.
+New migration `20260913174524_phase_14_material_analysis.sql` adds only `app.production_waste`, its constraints/indexes/RLS, two permission codes, a protected preparation trigger, immutable-history trigger and a completion-period index on `app.production_closures`. It does not change the stock writer or closure logic. It runs in one transaction as existing NOLOGIN `app_owner`.
 
 Read requires `production.read` and `inventory.read`. Creation additionally requires `production.waste`; reversal requires `production.waste.correct`. Role administration supports both. Browser roles receive no grants. Runtime has SELECT and column-limited INSERT, no UPDATE/DELETE or ability to supply item/owner/unit/snapshot/author/time. The private trigger derives those fields after tenant/session/permission checks, checks the original issue/order and locks the order row. Company-safe foreign keys, immutable rows, unique idempotency/reversal keys and SERIALIZABLE retries protect concurrent commands. The exact request must match before an idempotent response is returned.
 
@@ -53,3 +53,14 @@ Supabase's [RLS documentation](https://supabase.com/docs/guides/database/postgre
 ## Local verification checkpoint
 
 `npm run check`: PASS — typecheck, 181 unit/API/database/helper tests, frontend/backend build. Ten real PostgreSQL concurrency tests were skipped locally because the disposable PostgreSQL runtime is unavailable; they remain required in the existing CI step. The targeted final API/helper subset also passed (11 tests), including whole-unit validation and safe diagnostics. Browser discovery includes 12 new checks across desktop/tablet/mobile; discovery is not execution. No hosted migration or main publication has run.
+
+
+## Hosted migration — applied once
+
+The existing organization is still Free. Before migration, database size was 13,528,211 bytes and Phase 14 was absent. Expected extra cost: 0 DKK on the unchanged existing Free project. Migration `20260913174524_phase_14_material_analysis` was applied successfully once to `puwyontrchonoepisgun`. Its CLI-generated filename `20260913172805` is aligned to hosted history (100% rename, SQL unchanged); do not apply it again.
+
+Post-migration checks PASS: RLS enabled; browser SELECT blocked; snapshot/item/author protected from runtime INSERT; no runtime UPDATE/DELETE; private preparation function not callable by runtime; both permission codes present. Observation count: zero; no hosted fixtures. Security advisor has no new findings. Unchanged existing notices: [intentional default-deny location lock RLS](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy) and [disabled leaked-password protection](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection). No paid feature/configuration was enabled. Main remains the Phase 13 release; app deployment and authenticated online verification remain pending.
+
+## CI checkpoint and browser fixture compatibility
+
+Working-branch CI `34772405645` (`5329e1430dcf6b19e1f6388eb2c897eb71bb403e`) passed code checks and all ten real PostgreSQL concurrency tests. While browser verification runs, inspection found four older production-page fixtures returning a generic order for the new GET waste endpoints. Those fixtures now return the correct empty analysis/history responses. Assertions and application behavior are unchanged. Browser/runtime completion is still pending; a normal working-branch run will verify the corrected fixtures and unchanged migration SQL under its hosted-aligned filename.

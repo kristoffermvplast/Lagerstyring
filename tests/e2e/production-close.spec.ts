@@ -17,6 +17,7 @@ async function fixture(page:Page,transfer=true){
  await page.route(/\/api\/companies\/[^/]+\/masterdata/,r=>r.fulfill({json:r.request().url().includes('/units/')?{...row,symbol:'kg',dimension:'mass'}:{items:[row],total:1}}));
  await page.route(/\/api\/companies\/[^/]+\/production-orders/,async r=>{
   const u=new URL(r.request().url());
+  if(r.request().method()==='GET'&&u.pathname.includes('/waste'))return r.fulfill({json:u.pathname.endsWith('/analysis')?{final:false,materials:[]}:{items:[],total:0}});
   if(r.request().method()==='POST'){bodies.push(r.request().postDataJSON());if(bodies.length>1&&u.pathname.endsWith('/close'))closed=true;return r.fulfill({status:bodies.length===1?503:201,json:bodies.length===1?{message:'Unavailable'}:{id:'closure'}});}
   if(u.pathname.endsWith('/close/review'))return r.fulfill({json:{review_token:'a'.repeat(32),good_quantity:'500',planned_quantity:'504',materials:[{issue_id:row.id,remaining_quantity:'2',issued_quantity:'8',returned_quantity:'6',snapshot:{item:{name:'Material'},owner:{name:'External owner'},location:{name:'Machine'},unit:{symbol:'kg'}}}]}});
   if(u.pathname.endsWith('/close/result'))return r.fulfill({json:{comment:'All checked',snapshot:{good_quantity:'500',rejected_quantity:'4'}}});
