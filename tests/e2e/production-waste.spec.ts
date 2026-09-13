@@ -17,6 +17,8 @@ async function fixture(page:Page,transfer=true){
  await page.route(/\/api\/companies\/[^/]+\/masterdata/,r=>r.fulfill({json:r.request().url().includes('/units/')?{...row,symbol:'kg',dimension:'mass'}:{items:[row],total:1}}));
  await page.route(/\/api\/companies\/[^/]+\/production-orders/,async r=>{
   const u=new URL(r.request().url());
+  if(u.pathname.includes('/deliveries')) return r.fulfill({json:u.pathname.endsWith('/summary')?{good_quantity:'0',delivered_quantity:'0',remaining_quantity:'0',unit:{symbol:'stk.'},packing:null}:{items:[],total:0}});
+
   if(u.pathname.includes('/waste')){
    if(r.request().method()==='POST'){bodies.push(r.request().postDataJSON());return r.fulfill({status:bodies.length===1?503:201,json:bodies.length===1?{message:'Unavailable'}:{id:'waste'}});}
    if(u.pathname.endsWith('/analysis'))return r.fulfill({json:{final:true,materials:[{item_id:row.id,unit_id:row.id,name:'Material',unit:'kg',consumption_owner:'bom',issued_quantity:'800',returned_quantity:'200',net_quantity:'600',theoretical_quantity:'500',difference_quantity:'100',measured_waste_quantity:'80',unexplained_quantity:'20',difference_percent:'16.66666667',waste_percent:'13.33333333',warnings:[]}]}});

@@ -77,3 +77,8 @@ See [Phase 13 scope and verification](docs/phase-13.md). Implementation continue
 ## Phase 14 — material differences and measured waste
 
 See [Phase 14 implementation and verification](docs/phase-14.md). Exact theoretical/difference calculations, separate immutable measured-waste observations and reversals, company-scoped analysis history with period/material/product/machine/customer filters. No additional inventory consumption. Automated verification PASS: 181 unit/API/database/helper tests, ten PostgreSQL concurrency tests and 129 browser tests. Hosted migration is applied once; main publication is verified at `77b2e1c`; all four anonymous route checks pass with HTTP 401; operator-reported `PHASE_14_READ_ONLY_VERIFICATION: PASS` completes online verification. Login, session, permissions, production-order reads, waste-analysis access boundaries, material trend, not-found behavior and company isolation passed. `MATERIAL_ANALYSIS_ORDER_FIXTURE: NOT_RUN (no existing production order; no fixture created)` is expected; positive existing-order reads and hosted writes retain automated-test coverage. Photos remain disabled hosted; Phase 15 has not started.
+
+
+## Phase 15 — finished-goods deliveries and individual pallets
+
+See [Phase 15 implementation and verification](docs/phase-15.md). Incremental registered-good output enters the existing stock journal with preserved order/owner/unit/packing evidence. Individual pallets have protected stock allocations, whole-pallet moves and history; reasoned reversals cannot invalidate production totals or create negative stock. Verification and release are pending. Photos remain disabled hosted; Phase 16 has not started.

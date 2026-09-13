@@ -17,6 +17,7 @@ async function fixture(page:Page,transfer=true){
  await page.route(/\/api\/companies\/[^/]+\/masterdata/,r=>r.fulfill({json:r.request().url().includes('/units/')?{...row,symbol:'kg',dimension:'mass'}:{items:[row],total:1}}));
  await page.route(/\/api\/companies\/[^/]+\/production-orders/,async r=>{
   const u=new URL(r.request().url());
+  if(r.request().method()==='GET'&&u.pathname.includes('/deliveries'))return r.fulfill({json:u.pathname.endsWith('/summary')?{good_quantity:'0',delivered_quantity:'0',remaining_quantity:'0',unit:{symbol:'stk.'},packing:null}:{items:[],total:0}});
   if(r.request().method()==='GET'&&u.pathname.includes('/waste'))return r.fulfill({json:u.pathname.endsWith('/analysis')?{final:false,materials:[]}:{items:[],total:0}});
   if(r.request().method()==='POST'){bodies.push(r.request().postDataJSON());return r.fulfill({status:bodies.length===1?503:201,json:bodies.length===1?{message:'Unavailable'}:{id:'issue'}});}
   if(u.pathname.endsWith('/material-issues/options'))return r.fulfill({json:{components:[{id:row.id}],machine_location_id:row.id}});

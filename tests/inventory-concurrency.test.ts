@@ -197,4 +197,23 @@ describe.skipIf(!url)('real PostgreSQL concurrent inventory commands',()=>{
   expect((await pool.query('select snapshot from app.production_closures where order_id=$1',[order.id])).rows[0].snapshot).toEqual(closure);
  });
 
+ it('deduplicates output, prevents competing overdelivery and serializes pallet moves/reversals',async()=>{
+  barrier=undefined;
+  const {FinishedGoodsController,HandlingUnitsController}=require('../apps/api/dist/finished-goods.js');const output=new FinishedGoodsController(service),units=new HandlingUnitsController(service);
+  const order=(await pool.query("select * from app.production_orders where code='REG-CONCURRENT'")).rows[0];
+  const closure=(await pool.query('select snapshot from app.production_closures where order_id=$1',[order.id])).rows[0].snapshot;
+  const pallet=await service.asActor(actor,ids.a,async(db:any)=>(await db.query("insert into app.pallet_types(company_id,code,name) values($1,'OUTPUT-P','Output pallet') returning id",[ids.a])).rows[0].id);
+  const body={idempotency_key:randomUUID(),quantity:'10',owner_id:owner,location_id:location,pallet_type_id:pallet,production_date:'2026-09-01',comment:'Output concurrency'};
+  synchronize();const duplicate=await Promise.all([output.create({actor},ids.a,order.id,body),output.create({actor},ids.a,order.id,body)]);expect(duplicate[0].id).toBe(duplicate[1].id);
+  synchronize();const race=await Promise.allSettled([output.create({actor},ids.a,order.id,{...body,idempotency_key:randomUUID(),quantity:'30',pallet_type_id:null}),output.create({actor},ids.a,order.id,{...body,idempotency_key:randomUUID(),quantity:'30',pallet_type_id:null})]);expect(race.filter(x=>x.status==='fulfilled')).toHaveLength(1);
+  barrier=undefined;const hu=(await pool.query('select * from app.handling_units where delivery_id=$1',[duplicate[0].id])).rows[0];
+  const target=(await pool.query("select id from app.locations where code='CLOSE-PROD'")).rows[0].id;
+  const move={idempotency_key:randomUUID(),to_location_id:target,comment:'Atomic pallet move'};
+  synchronize();const moves=await Promise.all([units.move({actor},ids.a,hu.id,move),units.move({actor},ids.a,hu.id,move)]);expect(moves[0].id).toBe(moves[1].id);
+  barrier=undefined;await units.move({actor},ids.a,hu.id,{...move,idempotency_key:randomUUID(),to_location_id:location});
+  synchronize();const reversed=await Promise.allSettled([output.reverse({actor},ids.a,order.id,duplicate[0].id,{idempotency_key:randomUUID(),comment:'Output correction A'}),output.reverse({actor},ids.a,order.id,duplicate[0].id,{idempotency_key:randomUUID(),comment:'Output correction B'})]);expect(reversed.filter(x=>x.status==='fulfilled')).toHaveLength(1);
+  barrier=undefined;expect((await output.summary({actor},ids.a,order.id)).delivered_quantity).toBe('30.00000000');
+  expect((await pool.query('select snapshot from app.production_closures where order_id=$1',[order.id])).rows[0].snapshot).toEqual(closure);
+ });
+
 });

@@ -17,6 +17,7 @@ async function fixture(page:Page,transfer=true){
  await page.route(/\/api\/companies\/[^/]+\/masterdata/,r=>r.fulfill({json:r.request().url().includes('/units/')?{...row,symbol:'kg',dimension:'mass'}:{items:[row],total:1}}));
  await page.route(/\/api\/companies\/[^/]+\/production-orders/,async r=>{
   const u=new URL(r.request().url());
+  if(r.request().method()==='GET'&&u.pathname.includes('/deliveries'))return r.fulfill({json:u.pathname.endsWith('/summary')?{good_quantity:'0',delivered_quantity:'0',remaining_quantity:'0',unit:{symbol:'stk.'},packing:null}:{items:[],total:0}});
   if(r.request().method()==='GET'&&u.pathname.includes('/waste'))return r.fulfill({json:u.pathname.endsWith('/analysis')?{final:false,materials:[]}:{items:[],total:0}});
   if(r.request().method()==='POST'){bodies.push(r.request().postDataJSON());return r.fulfill({status:bodies.length===1?503:201,json:bodies.length===1?{message:'Unavailable'}:{id:'issue'}});}
   if(u.pathname.endsWith('/registrations/summary'))return r.fulfill({json:{good_quantity:'505',planned_quantity:'504',progress_percent:'100.19',overproduced:true,unit:{symbol:'stk.'}}});

@@ -12,6 +12,7 @@ async function fixture(page:Page,manage=true){
  await page.route(/\/api\/companies\/[^/]+\/recipes/,r=>r.fulfill({json:{lines:[{component_id:'box',quantity:'12',kind:'container',level:0,snapshot:{name:'Box'}}]}}));
  await page.route(/\/api\/companies\/[^/]+\/production-orders/,async r=>{
   const u=new URL(r.request().url());
+  if(r.request().method()==='GET'&&u.pathname.includes('/deliveries'))return r.fulfill({json:u.pathname.endsWith('/summary')?{good_quantity:'0',delivered_quantity:'0',remaining_quantity:'0',unit:{symbol:'stk.'},packing:null}:{items:[],total:0}});
   if(r.request().method()==='GET'&&u.pathname.includes('/waste'))return r.fulfill({json:u.pathname.endsWith('/analysis')?{final:false,materials:[]}:{items:[],total:0}});
   if(r.request().method()==='POST'){
    const b=r.request().postDataJSON();bodies.push(b);

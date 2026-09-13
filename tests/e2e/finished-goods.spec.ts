@@ -5,7 +5,7 @@ async function fixture(page:Page,transfer=true){
  const session={access_token:`e30.${payload}.fixture`,refresh_token:'local-refresh',token_type:'bearer',expires_in:3600,expires_at:Math.floor(Date.now()/1000)+3600,user:{id:user,aud:'authenticated',email:'fixture@example.test',user_metadata:{},app_metadata:{},created_at:new Date().toISOString()}};
  await page.route('http://127.0.0.1:54321/auth/v1/**',r=>r.fulfill({status:200,headers:{'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'*'},json:session}));
  await page.route('**/api/me',r=>r.fulfill({json:{user:{id:user,display_name:'Fixture'},memberships:[{company_id:company,name:'Test A'},{company_id:other,name:'Test B'}]}}));
- await page.route('**/api/companies/*/access',r=>r.fulfill({json:{permissions:[{code:'production.read'},{code:'inventory.read'},...(transfer?['production.return','production.close','inventory.transfer','masterdata.read','production.manage'].map(code=>({code})):[])]}}));
+ await page.route('**/api/companies/*/access',r=>r.fulfill({json:{permissions:[{code:'production.read'},{code:'inventory.read'},...(transfer?['production.deliver','production.delivery.correct','inventory.transfer','masterdata.read','production.manage'].map(code=>({code})):[])]}}));
  let closed=false;const row={id:'50000000-0000-4000-8000-000000000001',code:'CODE',name:'Fixture',active:true,kind:'company',notes:'',version:1};const bodies:any[]=[];
  await page.route(/\/api\/companies\/[^/]+\/(items|locations)/,r=>r.fulfill({json:r.request().url().includes(row.id)?{...row,path:[row],unit_id:row.id,supplier_id:row.id,standard_location_id:row.id}:{items:[row],total:1}}));
  await page.route(/\/api\/companies\/[^/]+\/inventory/,async r=>{
@@ -17,8 +17,16 @@ async function fixture(page:Page,transfer=true){
  await page.route(/\/api\/companies\/[^/]+\/masterdata/,r=>r.fulfill({json:r.request().url().includes('/units/')?{...row,symbol:'kg',dimension:'mass'}:{items:[row],total:1}}));
  await page.route(/\/api\/companies\/[^/]+\/production-orders/,async r=>{
   const u=new URL(r.request().url());
-  if(r.request().method()==='GET'&&u.pathname.includes('/deliveries'))return r.fulfill({json:u.pathname.endsWith('/summary')?{good_quantity:'0',delivered_quantity:'0',remaining_quantity:'0',unit:{symbol:'stk.'},packing:null}:{items:[],total:0}});
-  if(r.request().method()==='GET'&&u.pathname.includes('/waste'))return r.fulfill({json:u.pathname.endsWith('/analysis')?{final:false,materials:[]}:{items:[],total:0}});
+  if(u.pathname.includes('/deliveries')){
+   if(r.request().method()==='POST'){bodies.push(r.request().postDataJSON());return r.fulfill({status:bodies.length===1?503:201,json:{id:'output'}});}
+   if(u.pathname.endsWith('/summary'))return r.fulfill({json:{good_quantity:'500',delivered_quantity:'100',remaining_quantity:'400',unit:{symbol:'stk.'},packing:null}});
+   return r.fulfill({json:{items:[{id:row.id,kind:'delivery',quantity:'100',reversed:false,pallet_code:'PAL-TEST',created_at:'2026-09-01T00:00:00Z',comment:'Output',snapshot:{product:{name:'Product'},owner:{name:'External owner'},location:{name:'Shelf'},unit:{symbol:'stk.'}}}],total:1}});
+  }
+  if(u.pathname.includes('/waste')){
+   if(r.request().method()==='POST'){bodies.push(r.request().postDataJSON());return r.fulfill({status:bodies.length===1?503:201,json:bodies.length===1?{message:'Unavailable'}:{id:'waste'}});}
+   if(u.pathname.endsWith('/analysis'))return r.fulfill({json:{final:true,materials:[{item_id:row.id,unit_id:row.id,name:'Material',unit:'kg',consumption_owner:'bom',issued_quantity:'800',returned_quantity:'200',net_quantity:'600',theoretical_quantity:'500',difference_quantity:'100',measured_waste_quantity:'80',unexplained_quantity:'20',difference_percent:'16.66666667',waste_percent:'13.33333333',warnings:[]}]}});
+   return r.fulfill({json:{items:[{id:'70000000-0000-4000-8000-000000000001',kind:'record',quantity:'80',comment:'Measured',created_at:'2026-09-13T00:00:00Z',created_by:user,snapshot:{stock:{item:{name:'Material'},owner:{name:'External owner'},unit:{symbol:'kg'}}}}],total:1}});
+  }
   if(r.request().method()==='POST'){bodies.push(r.request().postDataJSON());if(bodies.length>1&&u.pathname.endsWith('/close'))closed=true;return r.fulfill({status:bodies.length===1?503:201,json:bodies.length===1?{message:'Unavailable'}:{id:'closure'}});}
   if(u.pathname.endsWith('/close/review'))return r.fulfill({json:{review_token:'a'.repeat(32),good_quantity:'500',planned_quantity:'504',materials:[{issue_id:row.id,remaining_quantity:'2',issued_quantity:'8',returned_quantity:'6',snapshot:{item:{name:'Material'},owner:{name:'External owner'},location:{name:'Machine'},unit:{symbol:'kg'}}}]}});
   if(u.pathname.endsWith('/close/result'))return r.fulfill({json:{comment:'All checked',snapshot:{good_quantity:'500',rejected_quantity:'4'}}});
@@ -27,22 +35,20 @@ async function fixture(page:Page,transfer=true){
   if(u.pathname.endsWith('/material-issues/options'))return r.fulfill({json:{components:[{id:row.id}],machine_location_id:row.id}});
   if(u.pathname.endsWith('/material-issues'))return r.fulfill({json:{items:[],total:0}});
   if(u.pathname.endsWith('/history'))return r.fulfill({json:[]});
-  const order={id:row.id,company_id:company,code:'PO-TEST',product:row,status:closed?'completed':'reconciliation',quantity:'10',version:2,problem:'',snapshot:{product:row,machine:row,unit:{symbol:'stk.'}},warnings:[],requirements:null};
+  const order={id:row.id,company_id:company,code:'PO-TEST',product:row,status:'completed',quantity:'10',version:2,problem:'',snapshot:{product:row,machine:row,unit:{symbol:'stk.'}},warnings:[],requirements:null};
   return r.fulfill({json:u.pathname.endsWith('/'+row.id)?order:{items:[order],total:1}});
  });
  await page.addInitScript(s=>sessionStorage.setItem('lager-auth-session',JSON.stringify(s)),session);
  await page.goto('/');await page.getByRole('button',{name:'Produktion',exact:true}).click();await page.getByRole('button',{name:'Åbn ordre',exact:true}).click();return{row,bodies};
 }
 
-test('reader can inspect reconciliation without return or completion buttons',async({page})=>{
- await fixture(page,false);await expect(page.getByText('2 kg',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Returnér materiale',exact:true})).toHaveCount(0);await expect(page.getByRole('button',{name:'Afslut produktion',exact:true})).toHaveCount(0);
+
+test('reader sees delivered and remaining quantities without write controls',async({page})=>{
+ await fixture(page,false);await expect(page.getByText(/Registreret godt: 500/)).toBeVisible();await expect(page.getByRole('button',{name:'Bekræft lageraflevering',exact:true})).toHaveCount(0);await expect(page.getByRole('button',{name:'Modpostér aflevering',exact:true})).toHaveCount(0);
 });
-test('closure confirms reviewed quantities and retains one command on uncertain response',async({page})=>{
- const {bodies}=await fixture(page);await page.getByLabel('Kasserede emner',{exact:true}).fill('4');await page.getByLabel('Afslutningskommentar og afvigelser',{exact:true}).fill('All quantities reconciled');await page.getByRole('checkbox',{name:/Jeg har kontrolleret/}).check();
- page.on('dialog',d=>void d.accept());await page.getByRole('button',{name:'Afslut produktion',exact:true}).click();await expect(page.getByLabel('Kasserede emner',{exact:true})).toBeDisabled();await page.getByRole('button',{name:'Prøv samme handling igen',exact:true}).click();
- await expect(page.getByText(/Produktionen er afsluttet og låst/)).toBeVisible();expect(bodies).toHaveLength(2);expect(bodies[0]).toEqual(bodies[1]);expect(bodies[0].confirm_materials).toBe(true);expect(bodies[0].review_token).toBe('a'.repeat(32));
+test('delivery preserves exact command after an uncertain response',async({page})=>{
+ const {row,bodies}=await fixture(page);await page.getByLabel('Antal til lager',{exact:true}).fill('100');await page.getByLabel('Færdigvarernes ejer',{exact:true}).selectOption(row.id);await page.getByLabel('Færdigvareplacering',{exact:true}).selectOption(row.id);await page.getByLabel('Produktionsdato',{exact:true}).fill('2026-09-01');page.on('dialog',d=>void d.accept());await page.getByRole('button',{name:'Bekræft lageraflevering',exact:true}).click();await expect(page.getByLabel('Antal til lager',{exact:true})).toBeDisabled();await page.getByRole('button',{name:'Prøv samme aflevering igen',exact:true}).click();await expect(page.getByLabel('Antal til lager',{exact:true})).toHaveValue('');expect(bodies).toHaveLength(2);expect(bodies[0]).toEqual(bodies[1]);expect(bodies[0].quantity).toBe('100');
 });
-test('return uses original issue and preserves retry identity',async({page})=>{
- const {row,bodies}=await fixture(page);await page.getByLabel('Udlevering til retur',{exact:true}).selectOption(row.id);await page.getByRole('combobox',{name:'Returplacering',exact:true}).selectOption(row.id);await page.getByLabel('Returmængde',{exact:true}).fill('1');await page.getByLabel('Returkommentar',{exact:true}).fill('Unused material');
- page.on('dialog',d=>void d.accept());await page.getByRole('button',{name:'Returnér materiale',exact:true}).click();await expect(page.getByLabel('Returmængde',{exact:true})).toBeDisabled();await page.getByRole('button',{name:'Prøv samme handling igen',exact:true}).click();await expect(page.getByLabel('Returmængde',{exact:true})).toHaveValue('');expect(bodies).toHaveLength(2);expect(bodies[0]).toEqual(bodies[1]);expect(bodies[0].issue_id).toBe(row.id);
+test('output reversal requires reason and preserves retry identity',async({page})=>{
+ const {bodies}=await fixture(page);page.on('dialog',d=>void d.accept('Incorrect output'));await page.getByRole('button',{name:'Modpostér aflevering',exact:true}).click();await expect(page.getByRole('button',{name:'Modpostér aflevering',exact:true})).toBeDisabled();await page.getByRole('button',{name:'Prøv samme aflevering igen',exact:true}).click();await expect(page.getByRole('button',{name:'Modpostér aflevering',exact:true})).toBeEnabled();expect(bodies[0]).toEqual(bodies[1]);
 });
