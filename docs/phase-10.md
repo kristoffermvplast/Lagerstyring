@@ -56,10 +56,40 @@ Hosted migration `20260913010919_phase_10_production_orders` was applied once to
 
 Hosted read-only checks: both new tables have RLS, both production permissions exist, no runtime DELETE or snapshot UPDATE, no audit INSERT/UPDATE/DELETE, no browser schema usage, no runtime EXECUTE on internal triggers, and trigger ownership is `app_owner`. Orders and order audit both contain zero rows. Security advisors show no new findings: the existing intentional [default-deny private location lock policy notice](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy) and disabled [leaked password protection](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection) are unchanged. No paid Auth feature was enabled.
 
-## Remaining release gate
+## Pre-publication release gate (historical)
 
 Implementation and automated verification are complete. Main remains `952dde2`; Phase 10 has not been deployed to Railway. The hosted API/login/isolation helper remains NOT_RUN until the approved release is active. No hosted production write behavior is claimed as verified. Use `node scripts/verify-production-orders.cjs` locally with hidden credentials after release; no credentials in chat. Preserve the expected missing-existing-order NOT_RUN if applicable.
 
 The concrete main push triggers normal GitHub Actions and Railway deployment. Expected incremental cost: 0–0.30 DKK; realistic worst-case scenario: 1–3 DKK, one-off. Basis: 5–10 minutes around 1–2 vCPU/1–2 GB normal resource overlap, versus 30–60 minutes at 4 vCPU/8 GB in the stress scenario, at [Railway resource rates](https://docs.railway.com/pricing/plans) $0.000463/vCPU-minute and $0.000231/GB-minute, using 10 DKK/USD as a conservative conversion/buffer assumption. These are scenarios, not measured deployment billing; current Railway usage/credits are inaccessible, so a reliable ≤1 DKK bound is unavailable. [Public-repository standard GitHub Actions runners are free](https://docs.github.com/en/billing/concepts/product-billing/github-actions); existing runner/cache settings and dependencies are unchanged. Main push requires explicit economic approval. No manual deployment, resource increase or further migration is proposed.
 
 Hosted photos remain disabled. Phase 11 has not started.
+
+## Approved main publication
+
+The user approved the one push of `a788164`, including its normal automatic GitHub Actions and Railway runs on unchanged resources. Main was fast-forwarded to `2abd67b35d07bf1bb27424f21789bef745154fdb`. The GitHub-created commit has the same parent `86082052d58bc9fcdb3e00fe8f5dcef71267fda3`, tree `e5651662c5f98f9354c8b179959c06b0c802c1c1` and message as approved local `a788164`; only commit metadata/identity differs. Automatic approval review initially rejected the differing SHA, then permitted the push after read-only evidence established this equivalence. Fetched main content was verified identical to the approved commit.
+
+Normal automatic main CI: [run 34754395182](https://github.com/kristoffermvplast/Lagerstyring/actions/runs/34754395182), job `103716206437`. No manual CI rerun, deployment, migration, resource/configuration change or extra branch push was performed. Hosted photos remain disabled.
+
+Initial release-window endpoint results: liveness HTTP 200; readiness HTTP 503; anonymous production-order collection and probe detail HTTP 404 (expected 401 when the new controller is active). These responses do not establish the Railway revision. Railway tools are unavailable in this conversation. Authenticated online verification is NOT_RUN until route/readiness availability is established and the operator runs the hidden-input helper. No credentials or hosted business fixtures were created.
+
+Main CI completed successfully: all code/database, real PostgreSQL concurrency, browser, Docker runtime, diagnostic and strict TLS/CA steps PASS. The targeted online recheck still returned readiness 503 and anonymous order collection/detail 404, rather than expected readiness 200 and route 401. Liveness had already returned 200 and was not repeated. No full online Phase 10 completion is claimed.
+
+Next operator action: confirm the active automatic Railway deployment for `2abd67b35d07bf1bb27424f21789bef745154fdb` and its status. Do not manually redeploy or change resources. Share only commit/status, no secrets. Once the expected revision is active, recheck readiness and the blocked routes. If readiness remains 503, run the existing `node /app/scripts/verify-database.cjs` diagnostic inside the existing container and share sanitized PASS/FAIL codes only. Authenticated verification then uses `scripts/verify-production-orders.cjs` with locally entered hidden credentials, company `MV Plast` and the already-approved isolation company; no new fixtures.
+
+This release result is recorded locally only; no additional documentation push/deployment is included in the one-push approval. Photos remain disabled hosted. Phase 11 has not started.
+
+## Targeted check after operator-confirmed Railway revision
+
+The operator confirmed active Railway commit `2abd67b35d07bf1bb27424f21789bef745154fdb`. Anonymous production-order collection and probe detail now return HTTP 401 — PASS. The earlier 404 route blocker is resolved. Readiness still returns HTTP 503; authenticated verification remains pending. No previously passed CI/tests were repeated.
+
+A read-only database diagnostic attempting `SET LOCAL ROLE app_backend` through the Supabase management connection was rejected with 42501 (permission denied to set role). No grants were changed or alternative privileged impersonation attempted. This management-connection restriction is not evidence of a failure in the Railway login itself. The actual connection must be diagnosed inside the existing Railway container using sanitized diagnostics. No code, migrations, deployment or hosted settings were changed.
+
+## Readiness permission-catalog regression fix
+
+Operator diagnostics passed connection/TLS/role checks, auth configuration, all readiness tables, session function and receipt column. Only `TRANSFER_PERMISSION_VISIBLE` failed. Targeted hosted read-only inspection confirmed `inventory.transfer` exists and the `permission_catalog` SELECT policy requires `app.actor_id() IS NOT NULL`. Readiness has no actor, so its permission-row existence check incorrectly failed under the intended RLS policy.
+
+The local fix replaces that row lookup with `to_regclass('app.permissions') IS NOT NULL`. Readiness checks structural availability; authenticated verification checks permissions. No actor is fabricated, no RLS policy/grant is relaxed, and no migration, seed or hosted data correction is needed.
+
+Validation: API TypeScript build PASS; targeted `tests/database.test.ts` PASS (5 tests). The new regression exercises the real readiness query through Kysely against isolated PostgreSQL as `app_backend` with no actor: the seeded transfer permission is hidden, readiness succeeds, permission rows remain hidden afterwards, and readiness still fails when the production-order table is absent. Local test changes roll back. Unrelated suites and hosted TLS checks were not repeated.
+
+The fix is local pending a separately approved main push and automatic Railway deployment. Hosted readiness 200 and authenticated Phase 10 verification remain pending. Photos remain disabled hosted; Phase 11 has not started.

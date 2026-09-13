@@ -1,6 +1,10 @@
 import { PGlite } from '@electric-sql/pglite';
 import { readFileSync, readdirSync } from 'node:fs';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+const { Kysely, PostgresDialect } = require('kysely');
+const { DatabaseService } = require('../apps/api/dist/database.js');
 
 const db = new PGlite();
 beforeAll(async () => {
@@ -12,6 +16,31 @@ beforeAll(async () => {
 afterAll(() => db.close());
 
 describe('migration security in isolated PostgreSQL engine', () => {
+  it('readiness succeeds without an actor while permission rows remain protected by RLS', async () => {
+    expect((await db.query("select exists(select 1 from app.permissions where code='inventory.transfer') as present")).rows).toEqual([{ present: true }]);
+    const service = new DatabaseService({ SUPABASE_URL: 'http://localhost', SUPABASE_PUBLISHABLE_KEY: 'local-test' });
+    service.db = new Kysely({ dialect: new PostgresDialect({ pool: {
+      connect: async () => ({
+        query: async (query: string, parameters: unknown[]) => {
+          const result = await db.query(query, parameters);
+          return { rows: result.rows, rowCount: result.rows.length };
+        },
+        release: () => {},
+      }),
+      end: async () => {},
+    } }) });
+    await db.exec('BEGIN; SET LOCAL ROLE app_backend;');
+    try {
+      expect((await db.query("select app.actor_id() is null as no_actor, exists(select 1 from app.permissions where code='inventory.transfer') as visible")).rows).toEqual([{ no_actor: true, visible: false }]);
+      expect(await service.ready()).toBe(true);
+      expect((await db.query('select count(*)::int as count from app.permissions')).rows).toEqual([{ count: 0 }]);
+      await db.exec('RESET ROLE; ALTER TABLE app.production_orders RENAME TO readiness_missing_orders; SET LOCAL ROLE app_backend;');
+      expect(await service.ready()).toBe(false);
+    } finally {
+      await db.exec('ROLLBACK');
+      await service.onApplicationShutdown();
+    }
+  });
   it('creates access and Phase 3–10 masterdata, inventory and production tables', async () => {
     const { rows } = await db.query("select count(*)::int as count from pg_tables where schemaname in ('app','app_private')");
     expect(rows).toEqual([{ count: 29 }]);
