@@ -97,7 +97,7 @@ async function main() {
   rl.on('SIGINT', () => { rl.close(); process.exitCode = 1; });
   const ask = label => new Promise(resolve => { process.stdout.write(label); rl.question('', answer => { process.stdout.write('\n'); resolve(answer); }); });
   try {
-    console.log('FINISHED_GOODS_VERIFICATION_VERSION: 1');
+    console.log('RESERVATIONS_VERIFICATION_VERSION: 1');
     console.log('Supabase/Railway login verification. All input is hidden. Only status and allowlisted error codes are printed.');
     const key = (await ask('Supabase publishable key (sb_publishable_..., NOT secret/service_role): ')).trim();
     if (!key.startsWith('sb_publishable_')) throw new Error('Publishable key required');

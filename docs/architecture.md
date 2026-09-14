@@ -134,3 +134,8 @@ Phase 10 is complete. Previously recorded automated tests and hosted migration `
 [Phase 16](phase-16.md) adds a frontend QR reference layer on top of existing guarded NestJS reads and confirmed writes. The versioned non-URL payload contains only company, type and immutable UUID. It never grants access or encodes commands. Camera frames and PNG generation stay on-device, using bundled libraries; no storage, API routes, migration, service or permission expansion. Existing tenant and stock invariants remain authoritative. Phase 17 has not started.
 
 Phase 16 automated verification is complete: CI `34880414365` passed 200 unit/API/helper tests, 11 PostgreSQL concurrency tests and 159 browser tests. No new database or backend authorization surface. Main publication is verified at `94f3789479e67247287c53fd302007716bbabf60`. Operator-reported `PHYSICAL_QR_CAMERA_SCAN: PASS` confirms a displayed QR was scanned with a real camera and resolved the correct record without an automatic stock/data change. Phase 16 is complete; physical keyboard-scanner/printer testing remains NOT_RUN. See the phase report for coverage limits.
+
+
+## Phase 17 extension
+
+[Phase 17](phase-17.md) adds reservation events and protected reservation/balance projections. SERIALIZABLE commands and shared physical-balance writes prevent overreservation against concurrent debits. Loose allocations exclude identified stock; pallet allocations retain the same ownership/location and block movement/reversal until released. All active reservations reduce available, never physical, inventory. Only NestJS can submit events; private database triggers derive state and snapshots under tenant/session checks. Shipment linkage and dispatch remain Phase 18. No new infrastructure.

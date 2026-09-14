@@ -1,6 +1,6 @@
 # Lagerstyring
 
-Webbaseret lager- og produktionssystem. **Fase 1–16 er afsluttet. Fase 17 er ikke startet.**
+Webbaseret lager- og produktionssystem. **Fase 1–16 er afsluttet. Fase 17 implementeres.**
 
 **Fase 1 er afsluttet og godkendt.** Se [det endelige Railway/Supabase-resultat](docs/phase-1-completion.md).
 
@@ -87,3 +87,8 @@ See [Phase 15 implementation and verification](docs/phase-15.md). Incremental re
 ## Phase 16 — QR labels and scanning
 
 See [Phase 16](docs/phase-16.md). Local QR labels for pallets, locations, orders and machines; camera or keyboard scanning into existing authenticated workflows. Strict company/type validation, explicit stock confirmation, no QR service or migration. Automated verification PASS: 200 unit/API/helper, 11 PostgreSQL concurrency and 159 browser tests. Main publication is verified at `94f3789479e67247287c53fd302007716bbabf60`. Operator-reported `PHYSICAL_QR_CAMERA_SCAN: PASS`: the QR displayed and scanned with a real camera, found the correct record, and triggered no automatic stock/data change. Phase 16 is complete. Physical keyboard-scanner/printer checks remain NOT_RUN; camera lifecycle and other device combinations are covered only as specified in the phase report. Photos remain disabled hosted; Phase 17 has not started.
+
+
+## Phase 17 — Reservations
+
+See [Phase 17](docs/phase-17.md). Separate reserve/release events protect available stock without changing physical inventory. Supports loose stock and individual pallets, owner/location boundaries, exact quantities, immutable history and idempotent retries. Existing debit and pallet workflows protect active reservations. NestJS permissions/RLS remain authoritative. Hosted migration, main publication and online sign-off are recorded in the phase report. Photos remain disabled hosted; Phase 18 has not started.

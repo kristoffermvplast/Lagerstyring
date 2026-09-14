@@ -20,10 +20,31 @@ Routes: `GET/POST /api/companies/:companyId/reservations`, `GET /:id`, `POST /:i
 
 ## Verification
 
-Results will be recorded after final checks. Tests cover idempotency, numeric precision, no physical posting, overreservation, reserved debit rejection, snapshot history, permissions, tenant isolation, full release and identified-pallet movement/reversal protection. Concurrent tests use only the existing disposable local PostgreSQL CI database. Browser tests use local fixtures, not hosted business data.
+Automated verification passed; hosted migration and online sign-off remain pending. Tests cover idempotency, numeric precision, no physical posting, overreservation, reserved debit rejection, snapshot history, permissions, tenant isolation, full release and identified-pallet movement/reversal protection. Concurrent tests use only the existing disposable local PostgreSQL CI database. Browser tests use local fixtures, not hosted business data.
 
 ## Release and cost boundary
 
 No hosted resource change, photos, extra service, manual deployment or Phase 18 workflow. Working-branch checks use existing public-repository GitHub Actions. Main publication is separate: expected Railway incremental 0–0.30 DKK, realistic one-off worst case 1–3 DKK, depending on build duration/overlap and included usage; explicit approval is needed if not confidently bounded at 1 DKK.
 
 Supabase changelog and RLS documentation checked: no relevant API changes are needed. Existing NestJS-only access remains, with explicit grants and per-company policies. No external paid integration.
+
+## Local verification and hosted boundary
+
+`npm run check` PASS: 205 tests passed; 12 PostgreSQL tests skipped locally because the local connection is absent. Typecheck and API/frontend builds passed. Two additional diagnostic-script tests passed separately, covering read-only requests and secret-safe output. The schema-count assertion was updated from 35 to 37 for the two new tables; no test gate was removed.
+
+Supabase organization `ltqcdagbwtuwtudnqpdn` was confirmed Free, project `puwyontrchonoepisgun` ACTIVE_HEALTHY, database 14,142,611 bytes, Phase 17 absent from hosted migration history. Expected migration charge: 0 DKK. Automatic approval review rejected the hosted migration because explicit authorization of the production schema changes is required. The migration was not executed and must not be retried without approval. No hosted business fixtures or resource changes were made.
+
+After approved migration and main deployment, run `node scripts/verify-reservations.cjs` interactively on the operator's machine. Enter publishable key, email, password, company name and existing isolation-company ID locally; no secrets are printed. It checks login/session, permission, list/detail scope, foreign-company denial and not-found behavior, using only GET business requests and session cleanup. If no reservation exists, `RESERVATION_EXISTING_RECORD: NOT_RUN` is expected; no fixtures are created. Hosted write behavior is not claimed by that read-only script.
+
+
+## Final automated verification — 2026-09-14
+
+GitHub Actions [34888463950](https://github.com/kristoffermvplast/Lagerstyring/actions/runs/34888463950), job `104124879095`, implementation commit `357654cb3f6d57f314cfb2e3d319e86520b81902`: SUCCESS.
+
+- 205 unit/API/database/helper tests PASS.
+- 12 real PostgreSQL concurrency tests PASS, including competing reservations, duplicate reserve/release retries and reservation versus physical debit.
+- 165 desktop/tablet/mobile browser tests PASS, including permission-limited reservation UI and identical retries after an uncertain response.
+- Typecheck, API/frontend build, backend runtime image and existing strict-TLS/runtime diagnostics PASS.
+- Two subsequent local online-helper tests PASS; the helper's version banner is `RESERVATIONS_VERIFICATION_VERSION: 1`. These tests verify GET-only business requests and no secret output. Only the version banner, helper tests and documentation follow the above CI revision; reservation implementation is unchanged.
+
+The existing schema-count assertion was the only initial check failure (35 expected versus 37 actual); it was updated for the two intentional tables and the full gate then passed. No test was removed. No paid resources, hosted fixtures, migration or main deployment were executed. Hosted permission/advisor and authenticated online checks remain pending approved migration and release. Phase 17 is implemented and automatically verified, not yet signed off online. Phase 18 has not started.
