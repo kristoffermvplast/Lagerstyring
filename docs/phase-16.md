@@ -1,6 +1,6 @@
 # Phase 16 — QR labels and scanning
 
-Status: implementation and automated verification complete on `phase16-qr`, based on verified main `450602e`. Main publication and physical-device acceptance remain pending. Phase 17 is not authorized. Photos remain disabled hosted.
+Status: Phase 16 complete. Implementation and automated verification are complete, based on verified main `450602e`; main publication is verified at `94f3789479e67247287c53fd302007716bbabf60`. The operator has now reported `PHYSICAL_QR_CAMERA_SCAN: PASS`; see final acceptance below. Earlier progress entries are historical evidence, not outstanding camera-test requirements. Phase 17 is not authorized. Photos remain disabled hosted.
 
 ## Implementation and boundaries
 
@@ -49,3 +49,37 @@ Final camera-panel cleanup change explicitly stops scanning when a containing de
 CI [34880414365](https://github.com/kristoffermvplast/Lagerstyring/actions/runs/34880414365), job `104098030176`, commit `e3ad8301adef1fa07aae874aa7a6050ad63b87c4`, tree `8d5975742c06b464aadcf0097d7d706225cb97e5`: SUCCESS. 200 unit/API/helper tests, all 11 real PostgreSQL concurrency tests and all 159 desktop/tablet/mobile browser tests PASS. This includes camera release both on navigation and scan-panel collapse, real QR image decoding, permissions, company boundaries and selector integration. Builds and existing runtime/TLS diagnostics PASS. Only documentation follows this verified implementation.
 
 No migrations were created or applied, no hosted business fixtures were created, and no main push/manual deployment/resource or photo-setting change was performed. Main publication remains subject to the documented economic approval. Actual camera/physical scanner/printer acceptance is not claimed by simulated device profiles. Phase 17 has not started.
+
+
+## Approved publication and online probes — 2026-09-14
+
+Main was advanced without force to exactly the user-approved `94f3789479e67247287c53fd302007716bbabf60` and the GitHub ref was read back successfully. Only the normal automatic workflow/deployment is authorized; no manual deployment, migration or resource change was performed.
+
+Read-only online results: `/api/health/live` HTTP 200; `/api/health/ready` HTTP 200; anonymous detail GETs for handling-units, locations, production-orders and masterdata/machines each HTTP 401. These reuse existing routes and therefore do not prove the active deployment revision. Railway tools are unavailable here. Operator can safely check `node -e 'console.log(process.env.RAILWAY_GIT_COMMIT_SHA || "COMMIT_UNAVAILABLE")'` in the Railway container and compare with the approved SHA. No secret is printed.
+
+Previously successful CI `34880414365` remains the automated evidence for the identical implementation; it was not manually rerun. No live authenticated QR lookup or physical-device result is claimed. These require the operator's local login and existing authorized records; credentials must not be shared.
+
+### Physical acceptance on the existing Mac setup
+
+1. Update the existing local main with fast-forward only, run `npm ci`, then `npm run dev` using the existing local environment configuration. Do not overwrite env files. Open http://localhost:5173 in Chrome and log in. If the existing setup is missing configuration, complete that setup before testing.
+2. Open an existing authorized machine/location/order/pallet and choose Vis QR. Download the PNG and display it on another screen or existing printed label. Do not create fixtures solely for this check. If no record exists, report NOT_RUN.
+3. Open Scan QR, choose Start kamera, allow camera, and scan that image. Confirm matching identity and Åbn registrering. Confirm camera stops after recognition, navigation and closing any expanded scan panel. Images stay local.
+4. For a keyboard scanner, focus Scan QR and scan the same label. Verify the same record opens with no automatic stock change. Without physical scanner hardware, report that hardware check NOT_RUN.
+5. With an existing pallet and a destination label, verify destination scanning selects the intended location. Do not confirm an actual inventory move unless it is intended business work. This read-only acceptance does not require stock writes.
+
+Photos remain disabled hosted. Verification is complete as far as the current available tools and nonphysical tests permit; active deployment and operator/device acceptance are outstanding and are not marked PASS. Phase 17 has not started.
+
+
+## Final operator acceptance — 2026-09-14
+
+Operator-reported result: `PHYSICAL_QR_CAMERA_SCAN: PASS`.
+
+- The QR code could be displayed and scanned with a physical camera.
+- The system found the correct record.
+- Scanning alone triggered no automatic inventory or other data change.
+
+This closes the outstanding basic physical-camera acceptance and completes Phase 16 together with the recorded automated and public online verification. No previously passed tests were rerun. The report is operator evidence; no credentials or camera images were collected.
+
+Coverage limits remain explicit: physical keyboard-scanner and printer checks are NOT_RUN. The operator report does not independently establish camera release on every lifecycle event, every entity/device combination, or an actual inventory move. Recorded automated tests remain the evidence for those covered scenarios; no hosted fixtures or business writes were added for acceptance. No new claim about Railway commit inspection is inferred from a successful scan.
+
+This closure changes documentation only. No push, migration, deployment, resource change or photo-setting change is performed as part of closure. Photos remain disabled hosted. Phase 17 has not started.
