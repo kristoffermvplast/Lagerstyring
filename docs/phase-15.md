@@ -1,6 +1,6 @@
 # Phase 15 — Finished goods and individual handling units
 
-Status: implementation on `phase15-finished-goods`, from verified main `2ef92c1`. Verification in progress; hosted migration applied once; no main deployment yet. Photos remain disabled hosted. Phase 16 is not started.
+Status: implementation on `phase15-finished-goods`, from verified main `2ef92c1`. Automated verification complete; hosted migration applied once; main publication and authenticated online sign-off pending. Photos remain disabled hosted. Phase 16 is not started.
 
 ## Scope and behavior
 
@@ -45,3 +45,21 @@ Local check passes: 192 unit/API/database/helper tests, typecheck and build. Ele
 Existing Supabase organization confirmed Free; database size before migration 13,642,899 bytes; Phase 15 absent. Applied once at expected 0 DKK as version `20260913193539`. Local filename aligned to hosted history by rename only; SQL unchanged. RLS, browser denial, protected snapshot/history/projection and private writer EXECUTE denial all PASS. Delivery count is zero; no hosted business fixtures created. No new security advisory: existing [default-deny private location-lock RLS](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy) and [disabled leaked-password protection](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection) remain unchanged. No paid setting enabled.
 
 Do not apply the migration again. Main and authenticated online sign-off remain pending. Photos remain disabled; Phase 16 has not started.
+
+
+## Final automated verification — release approval required
+
+CI [34779004153](https://github.com/kristoffermvplast/Lagerstyring/actions/runs/34779004153), job `103782424608`, revision `f95a4685e391c66c491687c412155f0f67580342`, tree `79a7a51ed2b33b3775babf8356d2d69e171f1b76`: SUCCESS. The published tree matches the local implementation.
+
+- 192 unit/API/database/helper tests PASS.
+- All 11 real PostgreSQL concurrency tests PASS, including duplicate output, competing overdelivery, pallet moves/reversals and unchanged closure consumption.
+- All 141 desktop/tablet/mobile browser tests PASS, including 12 Phase 15 checks.
+- Typecheck, frontend/backend build, runtime image and existing strict-TLS/container diagnostic checks PASS.
+
+First CI `34778037294` passed 138 browser tests before adding pallet navigation coverage. Runs `34778302371` and `34778693551` passed the other 138 but found the new movement control's label lookup failing after input on all three device profiles. Fixture subroute matching was made explicit, and diagnostics confirmed the form and retry command were retained with no browser exception. Giving the movement textarea an explicit stable accessible label resolved the failures. Assertions, retry payload equality and existing test gates were preserved. No extra database migration was needed for these UI/test changes.
+
+Hosted migration `20260913193539_phase_15_finished_goods` remains applied exactly once with verified RLS/grants and no fixtures. Additional production data, warehouses, users or services were not created. Photos remain disabled hosted. Whole-pallet history UI shows the latest 25 movements; the existing history API supports further pages. Already-delivered pallet splitting/repacking and pallet debts remain outside this implementation.
+
+Only documentation follows the verified implementation. Main is still `2ef92c1`; the next concrete action is a main push and its normal automatic Railway deployment. That action needs economic approval because its expected one-off increment is 0–0.30 DKK with realistic conservative worst-case 1–3 DKK. Basis: the existing small-build/deployment estimate, uncertain CPU duration/old-new overlap and included credits. Railway triggers the possible charge; existing public-repository standard GitHub Actions are expected 0 DKK. No resource increase or recurring allocation is proposed.
+
+After approved publication: confirm active Railway commit, check readiness and anonymous delivery/handling-unit routes for expected auth statuses, then use `verify-finished-goods.cjs` locally for real login/isolation without sharing secrets. No hosted authenticated Phase 15 PASS is claimed yet. Phase 16 has not started.
