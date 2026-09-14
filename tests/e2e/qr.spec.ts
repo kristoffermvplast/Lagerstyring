@@ -55,6 +55,10 @@ test('location QR populates existing selector only after validation, with no wri
  // Re-enter workspace so the authoritative permission query uses the updated fixture.
  await page.reload();await page.getByRole('button',{name:'Maskiner',exact:true}).click();await page.getByRole('button',{name:'Opret ny',exact:true}).click();
  await page.getByText('Scan maskinplacering',{exact:true}).click();
+ await page.evaluate(()=>{const canvas=document.createElement('canvas');const stream=canvas.captureStream(5);(window as any).qrTestStream=stream;(window as any).qrCameraCalls=0;Object.defineProperty(navigator.mediaDevices,'getUserMedia',{configurable:true,value:async()=>{(window as any).qrCameraCalls++;return stream;}});});
+ await page.getByRole('button',{name:'Start kamera',exact:true}).click();await expect.poll(()=>page.evaluate(()=>(window as any).qrCameraCalls)).toBe(1);
+ await page.getByText('Scan maskinplacering',{exact:true}).click();await expect.poll(()=>page.evaluate(()=>(window as any).qrTestStream.getTracks().every((t:MediaStreamTrack)=>t.readyState==='ended'))).toBe(true);
+ await page.getByText('Scan maskinplacering',{exact:true}).click();
  await page.getByLabel('QR Maskinplacering',{exact:true}).fill(code('pallet'));await page.getByRole('button',{name:'Læs kode',exact:true}).click();await expect(page.getByRole('alert')).toContainText('forkert type');
  await page.getByLabel('QR Maskinplacering',{exact:true}).fill(code('location'));await page.getByRole('button',{name:'Læs kode',exact:true}).click();await expect(page.getByLabel('Maskinplacering',{exact:true})).toHaveValue(id);
  expect(requests.every(r=>r.startsWith('GET '))).toBe(true);

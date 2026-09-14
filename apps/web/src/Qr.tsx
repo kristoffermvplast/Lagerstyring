@@ -17,12 +17,13 @@ export function QrInput({company,kind,onRead,label='Scan QR'}:{company:string;ki
  useEffect(()=>{
   if(!camera)return;let cancelled=false,consumed=false;let scanner:{destroy:()=>void}|undefined;
   const hide=()=>{if(document.hidden)setCamera(false);};document.addEventListener('visibilitychange',hide);
+  const panel=video.current?.closest('details');const collapse=()=>{if(panel&&!panel.open)setCamera(false);};panel?.addEventListener('toggle',collapse);
   void import('qr-scanner').then(async({default:Scanner})=>{
    if(cancelled||!video.current)return;
    const instance=new Scanner(video.current,result=>{if(cancelled||consumed)return;consumed=true;accept(result.data);setCamera(false);},{preferredCamera:'environment',maxScansPerSecond:5,onDecodeError:()=>{}});
    scanner=instance;await instance.start();if(cancelled)instance.destroy();
   }).catch(()=>{if(!cancelled){setError('Kameraet kunne ikke åbnes. Tillad kamera på HTTPS/localhost, eller brug kodefeltet.');setCamera(false);}});
-  return()=>{cancelled=true;scanner?.destroy();document.removeEventListener('visibilitychange',hide);};
+  return()=>{cancelled=true;scanner?.destroy();document.removeEventListener('visibilitychange',hide);panel?.removeEventListener('toggle',collapse);};
  },[camera,company,kind]);
  return <div className="access-card"><label>{label}<input maxLength={160} autoComplete="off" value={value} onChange={e=>setValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();e.stopPropagation();accept(value);}}}/></label><button type="button" disabled={!value} onClick={()=>accept(value)}>Læs kode</button><button type="button" onClick={()=>{setError('');setCamera(v=>!v);}}>{camera?'Stop kamera':'Start kamera'}</button>{camera&&<video ref={video} muted playsInline style={{maxWidth:'100%',width:360}} aria-label="QR-kamera"/>}{error&&<p role="alert">{error}</p>}</div>;
 }
