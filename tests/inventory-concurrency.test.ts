@@ -79,6 +79,21 @@ describe.skipIf(!url)('real PostgreSQL concurrent inventory commands',()=>{
   expect((await pool.query('select quantity from app.stock_balances where location_id=$1',[location])).rows[0].quantity).toBe(before);
  });
 
+ it('concurrent reservations and debits cannot oversubscribe; retries and releases are idempotent',async()=>{
+  barrier=undefined;const {ReservationsController}=require('../apps/api/dist/reservations.js');const reservations=new ReservationsController(service);
+  const before=(await pool.query('select quantity from app.stock_balances where location_id=$1',[location])).rows[0].quantity;
+  const body={item_id:item,owner_id:owner,location_id:location,quantity:before,reference:'Concurrent reservation',reason:'Local reservation test'};
+  synchronize();const compete=await Promise.allSettled([reservations.create({actor},ids.a,{...body,idempotency_key:randomUUID()}),reservations.create({actor},ids.a,{...body,idempotency_key:randomUUID()})]);
+  expect(compete.filter(x=>x.status==='fulfilled')).toHaveLength(1);const winner=(compete.find(x=>x.status==='fulfilled') as PromiseFulfilledResult<any>).value;
+  expect((await pool.query('select quantity,reserved_quantity from app.stock_balances where location_id=$1',[location])).rows[0]).toEqual({quantity:before,reserved_quantity:before});
+  const release={idempotency_key:randomUUID(),reason:'Release for race'};synchronize();const released=await Promise.all([reservations.release({actor},ids.a,winner.id,release),reservations.release({actor},ids.a,winner.id,release)]);expect(released.every(x=>!x.active)).toBe(true);
+  const key=randomUUID();synchronize();const duplicates=await Promise.all([reservations.create({actor},ids.a,{...body,idempotency_key:key}),reservations.create({actor},ids.a,{...body,idempotency_key:key})]);expect(duplicates[0].id).toBe(duplicates[1].id);
+  barrier=undefined;await reservations.release({actor},ids.a,key,{idempotency_key:randomUUID(),reason:'Release duplicate race'});
+  synchronize();const debit=await Promise.allSettled([reservations.create({actor},ids.a,{...body,idempotency_key:randomUUID()}),post('-'+before)]);expect(debit.filter(x=>x.status==='fulfilled')).toHaveLength(1);
+  const balance=(await pool.query('select quantity,reserved_quantity from app.stock_balances where location_id=$1',[location])).rows[0];expect(Number(balance.quantity)>=Number(balance.reserved_quantity)).toBe(true);
+  barrier=undefined;if(debit[0].status==='fulfilled')await reservations.release({actor},ids.a,debit[0].value.id,{idempotency_key:randomUUID(),reason:'Clean local reservation'});else await post(before);
+ });
+
  it('production order creation is idempotent and competing edits cannot lose an update',async()=>{
   barrier=undefined;
   const {ProductionOrdersController}=require('../apps/api/dist/production-orders.js');

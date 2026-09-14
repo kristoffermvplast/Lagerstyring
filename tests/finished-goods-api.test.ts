@@ -89,6 +89,19 @@ it('delivers a partial pallet exactly once, preserving ownership and frozen pack
  hu=(await(await call(`/companies/${ids.a}/handling-units`,bearer())).json()).items[0];expect(hu.snapshot.owner.id).toBe(owner);expect(hu.snapshot.packing.id).toBe(packing);expect(hu.order_id).toBe(order.id);
  const balances=(await db.query<any>('select * from app.stock_balances where item_id=$1',[product])).rows;expect(balances.length).toBe(1);expect(Number(balances[0].quantity)).toBe(100);
 });
+it('reserves identified stock separately, blocks movement/reversal and releases with no physical posting',async()=>{
+ const endpoint=`/companies/${ids.a}/reservations`,base={item_id:product,owner_id:owner,location_id:location,quantity:'40',reference:'Pallet allocation',reason:'Customer reservation'};
+ expect((await call(endpoint,bearer(),'POST',{...base,idempotency_key:crypto.randomUUID()})).status).toBe(409);
+ expect((await call(endpoint,bearer(),'POST',{...base,idempotency_key:crypto.randomUUID(),handling_unit_id:hu.id,quantity:'0.5'})).status).toBe(409);
+ const before=(await db.query<any>('select count(*)::int n from app.inventory_entries')).rows[0].n;
+ const r=await call(endpoint,bearer(),'POST',{...base,idempotency_key:crypto.randomUUID(),handling_unit_id:hu.id});expect(r.status).toBe(201);const reservation=await r.json();
+ expect((await call(endpoint,bearer(),'POST',{...base,idempotency_key:crypto.randomUUID(),handling_unit_id:hu.id,quantity:'61'})).status).toBe(409);
+ expect((await call(`/companies/${ids.a}/handling-units/${hu.id}/moves`,bearer(),'POST',{idempotency_key:crypto.randomUUID(),to_location_id:target,comment:'Reserved pallet must stay'})).status).toBe(409);
+ expect((await call(path()+'/'+released.id+'/reverse',bearer(),'POST',{idempotency_key:crypto.randomUUID(),comment:'Reserved output must stay'})).status).toBe(409);
+ expect((await call(endpoint+'/'+reservation.id+'/release',bearer(),'POST',{idempotency_key:crypto.randomUUID(),reason:'Release allocation'})).status).toBe(201);
+ expect((await db.query<any>('select count(*)::int n from app.inventory_entries')).rows[0].n).toBe(before);
+ expect((await db.query<any>('select reserved_quantity from app.handling_units where id=$1',[hu.id])).rows[0].reserved_quantity).toBe('0.00000000');
+});
 it('rejects overdelivery and production reversal below delivered stock',async()=>{
  expect((await call(path(),bearer(),'POST',{...output(),quantity:'401'})).status).toBe(409);
  const reg=(await db.query<any>("select id from app.production_registrations where order_id=$1 and kind='record'",[order.id])).rows[0].id;
