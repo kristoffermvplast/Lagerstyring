@@ -1,6 +1,6 @@
 # Phase 15 — Finished goods and individual handling units
 
-Status: implementation on `phase15-finished-goods`, from verified main `2ef92c1`. Automated verification complete; hosted migration applied once; main publication and authenticated online sign-off pending. Photos remain disabled hosted. Phase 16 is not started.
+Status: Phase 15 complete. Main/Railway revision `554937b273d846a6fcc6ef4ceb1a420fb26b4ef8` is verified; operator-reported authenticated online verification PASS. Hosted migration applied once. Photos remain disabled hosted. Phase 16 is not started. Earlier entries below are chronological verification history.
 
 ## Scope and behavior
 
@@ -63,3 +63,33 @@ Hosted migration `20260913193539_phase_15_finished_goods` remains applied exactl
 Only documentation follows the verified implementation. Main is still `2ef92c1`; the next concrete action is a main push and its normal automatic Railway deployment. That action needs economic approval because its expected one-off increment is 0–0.30 DKK with realistic conservative worst-case 1–3 DKK. Basis: the existing small-build/deployment estimate, uncertain CPU duration/old-new overlap and included credits. Railway triggers the possible charge; existing public-repository standard GitHub Actions are expected 0 DKK. No resource increase or recurring allocation is proposed.
 
 After approved publication: confirm active Railway commit, check readiness and anonymous delivery/handling-unit routes for expected auth statuses, then use `verify-finished-goods.cjs` locally for real login/isolation without sharing secrets. No hosted authenticated Phase 15 PASS is claimed yet. Phase 16 has not started.
+
+
+## Publication and initial online check — 2026-09-14
+
+User explicitly approved publishing `554937b273d846a6fcc6ef4ceb1a420fb26b4ef8`, which has exactly the same tree (`d0651f7e864217d38d20737aa2ab262d48955400`) as local `769daa7`. GitHub main was updated without force and its remote ref verified at that exact commit. No additional migration, manual deployment or resource change was performed.
+
+Initial public check: `/api/health/ready` returned HTTP 200. All six anonymous Phase 15 GET probes (delivery list/summary/detail and handling-unit list/detail/moves) returned HTTP 404 rather than expected HTTP 401. The active Railway revision could not be inspected because Railway tools are unavailable in this conversation. The expected new deployment is therefore not yet verified. No authenticated verification was attempted against the missing routes.
+
+Next: operator confirms Railway is active at `554937b273d846a6fcc6ef4ceb1a420fb26b4ef8`; repeat only these route probes, then run `node scripts/verify-finished-goods.cjs` with credentials entered locally. Full online sign-off remains pending. No previously passed automated tests were rerun. Photos remain disabled hosted; Phase 16 has not started.
+
+
+## Targeted route recheck — 2026-09-14
+
+Operator confirmed Railway revision `554937b273d846a6fcc6ef4ceb1a420fb26b4ef8`. All six previously missing anonymous GET routes now return the expected HTTP 401: delivery list, summary and detail; handling-unit list, detail and movement history. No other previously passing checks were rerun.
+
+Authenticated login/isolation verification remains pending operator execution of `scripts/verify-finished-goods.cjs`, with credentials entered locally and hidden. No hosted fixtures, migration, deployment or resource changes were made. Full Phase 15 online PASS is not yet claimed; Phase 16 remains unstarted.
+
+
+## Final online verification and closure — 2026-09-14
+
+Operator reported `PHASE_15_READ_ONLY_VERIFICATION: PASS` after running the existing hidden-input verification script locally against the verified Railway revision `554937b273d846a6fcc6ef4ceb1a420fb26b4ef8`. Login, session, permissions, production orders, finished-goods access, handling-unit access, not-found behavior and company isolation passed. The previously recorded six anonymous route checks returned HTTP 401.
+
+Expected unexecuted checks:
+
+- `HANDLING_UNIT_EXISTING_RECORD: NOT_RUN (no existing handling unit; no fixture created)`
+- `FINISHED_GOODS_ORDER_FIXTURE: NOT_RUN (no existing production order; no fixture created)`
+
+These are coverage limits, not positive existing-record verification: no existing handling unit or production order was available, and no hosted fixture was created. Positive existing-record reads and business mutations were not exercised by this read-only run; the recorded automated tests remain their evidence. The online result is operator-provided, not a new test execution by the assistant.
+
+Phase 15 is complete. This closure changes documentation only; no tests rerun, push, migration, deployment or resource change. Photos remain disabled hosted. Phase 16 has not started.
