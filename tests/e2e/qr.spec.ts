@@ -22,10 +22,40 @@ test('foreign/malformed codes cause no business lookup; own code opens existing 
 test('QR label generated locally and company switch clears scanned result',async({page})=>{
  await fixture(page);await page.getByLabel('Scan QR',{exact:true}).fill(code());await page.getByRole('button',{name:'Læs kode',exact:true}).click();await page.getByRole('button',{name:'Vis QR',exact:true}).click();
  const image=page.getByRole('img',{name:'QR-kode for Machine fixture'});await expect(image).toBeVisible();await expect(image).toHaveAttribute('src',/^data:image\/png;base64,/);await expect(page.getByLabel('QR-reference')).toHaveValue(code());
+ const src=await image.getAttribute('src');
+ const decoded=await page.evaluate(async({src,url})=>{const {default:Scanner}=await import(url);return (await Scanner.scanImage(src,{returnDetailedScanResult:true})).data;},{src,url:'/@fs/'+process.cwd()+'/node_modules/qr-scanner/qr-scanner.min.js'});
+ expect(decoded).toBe(code());
  await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await page.getByRole('button',{name:'Scan QR',exact:true}).click();await expect(page.getByRole('button',{name:'Åbn registrering'})).toHaveCount(0);
 });
 test('read permissions are checked before lookup and camera denial retains keyboard alternative',async({page})=>{
  const requests=await fixture(page,false);await page.getByLabel('Scan QR',{exact:true}).fill(code());await page.getByRole('button',{name:'Læs kode',exact:true}).click();await expect(page.getByRole('alert')).toContainText('ikke adgang');expect(requests).toEqual([]);
  await page.evaluate(()=>{Object.defineProperty(navigator.mediaDevices,'getUserMedia',{configurable:true,value:()=>Promise.reject(new DOMException('denied','NotAllowedError'))});});
  await page.getByRole('button',{name:'Start kamera',exact:true}).click();await expect(page.getByText('Kameraet kunne ikke åbnes.',{exact:false})).toBeVisible();await expect(page.getByLabel('Scan QR',{exact:true})).toBeEnabled();
+});
+
+test('camera starts only on request and releases tracks on navigation',async({page})=>{
+ await fixture(page);
+ await page.evaluate(()=>{
+  const canvas=document.createElement('canvas');canvas.width=320;canvas.height=240;
+  const stream=canvas.captureStream(5);(window as any).qrTestStream=stream;(window as any).qrCameraCalls=0;
+  Object.defineProperty(navigator.mediaDevices,'getUserMedia',{configurable:true,value:async()=>{(window as any).qrCameraCalls++;return stream;}});
+ });
+ expect(await page.evaluate(()=>(window as any).qrCameraCalls)).toBe(0);
+ await page.getByRole('button',{name:'Start kamera',exact:true}).click();await expect.poll(()=>page.evaluate(()=>(window as any).qrCameraCalls)).toBe(1);
+ await page.getByRole('button',{name:'Overblik',exact:true}).click();await expect.poll(()=>page.evaluate(()=>(window as any).qrTestStream.getTracks().every((t:MediaStreamTrack)=>t.readyState==='ended'))).toBe(true);
+});
+test('scanner does not grant masterdata write controls',async({page})=>{
+ const requests=await fixture(page);await page.getByRole('button',{name:'Maskiner',exact:true}).click();
+ // Read-only user can label/inspect but cannot open an editing or movement form.
+ await expect(page.getByRole('button',{name:'Opret ny',exact:true})).toHaveCount(0);expect(requests.every(r=>r.startsWith('GET '))).toBe(true);
+});
+test('location QR populates existing selector only after validation, with no write',async({page})=>{
+ const requests=await fixture(page);
+ await page.route('**/api/companies/*/access',r=>r.fulfill({json:{permissions:['masterdata.read','masterdata.manage'].map(code=>({code}))}}));
+ // Re-enter workspace so the authoritative permission query uses the updated fixture.
+ await page.reload();await page.getByRole('button',{name:'Maskiner',exact:true}).click();await page.getByRole('button',{name:'Opret ny',exact:true}).click();
+ await page.getByText('Scan maskinplacering',{exact:true}).click();
+ await page.getByLabel('QR Maskinplacering',{exact:true}).fill(code('pallet'));await page.getByRole('button',{name:'Læs kode',exact:true}).click();await expect(page.getByRole('alert')).toContainText('forkert type');
+ await page.getByLabel('QR Maskinplacering',{exact:true}).fill(code('location'));await page.getByRole('button',{name:'Læs kode',exact:true}).click();await expect(page.getByLabel('Maskinplacering',{exact:true})).toHaveValue(id);
+ expect(requests.every(r=>r.startsWith('GET '))).toBe(true);
 });

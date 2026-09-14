@@ -1,6 +1,6 @@
 # Lagerstyring
 
-Webbaseret lager- og produktionssystem. **Fase 1–15 er afsluttet. Fase 16 er ikke startet.**
+Webbaseret lager- og produktionssystem. **Fase 1–15 er afsluttet. Fase 16 implementeres.**
 
 **Fase 1 er afsluttet og godkendt.** Se [det endelige Railway/Supabase-resultat](docs/phase-1-completion.md).
 
@@ -82,3 +82,8 @@ See [Phase 14 implementation and verification](docs/phase-14.md). Exact theoreti
 ## Phase 15 — finished-goods deliveries and individual pallets
 
 See [Phase 15 implementation and verification](docs/phase-15.md). Incremental registered-good output enters the existing stock journal with preserved order/owner/unit/packing evidence. Individual pallets have protected stock allocations, whole-pallet moves and history; reasoned reversals cannot invalidate production totals or create negative stock. Automated verification PASS: 192 unit/API/database/helper tests, 11 real PostgreSQL concurrency tests and 141 browser tests. Hosted migration is applied once and database boundaries verified. Main/Railway `554937b273d846a6fcc6ef4ceb1a420fb26b4ef8` is verified. Operator-reported `PHASE_15_READ_ONLY_VERIFICATION: PASS` completes Phase 15 online sign-off. Login, session, permissions, production orders, finished-goods and handling-unit access, not-found behavior and company isolation passed. Expected `HANDLING_UNIT_EXISTING_RECORD: NOT_RUN` and `FINISHED_GOODS_ORDER_FIXTURE: NOT_RUN` reflect absent existing records; no fixtures were created. Positive existing-record reads and hosted business writes retain automated-test coverage. Photos remain disabled hosted; Phase 16 has not started.
+
+
+## Phase 16 — QR labels and scanning
+
+See [Phase 16](docs/phase-16.md). Local QR labels for pallets, locations, orders and machines; camera or keyboard scanning into existing authenticated workflows. Strict company/type validation, explicit stock confirmation, no QR service or migration. Automated verification in progress. Photos remain disabled hosted; Phase 17 has not started.

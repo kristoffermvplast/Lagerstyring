@@ -3,10 +3,10 @@ import {accessApi} from './auth-client';
 import {encodeQr,parseQr,qrPath,QrKind,QrReference} from './qr-reference';
 
 export function QrLabel({company,kind,id,label}:{company:string;kind:QrKind;id:string;label:string}) {
- const [visible,setVisible]=useState(false),[image,setImage]=useState(''),[error,setError]=useState('');
+ const [visible,setVisible]=useState(false),[image,setImage]=useState<{value:string;url:string}|null>(null),[error,setError]=useState('');
  const value=encodeQr({company,kind,id});
- useEffect(()=>{let alive=true;if(visible){void import('qrcode').then(q=>q.toDataURL(value,{width:384,margin:4,errorCorrectionLevel:'M'})).then(url=>{if(alive)setImage(url);}).catch(()=>{if(alive)setError('QR-koden kunne ikke dannes.');});}return()=>{alive=false;};},[visible,value]);
- return <div><button type="button" onClick={()=>setVisible(v=>!v)}>{visible?'Skjul QR':'Vis QR'}</button>{visible&&<figure><figcaption>{label}</figcaption>{image&&<><img src={image} alt={`QR-kode for ${label}`} width="256" height="256"/><a href={image} download={`lager-${kind}-${id}.png`}>Download QR</a></>}<label>QR-reference<input readOnly value={value} onFocus={e=>e.target.select()}/></label>{error&&<p role="alert">{error}</p>}</figure>}</div>;
+ useEffect(()=>{let alive=true;if(visible){void import('qrcode').then(q=>q.toDataURL(value,{width:384,margin:4,errorCorrectionLevel:'M'})).then(url=>{if(alive)setImage({value,url});}).catch(()=>{if(alive)setError('QR-koden kunne ikke dannes.');});}return()=>{alive=false;};},[visible,value]);
+ return <div><button type="button" onClick={()=>setVisible(v=>!v)}>{visible?'Skjul QR':'Vis QR'}</button>{visible&&<figure><figcaption>{label}</figcaption>{image?.value===value&&<><img src={image.url} alt={`QR-kode for ${label}`} width="256" height="256"/><a href={image.url} download={`lager-${kind}-${id}.png`}>Download QR</a></>}<label>QR-reference<input readOnly value={value} onFocus={e=>e.target.select()}/></label>{error&&<p role="alert">{error}</p>}</figure>}</div>;
 }
 
 /** Starts camera only by explicit action; no images leave the device. */
