@@ -1,6 +1,6 @@
 # Project rules
 
-- Implement only the phase explicitly authorized by the user. Phase 15 (finished-goods deliveries and individual handling units) is authorized. Do not implement Phase 16 or later workflows.
+- Implement only the phase explicitly authorized by the user. Phase 16 (QR labels and scanning into existing workflows) is authorized. Do not implement Phase 17 or later workflows.
 - React/TypeScript/Vite frontend; NestJS backend; Supabase PostgreSQL/Auth/Storage.
 - All business reads and writes go through NestJS. Never introduce browser Data API writes or privileged browser credentials.
 - No hardcoded business master data. Fixtures belong only in tests.

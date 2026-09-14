@@ -1,3 +1,5 @@
+import {QrWorkspace} from './Qr';
+import {QrReference} from './qr-reference';
 import {HandlingUnits} from './FinishedGoods';
 import { ProductionOrders } from './ProductionOrders';
 import { Transfers } from './Transfers';
@@ -62,6 +64,7 @@ function Workspace({localLogout}:{localLogout:()=>void}) {
   const cache = useQueryClient();
   const me = useQuery({ queryKey: ['me'], queryFn: ()=>accessApi<Me>('/me'), retry: false });
   const [company,setCompany] = useState(''); const [page,setPage] = useState('Overblik'); const [error,setError] = useState('');
+  const [scan,setScan]=useState<QrReference|null>(null);
   const [busy,setBusy] = useState(false);
   const memberships = me.data?.memberships ?? [];
   const selected = memberships.find(m=>m.company_id===company) ?? memberships[0];
@@ -87,21 +90,22 @@ function Workspace({localLogout}:{localLogout:()=>void}) {
     finally { setBusy(false); }
   }
   return <div className="access-shell"><a className="skip-link" href="#content">Gå til indhold</a><header className="access-header"><div className="auth-brand"><Boxes />Lagerstyring</div><button onClick={logout} disabled={busy}>Log ud</button></header>
-    <div className="access-body"><aside className="access-nav"><label>Virksomhed<select aria-label="Virksomhed" value={id ?? ''} onChange={e=>{setCompany(e.target.value);setPage('Overblik');cache.removeQueries({queryKey:['members']});cache.removeQueries({queryKey:['roles']});}}>
+    <div className="access-body"><aside className="access-nav"><label>Virksomhed<select aria-label="Virksomhed" value={id ?? ''} onChange={e=>{setCompany(e.target.value);setScan(null);setPage('Overblik');cache.removeQueries({queryKey:['members']});cache.removeQueries({queryKey:['roles']});}}>
       {!memberships.length && <option value="">Ingen virksomhed</option>}{memberships.map(m=><option key={m.company_id} value={m.company_id}>{m.name}</option>)}</select></label>
-      {['Overblik',...(canProductionRead?['Produktion']:[]),...(canInventoryRead?['Lager','Modtagelse','Lagerflytning']:[]),...(canInventoryRead&&canProductionRead?['Pallestyring']:[]),...(canMasterRead?[...Object.keys(itemPages),'Styklister og pakning','Lagerplaceringer',...Object.keys(masterdataPages)]:[]),'Min profil',...(canRead?['Adgang']:[])].map(name=><button key={name} aria-current={page===name?'page':undefined} onClick={()=>setPage(name)}>{name}</button>)}</aside>
+      {['Overblik',...(id?['Scan QR']:[]),...(canProductionRead?['Produktion']:[]),...(canInventoryRead?['Lager','Modtagelse','Lagerflytning']:[]),...(canInventoryRead&&canProductionRead?['Pallestyring']:[]),...(canMasterRead?[...Object.keys(itemPages),'Styklister og pakning','Lagerplaceringer',...Object.keys(masterdataPages)]:[]),'Min profil',...(canRead?['Adgang']:[])].map(name=><button key={name} aria-current={page===name?'page':undefined} onClick={()=>{setScan(null);setPage(name);}}>{name}</button>)}</aside>
     <main id="content" className="access-content"><h1>{page}</h1>{error && <div role="alert"><p>{error}</p><button onClick={localLogout}>Luk kun sessionen på denne enhed</button><p>Serverens logout er ikke bekræftet, hvis forbindelsen fejlede.</p></div>}{me.isPending && <p role="status">Henter dit arbejdsrum…</p>}{me.error && <p role="alert">{message(me.error)}</p>}{access.error && <p role="alert">{message(access.error)}</p>}
+      {id&&page==='Scan QR'&&<QrWorkspace key={id} company={id} permissions={access.data?.permissions.map(p=>p.code)??[]} open={ref=>{setScan(ref);setPage({pallet:'Pallestyring',location:'Lagerplaceringer',order:'Produktion',machine:'Maskiner'}[ref.kind]);}}/>}
       {me.data && page==='Min profil' && <Profile me={me.data} />}
       {me.data && page==='Overblik' && <section className="auth-card"><h2>Hej{me.data.user.display_name ? `, ${me.data.user.display_name}` : ''}</h2><p>{id ? `Du er logget ind hos ${selected.name}.` : 'Du har endnu ingen aktiv virksomhedsadgang. Kontakt en administrator og oplys dit bruger-ID fra Min profil.'}</p><p>Vælg et arbejdsområde i menuen.</p></section>}
-      {id && canMasterRead && masterdataPages[page] && <Masterdata key={id+':'+page} company={id} kind={masterdataPages[page]} title={page} canManage={canMasterManage}/> }
+      {id && canMasterRead && masterdataPages[page] && <Masterdata initialId={scan?.kind==='machine'?scan.id:undefined} key={id+':'+page} company={id} kind={masterdataPages[page]} title={page} canManage={canMasterManage}/> }
       {id && canMasterRead && itemPages[page] && <Items key={id+':'+page} company={id} kind={itemPages[page]} title={page} canManage={canMasterManage}/> }
       {id && canMasterRead && page==='Styklister og pakning' && <Recipes key={id} company={id} canManage={canMasterManage}/>}
-      {id && canInventoryRead && canProductionRead && page==='Pallestyring' && <HandlingUnits key={id} company={id} canMove={canTransfer&&canMasterRead}/>}
-      {id && canProductionRead && page==='Produktion' && <ProductionOrders canDeliver={canMasterRead&&(access.data?.permissions.some(p=>p.code==='production.deliver')??false)} canDeliveryCorrect={access.data?.permissions.some(p=>p.code==='production.delivery.correct')??false} canWaste={access.data?.permissions.some(p=>p.code==='production.waste')??false} canWasteCorrect={access.data?.permissions.some(p=>p.code==='production.waste.correct')??false} canReturn={canInventoryRead&&canMasterRead&&canTransfer&&(access.data?.permissions.some(p=>p.code==='production.return')??false)} canClose={canInventoryRead&&canMasterRead&&canProductionManage&&(access.data?.permissions.some(p=>p.code==='production.close')??false)} key={id} company={id} canRecord={access.data?.permissions.some(p=>p.code==='production.record')??false} canCorrect={access.data?.permissions.some(p=>p.code==='production.correct')??false} canManage={canProductionManage&&canMasterRead} canInventoryRead={canInventoryRead} canIssue={canInventoryRead&&canMasterRead&&canTransfer&&(access.data?.permissions.some(p=>p.code==='production.issue')??false)}/>}
+      {id && canInventoryRead && canProductionRead && page==='Pallestyring' && <HandlingUnits initialId={scan?.kind==='pallet'?scan.id:undefined} key={id} company={id} canMove={canTransfer&&canMasterRead}/>}
+      {id && canProductionRead && page==='Produktion' && <ProductionOrders initialId={scan?.kind==='order'?scan.id:undefined} canDeliver={canMasterRead&&(access.data?.permissions.some(p=>p.code==='production.deliver')??false)} canDeliveryCorrect={access.data?.permissions.some(p=>p.code==='production.delivery.correct')??false} canWaste={access.data?.permissions.some(p=>p.code==='production.waste')??false} canWasteCorrect={access.data?.permissions.some(p=>p.code==='production.waste.correct')??false} canReturn={canInventoryRead&&canMasterRead&&canTransfer&&(access.data?.permissions.some(p=>p.code==='production.return')??false)} canClose={canInventoryRead&&canMasterRead&&canProductionManage&&(access.data?.permissions.some(p=>p.code==='production.close')??false)} key={id} company={id} canRecord={access.data?.permissions.some(p=>p.code==='production.record')??false} canCorrect={access.data?.permissions.some(p=>p.code==='production.correct')??false} canManage={canProductionManage&&canMasterRead} canInventoryRead={canInventoryRead} canIssue={canInventoryRead&&canMasterRead&&canTransfer&&(access.data?.permissions.some(p=>p.code==='production.issue')??false)}/>}
       {id && canInventoryRead && page==='Lagerflytning' && <Transfers key={id} company={id} canTransfer={canTransfer} canAdjust={canInventoryAdjust} canMasterRead={canMasterRead}/>}
       {id && canInventoryRead && page==='Modtagelse' && <Receiving key={id} company={id} canReceive={canReceive} canAdjust={canInventoryAdjust} canMasterRead={canMasterRead}/>}
       {id && canInventoryRead && page==='Lager' && <Inventory key={id} company={id} canAdjust={canInventoryAdjust} canMasterRead={canMasterRead}/>}
-      {id && canMasterRead && page==='Lagerplaceringer' && <Locations key={id} company={id} canManage={canMasterManage}/>}
+      {id && canMasterRead && page==='Lagerplaceringer' && <Locations initialId={scan?.kind==='location'?scan.id:undefined} key={id} company={id} canManage={canMasterManage}/>}
       {page==='Adgang' && id && canRead && <Administration key={id} company={id} canManage={canManage} />}
     </main></div></div>;
 }
