@@ -86,4 +86,4 @@ See [Phase 15 implementation and verification](docs/phase-15.md). Incremental re
 
 ## Phase 16 — QR labels and scanning
 
-See [Phase 16](docs/phase-16.md). Local QR labels for pallets, locations, orders and machines; camera or keyboard scanning into existing authenticated workflows. Strict company/type validation, explicit stock confirmation, no QR service or migration. Automated verification in progress. Photos remain disabled hosted; Phase 17 has not started.
+See [Phase 16](docs/phase-16.md). Local QR labels for pallets, locations, orders and machines; camera or keyboard scanning into existing authenticated workflows. Strict company/type validation, explicit stock confirmation, no QR service or migration. Automated verification PASS: 200 unit/API/helper, 11 PostgreSQL concurrency and 159 browser tests. Main publication and physical-device acceptance remain pending. Photos remain disabled hosted; Phase 17 has not started.

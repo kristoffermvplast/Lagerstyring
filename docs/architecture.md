@@ -132,3 +132,5 @@ Phase 10 is complete. Previously recorded automated tests and hosted migration `
 ## Phase 16 extension
 
 [Phase 16](phase-16.md) adds a frontend QR reference layer on top of existing guarded NestJS reads and confirmed writes. The versioned non-URL payload contains only company, type and immutable UUID. It never grants access or encodes commands. Camera frames and PNG generation stay on-device, using bundled libraries; no storage, API routes, migration, service or permission expansion. Existing tenant and stock invariants remain authoritative. Phase 17 has not started.
+
+Phase 16 automated verification is complete: CI `34880414365` passed 200 unit/API/helper tests, 11 PostgreSQL concurrency tests and 159 browser tests. No new database or backend authorization surface. Main publication and real camera/scanner acceptance remain pending; see the phase report for coverage limits.
