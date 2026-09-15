@@ -248,4 +248,28 @@ describe.skipIf(!url)('real PostgreSQL concurrent inventory commands',()=>{
   expect((await pool.query('select reserved_quantity from app.stock_balances where item_id=$1 and location_id=$2',[item,location])).rows[0].reserved_quantity).toBe('0.00000000');
  });
 
+ it('pallet journal deduplicates writers and serializes reversals and declaration versus plan',async()=>{
+  barrier=undefined;const {PalletAccountsController}=require('../apps/api/dist/pallet-accounts.js');const pallets=new PalletAccountsController(service);
+  const {ShipmentsController}=require('../apps/api/dist/shipments.js');const shipments=new ShipmentsController(service);
+  const refs=await service.asActor(actor,ids.a,async(db:any)=>({
+   type:(await db.query("insert into app.pallet_types(company_id,code,name) values($1,'CONCUR','Concurrency type') returning id",[ids.a])).rows[0].id,
+   customer:(await db.query("insert into app.customers(company_id,code,name) values($1,'PAL','Pallet customer') returning id",[ids.a])).rows[0].id
+  }));
+  const body={idempotency_key:randomUUID(),action:'outbound',reason:'Concurrent pallet movement',data:{customer_id:refs.customer,supplier_id:null,pallet_type_id:refs.type,quantity:'12',occurred_on:'2026-09-15',reference:''}};
+  synchronize();const dup=await Promise.all([pallets.create({actor},ids.a,body),pallets.create({actor},ids.a,body)]);expect(dup[0]).toEqual(dup[1]);
+  synchronize();const reverse=await Promise.allSettled([pallets.reverse({actor},ids.a,dup[0].id,{idempotency_key:randomUUID(),reason:'First correction'}),pallets.reverse({actor},ids.a,dup[0].id,{idempotency_key:randomUUID(),reason:'Second correction'})]);expect(reverse.filter(x=>x.status==='fulfilled')).toHaveLength(1);
+  barrier=undefined;expect((await pool.query('select sum(quantity)::text n from app.pallet_entries where pallet_type_id=$1',[refs.type])).rows[0].n).toBe('0');
+  await post('10');
+  let s=await shipments.create({actor},ids.a,{idempotency_key:randomUUID(),version:0,reason:'Concurrent packaging',data:{code:randomUUID(),customer_id:refs.customer,ship_date:'2026-09-15',lines:[{item_id:item,owner_id:owner,location_id:location,quantity:'1'}]}});
+  await pallets.declare({actor},ids.a,s.id,{idempotency_key:randomUUID(),version:s.version,reason:'Initial packaging',lines:[{pallet_type_id:refs.type,quantity:'1'}]});
+  s=await shipments.get({actor},ids.a,s.id);
+  const declare={idempotency_key:randomUUID(),version:s.version,reason:'Declare packaging',lines:[{pallet_type_id:refs.type,quantity:'2'}]};
+  synchronize();const race=await Promise.allSettled([pallets.declare({actor},ids.a,s.id,declare),shipments.transition({actor},ids.a,s.id,'plan',{idempotency_key:randomUUID(),version:s.version,reason:'Plan shipment'})]);expect(race.filter(x=>x.status==='fulfilled')).toHaveLength(1);
+  barrier=undefined;s=await shipments.get({actor},ids.a,s.id);
+  for(const action of (s.status==='draft'?['plan','reserve','ready']:['reserve','ready']))s=await shipments.transition({actor},ids.a,s.id,action,{idempotency_key:randomUUID(),version:s.version,reason:'Prepare dispatch'});
+  const dispatch={idempotency_key:randomUUID(),version:s.version,reason:'Dispatch with pallets'};
+  synchronize();const sent=await Promise.all([shipments.transition({actor},ids.a,s.id,'dispatch',dispatch),shipments.transition({actor},ids.a,s.id,'dispatch',dispatch)]);expect(sent[0]).toEqual(sent[1]);
+  barrier=undefined;expect((await pool.query('select count(*)::int n from app.pallet_entries where shipment_id=$1',[s.id])).rows[0].n).toBe(s.pallet_exchange.length);
+ });
+
 });

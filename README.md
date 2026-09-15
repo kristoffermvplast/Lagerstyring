@@ -98,3 +98,7 @@ Phase 17 is complete with operator-reported `PHASE_17_READ_ONLY_VERIFICATION: PA
 ## Fase 18 — forsendelser
 
 Implementeret og CI-verificeret på arbejdsbranchen i `afbd7c0`: 217 automatiske tests, 13 PostgreSQL-samtidighedstests og 174 browserprøver består. Hosted Fase 18-migration er kørt én gang og adgangsgrænserne verificeret. Main/Railway er verificeret på `afbd7c0`. Fase 18 er afsluttet med brugerbekræftet `PHASE_18_READ_ONLY_VERIFICATION: PASS`: login, session, permissions, forsendelser, not-found-adfærd og virksomhedsisolation består. `SHIPMENT_EXISTING_RECORD: NOT_RUN` er forventet, da ingen forsendelse fandtes, og ingen fixture blev oprettet. Se [Fase 18](docs/phase-18.md) for workflows, migrations- og teststatus. Foto forbliver deaktiveret hosted. Fase 19 er ikke startet.
+
+## Fase 19 — pallemellemværender
+
+[Leverance og verifikation](docs/phase-19.md): separate saldi pr. modpart og genbrugstype, historik, modpostering og automatisk bogføring af angivet genbrugsemballage ved afsendelse. Lokale checks består; CI og hosted verifikation afventer. Fysisk lager forbruges ikke igen. Fase 20 er ikke startet.
