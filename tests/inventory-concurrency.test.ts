@@ -231,4 +231,21 @@ describe.skipIf(!url)('real PostgreSQL concurrent inventory commands',()=>{
   expect((await pool.query('select snapshot from app.production_closures where order_id=$1',[order.id])).rows[0].snapshot).toEqual(closure);
  });
 
+ it('serializes dispatch against cancel and deduplicates simultaneous dispatch without a second debit',async()=>{
+  barrier=undefined;
+  const {ShipmentsController}=require('../apps/api/dist/shipments.js');const shipments=new ShipmentsController(service);
+  const customer=await service.asActor(actor,ids.a,async(db:any)=>(await db.query("insert into app.customers(company_id,code,name) values($1,'SHIP','Shipment test') returning id",[ids.a])).rows[0].id);
+  await post('10');
+  const make=async()=>{let s=await shipments.create({actor},ids.a,{idempotency_key:randomUUID(),version:0,reason:'Create concurrency shipment',data:{code:randomUUID(),customer_id:customer,ship_date:'2026-09-16',lines:[{item_id:item,owner_id:owner,location_id:location,quantity:'1'}]}});for(const action of ['plan','reserve','ready'])s=await shipments.transition({actor},ids.a,s.id,action,{idempotency_key:randomUUID(),version:s.version,reason:'Prepare concurrent dispatch'});return s;};
+  const first=await make(),before=(await pool.query('select quantity from app.stock_balances where item_id=$1 and location_id=$2',[item,location])).rows[0].quantity;
+  const cmd={idempotency_key:randomUUID(),version:first.version,reason:'Dispatch once'};
+  synchronize();const duplicates=await Promise.all([shipments.transition({actor},ids.a,first.id,'dispatch',cmd),shipments.transition({actor},ids.a,first.id,'dispatch',cmd)]);expect(duplicates[0]).toEqual(duplicates[1]);
+  barrier=undefined;expect((await pool.query('select (quantity-$3::numeric)::text delta from app.stock_balances where item_id=$1 and location_id=$2',[item,location,before])).rows[0].delta).toBe('-1.00000000');
+  const second=await make();const body={idempotency_key:randomUUID(),version:second.version,reason:'Competing terminal state'};
+  synchronize();const race=await Promise.allSettled([shipments.transition({actor},ids.a,second.id,'dispatch',body),shipments.transition({actor},ids.a,second.id,'cancel',{...body,idempotency_key:randomUUID()})]);expect(race.filter(x=>x.status==='fulfilled')).toHaveLength(1);
+  barrier=undefined;const status=(await pool.query('select status from app.shipments where id=$1',[second.id])).rows[0].status;
+  const n=(await pool.query("select count(*)::int n from app.inventory_entries where kind='shipment'")).rows[0].n;expect(n).toBe(status==='dispatched'?2:1);
+  expect((await pool.query('select reserved_quantity from app.stock_balances where item_id=$1 and location_id=$2',[item,location])).rows[0].reserved_quantity).toBe('0.00000000');
+ });
+
 });

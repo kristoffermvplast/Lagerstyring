@@ -94,3 +94,7 @@ See [Phase 16](docs/phase-16.md). Local QR labels for pallets, locations, orders
 See [Phase 17](docs/phase-17.md). Separate reserve/release events protect available stock without changing physical inventory. Supports loose stock and individual pallets, owner/location boundaries, exact quantities, immutable history and idempotent retries. Existing debit and pallet workflows protect active reservations. NestJS permissions/RLS remain authoritative. Hosted migration, main publication and online sign-off are recorded in the phase report. Photos remain disabled hosted; Phase 18 has not started.
 
 Phase 17 is complete with operator-reported `PHASE_17_READ_ONLY_VERIFICATION: PASS`: login, session, permissions, reservation reads, not-found behavior and company isolation passed. Expected `RESERVATION_EXISTING_RECORD: NOT_RUN (no existing reservation; no fixture created)` means positive hosted detail/history reads were not exercised; previously recorded automated tests remain their coverage. Hosted reserve/release writes are not claimed by this read-only verification.
+
+## Fase 18 — forsendelser
+
+Implementeret på arbejdsbranch fra `ce54395`; hosted aktivering og online-verifikation afventer. Se [Fase 18](docs/phase-18.md) for workflows, migrations- og teststatus. Foto forbliver deaktiveret hosted. Fase 19 er ikke startet.

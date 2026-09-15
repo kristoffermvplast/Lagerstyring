@@ -146,3 +146,21 @@ it('permits post-closure delivery without changing consumption or registration',
  expect((await db.query<any>("select count(*)::int n from app.inventory_entries where kind='production_consumption'")).rows[0].n).toBe(consumption);
  expect((await db.query<any>("select snapshot from app.production_closures where order_id=$1",[order.id])).rows[0].snapshot).toEqual(before);
 });
+
+it('ships a whole partial pallet with loose stock, aggregates the debit and keeps historical packing',async()=>{
+ const customer=await asUser(db,ids.adminA,ids.a,async()=>(await db.query<any>("insert into app.customers(company_id,code,name) values($1,'SHIP','Shipping customer') returning id",[ids.a])).rows[0].id);
+ const delivery=await call(path(),bearer(),'POST',{...output(),quantity:'100',pallet_type_id:pallet});expect(delivery.status).toBe(201);const delivered=await delivery.json();
+ const palletRow=(await db.query<any>('select * from app.handling_units where delivery_id=$1',[delivered.id])).rows[0];
+ const endpoint=`/companies/${ids.a}/shipments`;
+ const data={code:'SHIP-OUTPUT',customer_id:customer,ship_date:'2026-09-16',lines:[{item_id:product,owner_id:owner,location_id:location,handling_unit_id:palletRow.id,quantity:'100',pallet_spaces:'0.5'},{item_id:product,owner_id:owner,location_id:location,quantity:'13',packing_revision_id:packing,pallet_spaces:'0.5'}]};
+ const r=await call(endpoint,bearer(),'POST',{idempotency_key:crypto.randomUUID(),version:0,reason:'Shipping test',data});expect(r.status).toBe(201);let ship=await r.json();
+ let detail=await(await call(endpoint+'/'+ship.id,bearer())).json();expect(detail.packing.pallet_spaces).toBe('1');expect(detail.packing.lines[0].pallets).toBe('1');expect(detail.packing.lines[0].packing.containers[0].count).toBe('9');expect(detail.packing.lines[1].packing.containers[0].count).toBe('2');expect(detail.packing.lines[1].packing.containers[0].remainder).toBe('1');
+ const before=(await db.query<any>('select quantity from app.stock_balances where item_id=$1 and location_id=$2',[product,location])).rows[0].quantity;
+ for(const action of ['plan','reserve','ready','dispatch']){const response=await call(endpoint+'/'+ship.id+'/'+action,bearer(),'POST',{idempotency_key:crypto.randomUUID(),version:ship.version,reason:'Confirmed shipping'});expect(response.status).toBe(201);ship=await response.json();}
+ expect((await db.query<any>('select (quantity-$3::numeric)::text delta from app.stock_balances where item_id=$1 and location_id=$2',[product,location,before])).rows[0].delta).toBe('-113.00000000');
+ expect((await db.query<any>('select active,reserved_quantity from app.handling_units where id=$1',[palletRow.id])).rows[0]).toEqual({active:false,reserved_quantity:'0.00000000'});
+ expect((await db.query<any>('select count(*)::int n from app.inventory_lines where entry_id=$1',[ship.entry_id])).rows[0].n).toBe(1);
+ expect((await call(path()+'/'+delivered.id+'/reverse',bearer(),'POST',{idempotency_key:crypto.randomUUID(),comment:'Cannot reverse shipped pallet'})).status).toBe(409);
+ detail=await(await call(endpoint+'/'+ship.id,bearer())).json();expect(detail.lines[0].snapshot.packing.id).toBe(packing);expect(detail.lines[0].snapshot.production_order_id).toBe(order.id);
+ const shippedUnit=await(await call(`/companies/${ids.a}/handling-units/${palletRow.id}`,bearer())).json();expect(shippedUnit.shipment_id).toBe(ship.id);expect(shippedUnit.shipped_at).toBeTruthy();
+});
