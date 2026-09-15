@@ -1,6 +1,6 @@
 # Phase 17 — Reservations
 
-Continues verified main `716d2e1`. Implementation on `phase17-reservations`; Phase 18 is not authorized. Photos remain disabled hosted.
+Status: Phase 17 complete. Main/Railway commit `b5dfe81ab4a7b70f0263a18ff1c321e224ac7fe2` is verified; hosted migration applied once and operator-reported online verification PASS. Earlier entries below record progress at their respective dates. Phase 18 is not authorized. Photos remain disabled hosted.
 
 ## Scope and rules
 
@@ -48,3 +48,30 @@ GitHub Actions [34888463950](https://github.com/kristoffermvplast/Lagerstyring/a
 - Two subsequent local online-helper tests PASS; the helper's version banner is `RESERVATIONS_VERIFICATION_VERSION: 1`. These tests verify GET-only business requests and no secret output. Only the version banner, helper tests and documentation follow the above CI revision; reservation implementation is unchanged.
 
 The existing schema-count assertion was the only initial check failure (35 expected versus 37 actual); it was updated for the two intentional tables and the full gate then passed. No test was removed. No paid resources, hosted fixtures, migration or main deployment were executed. Hosted permission/advisor and authenticated online checks remain pending approved migration and release. Phase 17 is implemented and automatically verified, not yet signed off online. Phase 18 has not started.
+
+## Approved hosted migration and publication — 2026-09-15
+
+The operator explicitly approved the single Phase 17 migration and main publication of `b5dfe81ab4a7b70f0263a18ff1c321e224ac7fe2`, including normal automatic GitHub Actions/Railway usage on unchanged resources. Migration applied exactly once, recorded by hosted Supabase as `20260915084006_phase_17_reservations`. This corresponds to repository file `20260914193226_phase_17_reservations.sql`; do not apply that SQL again merely because the hosted timestamp differs. The earlier automatic-review rejection did not execute a migration.
+
+Main ref was advanced without force and verified at the exact approved SHA. No other main push or manual deployment was performed.
+
+Hosted database checks PASS: both reservation tables have RLS; anon/authenticated have no direct SELECT; runtime has no UPDATE/DELETE on reservation state/history; runtime can insert event request columns but cannot update reserved balance/pallet counters or directly execute the private posting function. Reservation count is zero; no hosted fixtures were created.
+
+Security advisor reports no new findings. Existing [default-deny private location-lock policy notice](https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy) and [disabled leaked-password protection](https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection) remain unchanged. No paid setting was enabled.
+
+Initial public checks after push: live 200, ready 200; reservation list GET, detail GET, create POST and release POST all returned 404. POST probes were anonymous empty objects against the new routes and could not create business data. Railway tools are unavailable, so these health responses do not prove the active deployment SHA. Deployment/route acceptance remains pending; no manual deployment or repeat migration is warranted by these initial 404s.
+
+Next operator check inside Railway: `node -e 'console.log(process.env.RAILWAY_GIT_COMMIT_SHA || "COMMIT_UNAVAILABLE")'`. Expected SHA: `b5dfe81ab4a7b70f0263a18ff1c321e224ac7fe2`. Once active, repeat only the new route probes (expected 401 without login), then run `node scripts/verify-reservations.cjs` locally with hidden inputs. Authenticated online PASS is not yet claimed. Previous automated tests were not manually rerun. Photos remain disabled hosted. Phase 18 has not started.
+
+## Active Railway route verification — 2026-09-15
+
+Operator verified Railway commit `b5dfe81ab4a7b70f0263a18ff1c321e224ac7fe2`. Targeted anonymous probes now PASS: reservation list GET 401, detail GET 401, create POST 401 and release POST 401. Only these four previously-404 routes were rechecked; no existing health/database/automated tests were repeated. Empty unauthenticated POST probes made no business changes.
+
+Authenticated login/isolation verification remains pending the operator's local execution of `scripts/verify-reservations.cjs`; credentials stay on their machine. Expected final result is `PHASE_17_READ_ONLY_VERIFICATION: PASS`, with `RESERVATION_EXISTING_RECORD: NOT_RUN` permitted if no existing reservation is present. No fixtures are to be created for this read-only check. No push, migration, deployment, resource or photo-setting changes. Phase 18 has not started.
+
+
+## Final online sign-off — 2026-09-15
+
+Phase 17 is complete with operator-reported `PHASE_17_READ_ONLY_VERIFICATION: PASS`: login, session, permissions, reservation reads, not-found behavior and company isolation passed. Expected `RESERVATION_EXISTING_RECORD: NOT_RUN (no existing reservation; no fixture created)` means positive hosted detail/history reads were not exercised; previously recorded automated tests remain their coverage. Hosted reserve/release writes are not claimed by this read-only verification.
+
+No tests were rerun, no fixtures created and no push, migration, deployment or resource changes performed for this documentation-only closure. Photos remain disabled hosted. Phase 18 has not started.
