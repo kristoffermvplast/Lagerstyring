@@ -2,7 +2,7 @@
 
 ## Current status
 
-Implemented locally from main `c36c33d` on `phase19-pallet-accounts`. No hosted migration or main publication yet. Phase 20 has not started. Photos remain disabled hosted.
+Phase 19 is complete within the verification scope recorded below. Tested implementation `5e429fa53f189f7c568a2f06ce47a40f4f21a222` is published on main and operator-confirmed active on Railway. Hosted migration was previously applied and verified; it was not repeated. Final operator result: `PHASE_19_READ_ONLY_VERIFICATION: PASS`. Phase 20 has not started. Photos remain disabled hosted. Historical checkpoints below retain the earlier release sequence.
 
 ## Business behavior
 
@@ -61,3 +61,55 @@ Main publication normally triggers Railway: prior comparable estimate 0–0.30 D
 ### Publication approval gate
 
 Automatic approval review rejected uploading the Phase 19 tree to the working branch: it requires explicit authorization to publish/share the implementation, despite the implementation task and verified 0 DKK CI estimate. No GitHub tree, branch, main update, hosted migration or deployment was performed. Implementation commit is `242d3c3`; explicit approval for working-branch publication and existing CI is required to continue. Do not bypass the review rejection. Existing local test evidence stands; no additional reruns.
+
+
+## Approved main publication and targeted online checks — 2026-09-15 15:08 UTC
+
+User explicitly approved publishing only tested commit `5e429fa53f189f7c568a2f06ce47a40f4f21a222` to main and the normal automatic Railway deployment on unchanged resources, accepting 0–0.30 DKK expected and 1–3 DKK realistic worst-case one-off consumption.
+
+GitHub comparison confirmed main `c36c33d60c426e492a3931f2b800326c30999c57` was exactly one commit behind the target, with no divergence. Main was advanced without force to the exact approved SHA. A fresh main checkout independently confirmed that SHA. No extra documentation commit was published.
+
+Hosted migration was already verified in the preceding session (reported local evidence `f2fc049`); it was NOT rerun. Prior CI evidence (226 tests, 14 PostgreSQL concurrency tests, 180 browser tests, builds/runtime/TLS) is retained from the handoff; no tests were manually rerun.
+
+Targeted public checks:
+- GET /api/health/live: 200, status ok.
+- GET /api/health/ready: 200, status ready.
+- Anonymous GET pallet-accounts/balances and /entries: 404 on initial and follow-up checks.
+- Anonymous GET pallet-accounts/entries/:id and /shipments/:id using a non-business probe UUID: 404. Expected route/auth boundary is 401 once Phase 19 is active.
+- GitHub deployment records still show the latest Railway deployment at Phase 18 `afbd7c06ad88f0a1b7d44e205146c0de89483ac9` (deployment 6458003928). No Phase 19 deployment was recorded at inspection. Combined commit statuses were empty. These observations do not establish why automatic deployment is not yet active.
+
+Phase 19 is NOT online-verified or closed. Railway management access and operator login credentials are unavailable in this session. Operator must inspect the existing automatic Railway deployment and confirm the active SHA; do not manually deploy or change resources under this approval. Once active, repeat only the failed route probes and run `node scripts/verify-pallet-accounts.cjs` with hidden operator inputs. Required final marker: PHASE_19_READ_ONLY_VERIFICATION: PASS. No existing entry is a permitted explicit NOT_RUN result; do not create a hosted fixture.
+
+No photos setting, service, replica, compute/RAM, credit, spend limit or other resource was changed. Hosted photos remain disabled per the prior verified configuration; this session did not independently inspect Railway variables. No manual deployment or business data writes were performed. Phase 20 was not started.
+
+
+## Railway activation and targeted route verification — 2026-09-15
+
+Operator confirmed active Railway SHA `5e429fa53f189f7c568a2f06ce47a40f4f21a222`. Repeated only the four previously failing anonymous GET routes under `/api/companies/00000000-0000-4000-8000-000000000000/pallet-accounts`:
+
+- `/balances`: HTTP 401 PASS.
+- `/entries`: HTTP 401 PASS.
+- `/entries/00000000-0000-4000-8000-000000000000`: HTTP 401 PASS.
+- `/shipments/00000000-0000-4000-8000-000000000000`: HTTP 401 PASS.
+
+No health, local or CI tests were rerun. Four ordinary GET requests on existing resources are reasonably below the 1 DKK economic limit. No migration, deployment, configuration, photo or resource changes were performed.
+
+Remaining authenticated verification: NOT_RUN; operator credentials are unavailable to this session. The existing tested `scripts/verify-pallet-accounts.cjs` is unchanged and requires an interactive terminal with hidden inputs. Run locally using the exact approved commit, with the existing publishable key, operator login, company `MV Plast`, and previously used isolation company ID. It checks real login/session, permissions, balances/entries, foreign-company denial, unknown entry behavior and session cleanup, without business writes or fixture creation. Required final marker: `PHASE_19_READ_ONLY_VERIFICATION: PASS`. Empty existing journal is explicitly permitted as `PALLET_ACCOUNT_EXISTING_RECORD: NOT_RUN`.
+
+Phase 19 remains open pending this operator result. Phase 20 has not started. Documentation is committed locally only, to avoid publishing an additional commit or triggering another deployment.
+
+
+## Final operator verification and closure — 2026-09-15
+
+The user confirmed the completed authenticated online verification:
+
+```text
+PHASE_19_READ_ONLY_VERIFICATION: PASS
+PALLET_ACCOUNT_EXISTING_RECORD: NOT_RUN (no existing pallet entry; no fixture created)
+```
+
+Login, session, permissions, pallet balance and entry-list reads, response scope, not-found behavior and company isolation all passed according to the operator result. This supplements the four anonymous route checks (401 PASS) and the operator-confirmed active Railway SHA `5e429fa53f189f7c568a2f06ce47a40f4f21a222`. Prior CI evidence remains unchanged: 226 unit/API/database tests, 14 PostgreSQL concurrency tests, 180 browser tests, build/runtime/TLS checks.
+
+The existing-record NOT_RUN is expected because the hosted ledger is empty. Positive hosted entry-detail reads were not exercised; no fixture was created. This read-only verification does not claim hosted movement, reversal, declaration or dispatch writes. Previously recorded automated tests retain coverage of those behaviors.
+
+Phase 19 is closed within this documented scope. This closure updates only README.md, docs/architecture.md and docs/phase-19.md and is committed locally. No additional publication or Railway deployment was triggered. No tests were rerun, migration repeated, business data written, or resources/limits changed; this documentation step incurs no external service charge. Photos remain disabled hosted. Phase 20 has not started.
