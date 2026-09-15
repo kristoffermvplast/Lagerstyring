@@ -149,3 +149,8 @@ Phase 17 is complete with operator-reported `PHASE_17_READ_ONLY_VERIFICATION: PA
 ## Phase 19 extension
 
 [Phase 19](phase-19.md) adds immutable reusable-packaging debt entries and authorized command events. Balances are sums per tenant/counterparty/type, independent of physical inventory and handling units. Versioned draft-shipment declarations generate debt atomically on dispatch without consuming packaging again. RLS, column-limited grants, exact idempotency and one-time reversals preserve company and history boundaries. Phase 19 is complete: prior CI passed, hosted migration was verified, and main/Railway implementation `5e429fa` is verified. Operator-reported `PHASE_19_READ_ONLY_VERIFICATION: PASS` covers login/session, permissions, balance and entry-list reads, response scope, not-found behavior and company isolation. Expected `PALLET_ACCOUNT_EXISTING_RECORD: NOT_RUN` reflects an empty journal; positive hosted entry-detail reads and business writes are not claimed. No hosted fixture was created. Photos remain disabled hosted. No Phase 20 functionality or resource changes.
+
+
+## Phase 20 extension
+
+[Phase 20](phase-20.md) adds count sessions and immutable commands with role-separated approval. A monotonic physical-balance revision rejects stale and net-zero intervening movements. Short SERIALIZABLE transactions post only an approved delta through the existing journal, preserving reservation and identified-pallet guards. No locks span operator counting time. Ten new local tests and builds pass; real PostgreSQL concurrency/browser CI and hosted verification are pending. No Phase 21 functionality or resource changes.

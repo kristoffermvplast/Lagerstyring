@@ -102,3 +102,8 @@ Implementeret og CI-verificeret på arbejdsbranchen i `afbd7c0`: 217 automatiske
 ## Fase 19 — pallemellemværender
 
 [Leverance og verifikation](docs/phase-19.md): separate saldi pr. modpart og genbrugstype, historik, modpostering og automatisk bogføring af angivet genbrugsemballage ved afsendelse. Fase 19 er afsluttet: CI består, migrationen er verificeret, og `5e429fa` er publiceret på main og verificeret aktiv på Railway. Brugerbekræftet `PHASE_19_READ_ONLY_VERIFICATION: PASS` dækker login, session, permissions, pallebalancer, posteringernes liste, response scope, not-found-adfærd og virksomhedsisolation. `PALLET_ACCOUNT_EXISTING_RECORD: NOT_RUN` er forventet ved tom historik; ingen fixture blev oprettet. Fysisk lager forbruges ikke igen. Fase 20 er ikke startet.
+
+
+## Fase 20 — optælling
+
+[Leverance og verifikation](docs/phase-20.md): optælling pr. vare/ejer/placering, godkendte differencer og bevægelseskontrol. Reservationer og identificerede paller forbliver beskyttede. Ti nye lokale tests og builds består; CI og hosted trin afventer. Foto er fortsat deaktiveret hosted. Fase 21 er ikke startet.

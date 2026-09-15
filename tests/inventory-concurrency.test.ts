@@ -272,4 +272,34 @@ describe.skipIf(!url)('real PostgreSQL concurrent inventory commands',()=>{
   barrier=undefined;expect((await pool.query('select count(*)::int n from app.pallet_entries where shipment_id=$1',[s.id])).rows[0].n).toBe(s.pallet_exchange.length);
  });
 
+ async function countFixture(quantity='90'){
+  barrier=undefined;
+  const loc=(await service.asActor(actor,ids.a,async(db:any)=>(await db.query("insert into app.locations(company_id,code,name) values($1,$2,'Count race') returning id",[ids.a,randomUUID()])).rows[0].id));
+  const inventory=new InventoryController(service),{StockCountsController}=require('../apps/api/dist/stock-counts.js'),counts=new StockCountsController(service);
+  const line={item_id:item,owner_id:owner,location_id:loc};
+  const write=(q:string)=>inventory.correction({actor},ids.a,{idempotency_key:randomUUID(),reason:'Phase 20 race',lines:[{...line,quantity:q}]});
+  await write('100');let c=await counts.start({actor},ids.a,{...line,idempotency_key:randomUUID(),reason:'Start race count'});
+  c=await counts.change({actor},ids.a,c.id,'record',{idempotency_key:randomUUID(),version:c.version,quantity,reason:'Record race count'});
+  const approval={idempotency_key:randomUUID(),version:c.version,reason:'Approve race count'};
+  return {c,counts,line,write,approve:()=>counts.change({actor},ids.a,c.id,'approve',approval)};
+ }
+ it('Phase 20: concurrent duplicate approval posts one exact correction',async()=>{
+  const f=await countFixture();synchronize();const r=await Promise.all([f.approve(),f.approve()]);barrier=undefined;expect(r[0]).toEqual(r[1]);
+  expect((await pool.query('select count(*)::int n from app.inventory_entries where id=$1',[r[0].entry_id])).rows[0].n).toBe(1);
+  expect((await pool.query('select quantity from app.stock_balances where location_id=$1',[f.line.location_id])).rows[0].quantity).toBe('90.00000000');
+ });
+ it('Phase 20: approval racing a physical receipt never overwrites the receipt',async()=>{
+  const f=await countFixture();synchronize();const r=await Promise.allSettled([f.approve(),f.write('1')]);barrier=undefined;
+  expect(r[1].status).toBe('fulfilled');const b=(await pool.query('select quantity from app.stock_balances where location_id=$1',[f.line.location_id])).rows[0];
+  expect(b.quantity).toBe(r[0].status==='fulfilled'?'91.00000000':'101.00000000');
+  if(r[0].status==='rejected')expect(r[0].reason.code).toBe('23514');
+ });
+ it('Phase 20: concurrent reservation and downward approval cannot oversubscribe',async()=>{
+  const f=await countFixture('70'),{ReservationsController}=require('../apps/api/dist/reservations.js'),reserve=new ReservationsController(service);
+  synchronize();const r=await Promise.allSettled([f.approve(),reserve.create({actor},ids.a,{...f.line,idempotency_key:randomUUID(),quantity:'80',reference:'Count race',reason:'Concurrent reservation'})]);barrier=undefined;
+  expect(r.filter(x=>x.status==='fulfilled')).toHaveLength(1);
+  const b=(await pool.query('select quantity,reserved_quantity from app.stock_balances where location_id=$1',[f.line.location_id])).rows[0];
+  expect(Number(b.quantity)).toBeGreaterThanOrEqual(Number(b.reserved_quantity));
+ });
+
 });

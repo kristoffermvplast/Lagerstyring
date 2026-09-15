@@ -70,6 +70,7 @@ export class DatabaseService implements OnApplicationShutdown {
           and to_regclass('app.items') is not null
           and to_regclass('app.locations') is not null
           and to_regclass('app.stock_balances') is not null
+          and to_regclass('app.stock_counts') is not null and to_regclass('app.count_events') is not null
           and to_regclass('app.pallet_entries') is not null and to_regclass('app.pallet_events') is not null
           and to_regclass('app.shipments') is not null and to_regclass('app.shipment_events') is not null and to_regclass('app.shipment_reservations') is not null
           and to_regclass('app.stock_reservations') is not null and to_regclass('app.reservation_events') is not null

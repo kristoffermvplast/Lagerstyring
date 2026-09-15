@@ -1,3 +1,4 @@
+import {StockCountsController} from './stock-counts';
 import {PalletAccountsController} from './pallet-accounts';
 import {ShipmentsController} from './shipments';
 import {ReservationsController} from './reservations';
@@ -71,7 +72,7 @@ class AppModule {}
 export async function createApp(config: AppConfig, database = new DatabaseService(config)) {
   const app = await NestFactory.create<NestExpressApplication>({
     module: AppModule,
-    controllers: [PalletAccountsController,ShipmentsController,ReservationsController,FinishedGoodsController,HandlingUnitsController,ProductionAnalysisController,ProductionWasteController,ProductionCloseController,ProductionRegistrationsController,MaterialIssuesController,ProductionOrdersController,TransfersController,ReceivingController,InventoryController,HealthController, AccessController, MasterdataController, ItemsController, ItemPhotosController, RecipesController, LocationsController],
+    controllers: [StockCountsController,PalletAccountsController,ShipmentsController,ReservationsController,FinishedGoodsController,HandlingUnitsController,ProductionAnalysisController,ProductionWasteController,ProductionCloseController,ProductionRegistrationsController,MaterialIssuesController,ProductionOrdersController,TransfersController,ReceivingController,InventoryController,HealthController, AccessController, MasterdataController, ItemsController, ItemPhotosController, RecipesController, LocationsController],
     providers: [{ provide: DatabaseService, useValue: database }, { provide: APP_CONFIG, useValue: config }, SupabaseIdentity, ItemPhotoStorage, { provide: APP_GUARD, useClass: AccessGuard }],
   }, { logger: config.NODE_ENV === 'test' ? false : ['error', 'warn', 'log'], bodyParser: false });
 

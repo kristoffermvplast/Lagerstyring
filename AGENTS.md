@@ -1,6 +1,6 @@
 # Project rules
 
-- Implement only the phase explicitly authorized by the user. Phase 19 (pallet accounts) is authorized. Do not implement Phase 20 or later workflows.
+- Implement only the phase explicitly authorized by the user. Phase 20 (stock counts) is authorized. Do not implement Phase 21 or later workflows.
 - React/TypeScript/Vite frontend; NestJS backend; Supabase PostgreSQL/Auth/Storage.
 - All business reads and writes go through NestJS. Never introduce browser Data API writes or privileged browser credentials.
 - No hardcoded business master data. Fixtures belong only in tests.
