@@ -302,4 +302,15 @@ describe.skipIf(!url)('real PostgreSQL concurrent inventory commands',()=>{
   expect(Number(b.quantity)).toBeGreaterThanOrEqual(Number(b.reserved_quantity));
  });
 
+ it('Phase 21: concurrent personal acknowledgements persist once and changed signals reject stale fingerprints',async()=>{
+  barrier=undefined;
+  const {DashboardController}=require('../apps/api/dist/dashboard.js'),dashboard=new DashboardController(service);
+  await service.asActor(actor,ids.a,(db:any)=>db.query("update app.items set minimum_stock=999999999999,version=version+1 where id=$1",[item]));
+  const alert=(await dashboard.get({actor},ids.a)).alerts.find((a:any)=>a.key==='stock-low:'+item);
+  expect(alert).toBeTruthy();const payload={key:alert.key,fingerprint:alert.fingerprint};
+  synchronize();const results=await Promise.all([dashboard.acknowledge({actor},ids.a,payload),dashboard.acknowledge({actor},ids.a,payload)]);barrier=undefined;
+  expect(results[0]).toEqual(results[1]);expect((await pool.query('select count(*)::int n from app.alert_acknowledgements where alert_key=$1',[payload.key])).rows[0].n).toBe(1);
+  await post('1');await expect(dashboard.acknowledge({actor},ids.a,payload)).rejects.toMatchObject({status:409});
+ });
+
 });

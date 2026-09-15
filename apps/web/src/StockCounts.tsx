@@ -5,9 +5,9 @@ type Balance={item_id:string;owner_id:string;location_id:string;quantity:string;
 type Count=Balance&{id:string;status:string;version:number;baseline_quantity:string;counted_quantity:string|null;current_quantity:string;reserved_quantity:string;difference:string|null;stale:boolean;entry_id:string|null;events:{id:string;action:string;reason:string;actor_id:string;created_at:string}[];reservations:{id:string;reference:string;quantity:string}[]};
 const labels:Record<string,string>={open:'Åben',counted:'Optalt',approved:'Godkendt',cancelled:'Annulleret',start:'Startet',record:'Optalt',approve:'Godkendt',cancel:'Annulleret'};
 const msg=(e:unknown)=>e instanceof Error?e.message:'Handlingen kunne ikke gennemføres.';
-export function StockCounts({company,permissions}:{company:string;permissions:string[]}){
+export function StockCounts({initialId='',company,permissions}: {initialId?:string;company:string;permissions:string[]}){
  const base=`/companies/${company}/stock-counts`,cache=useQueryClient();
- const[status,setStatus]=useState(''),[page,setPage]=useState(1),[selected,setSelected]=useState(''),[create,setCreate]=useState(false);
+ const[status,setStatus]=useState(''),[page,setPage]=useState(1),[selected,setSelected]=useState(initialId),[create,setCreate]=useState(false);
  const manage=permissions.includes('counts.manage'),approve=permissions.includes('counts.approve')&&permissions.includes('inventory.adjust');
  const list=useQuery({queryKey:['counts',company,status,page],queryFn:()=>accessApi<{items:Count[];total:number}>(`${base}?page=${page}${status?'&status='+status:''}`),retry:false});
  async function saved(id?:string){await cache.invalidateQueries({queryKey:['counts']});await cache.invalidateQueries({queryKey:['inventory']});setCreate(false);if(id)setSelected(id);}

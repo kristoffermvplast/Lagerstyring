@@ -1,6 +1,6 @@
 # Lagerstyring
 
-Webbaseret lager- og produktionssystem. **Fase 1–17 er afsluttet. Fase 18 er ikke startet.**
+Webbaseret lager- og produktionssystem. **Fase 1–20 er afsluttet. Fase 21 implementeres på arbejdsgrenen.**
 
 **Fase 1 er afsluttet og godkendt.** Se [det endelige Railway/Supabase-resultat](docs/phase-1-completion.md).
 
@@ -23,7 +23,7 @@ npm run dev
 
 Grundlayoutet kan åbnes uden databasehemmeligheder. API-liveness svarer da 200, mens database-readiness på `/api/health/ready` korrekt svarer 503. Det er ikke bevis for en fungerende hosted databaseforbindelse.
 
-For en faktisk databaseforbindelse: følg [miljø- og databasevejledningen](docs/environments.md). Se [Fase 2](docs/phase-2.md) for login, rettigheder, konfiguration og afgrænsninger. Lager-/produktionsfunktioner er ikke implementeret.
+For en faktisk databaseforbindelse: følg [miljø- og databasevejledningen](docs/environments.md). Se [Fase 2](docs/phase-2.md) for login, rettigheder, konfiguration og afgrænsninger. Aktuel funktionalitet og verifikationsstatus er beskrevet under de enkelte faser.
 
 ## Test og build
 
@@ -106,4 +106,9 @@ Implementeret og CI-verificeret på arbejdsbranchen i `afbd7c0`: 217 automatiske
 
 ## Fase 20 — optælling
 
-[Leverance og verifikation](docs/phase-20.md): optælling pr. vare/ejer/placering, godkendte differencer og bevægelseskontrol. Reservationer og identificerede paller forbliver beskyttede. CI består på arbejdsgrenen i `80f1093`: 236 unit/API/database-tests, 17 PostgreSQL-samtidighedstests og 189 browsertests samt build/runtime/TLS. Fase 20 er afsluttet: hosted migration er kørt og kontrolleret, og `80f1093` er verificeret aktiv på main/Railway. Seks anonyme ruter svarer 401. Brugerbekræftet `PHASE_20_READ_ONLY_VERIFICATION: PASS` dækker login, session, permissions, optællingsliste, response scope, not-found-adfærd og virksomhedsisolation. `STOCK_COUNT_EXISTING_RECORD: NOT_RUN` er forventet ved tom historik; ingen fixture blev oprettet. Foto er fortsat deaktiveret hosted. Fase 21 er ikke startet.
+[Leverance og verifikation](docs/phase-20.md): optælling pr. vare/ejer/placering, godkendte differencer og bevægelseskontrol. Reservationer og identificerede paller forbliver beskyttede. CI består på arbejdsgrenen i `80f1093`: 236 unit/API/database-tests, 17 PostgreSQL-samtidighedstests og 189 browsertests samt build/runtime/TLS. Fase 20 er afsluttet: hosted migration er kørt og kontrolleret, og `80f1093` er verificeret aktiv på main/Railway. Seks anonyme ruter svarer 401. Brugerbekræftet `PHASE_20_READ_ONLY_VERIFICATION: PASS` dækker login, session, permissions, optællingsliste, response scope, not-found-adfærd og virksomhedsisolation. `STOCK_COUNT_EXISTING_RECORD: NOT_RUN` er forventet ved tom historik; ingen fixture blev oprettet. Foto er fortsat deaktiveret hosted. Fase 21-status fremgår nedenfor.
+
+
+## Fase 21 — dashboard og advarsler
+
+[Leverance og verifikation](docs/phase-21.md): rettighedsstyret overblik med kritiske advarsler, aktive produktioner, dagens modtagelser/forsendelser, kommende materialemangel og direkte handlinger. Personlige kvitteringer følger den konkrete problemversion; løsning afledes af kildedata. Lokale målrettede tests består. CI/browser/samtidighed og hosted trin er endnu ikke verificeret. Foto forbliver deaktiveret hosted. Fase 22 er ikke startet.
