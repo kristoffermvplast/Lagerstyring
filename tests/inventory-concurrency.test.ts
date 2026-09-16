@@ -313,4 +313,24 @@ describe.skipIf(!url)('real PostgreSQL concurrent inventory commands',()=>{
   await post('1');await expect(dashboard.acknowledge({actor},ids.a,payload)).rejects.toMatchObject({status:409});
  });
 
+ it('report count, totals and rows retain one snapshot while a journal is posted',async()=>{
+  barrier=undefined;
+  const {ReportsController}=require('../apps/api/dist/reports.js');
+  const baseline=await new ReportsController(service).list({actor},ids.a,'inventory',{item_id:item});
+  let counted!:()=>void,release!:()=>void;
+  const ready=new Promise<void>(r=>counted=r),resume=new Promise<void>(r=>release=r);
+  const reporting={asActor:(a:any,c:string,work:any)=>service.asActor(a,c,(db:any)=>work({query:async(sql:string,values:any[])=>{
+   const result=await db.query(sql,values);
+   if(sql.includes('count(*)::int total from filtered')){counted();await resume;}
+   return result;
+  }}))};
+  const pending=new ReportsController(reporting).list({actor},ids.a,'inventory',{item_id:item});
+  await ready;
+  try{await post('1.00000001');}finally{release();}
+  const during=await pending;
+  expect(during.total).toBe(baseline.total);expect(during.totals).toEqual(baseline.totals);expect(during.items).toEqual(baseline.items);
+  const after=await new ReportsController(service).list({actor},ids.a,'inventory',{item_id:item});
+  expect(after.total).toBe(baseline.total+1);expect(after.totals).not.toEqual(baseline.totals);
+ });
+
 });
