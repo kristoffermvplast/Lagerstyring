@@ -1,6 +1,6 @@
 # Lagerstyring
 
-Webbaseret lager- og produktionssystem. **Fase 1–20 er afsluttet. Fase 21 implementeres på arbejdsgrenen.**
+Webbaseret lager- og produktionssystem. **Fase 1–21 er afsluttet. Fase 22 er ikke startet.**
 
 **Fase 1 er afsluttet og godkendt.** Se [det endelige Railway/Supabase-resultat](docs/phase-1-completion.md).
 
@@ -111,4 +111,4 @@ Implementeret og CI-verificeret på arbejdsbranchen i `afbd7c0`: 217 automatiske
 
 ## Fase 21 — dashboard og advarsler
 
-[Leverance og verifikation](docs/phase-21.md): rettighedsstyret overblik med kritiske advarsler, aktive produktioner, dagens modtagelser/forsendelser, kommende materialemangel og direkte handlinger. Personlige kvitteringer følger den konkrete problemversion; løsning afledes af kildedata. Lokale målrettede tests består. CI/browser/samtidighed og hosted trin er endnu ikke verificeret. Foto forbliver deaktiveret hosted. Fase 22 er ikke startet.
+[Leverance og verifikation](docs/phase-21.md): rettighedsstyret overblik med kritiske advarsler, aktive produktioner, dagens modtagelser/forsendelser, kommende materialemangel og direkte handlinger. Personlige kvitteringer følger den konkrete problemversion; løsning afledes af kildedata. CI består på `4fd3db9`: 249 unit/API/database-tests, 18 PostgreSQL-samtidighedstests og 198 browsertests samt build/runtime/TLS. Hosted migration er kørt én gang, og `4fd3db9` er verificeret på main og aktiv i Railway. Readiness svarer 200; de to anonyme dashboard-ruter svarer 401. Brugerbekræftet `PHASE_21_READ_ONLY_VERIFICATION: PASS` dækker login/session, dashboard permissions/read, response scope, alert shape, virksomhedsisolation og session cleanup. `DASHBOARD_COMPLETENESS: PASS`. Fase 21 er afsluttet inden for det dokumenterede verifikationsomfang. Foto forbliver deaktiveret hosted. Fase 22 er ikke startet.
