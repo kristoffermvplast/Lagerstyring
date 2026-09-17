@@ -1,3 +1,4 @@
+import {ConnectionStatus} from './ConnectionStatus';
 import {Reports} from './Reports';
 import {Dashboard,type DashboardTarget} from './Dashboard';
 import {StockCounts} from './StockCounts';
@@ -9,7 +10,7 @@ import {QrReference} from './qr-reference';
 import {HandlingUnits} from './FinishedGoods';
 import { ProductionOrders } from './ProductionOrders';
 import { Transfers } from './Transfers';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Boxes } from 'lucide-react';
@@ -71,6 +72,8 @@ function Workspace({localLogout}:{localLogout:()=>void}) {
   const me = useQuery({ queryKey: ['me'], queryFn: ()=>accessApi<Me>('/me'), retry: false });
   const [target,setTarget]=useState<DashboardTarget|null>(null);
   const [company,setCompany] = useState(''); const [page,setPage] = useState('Overblik'); const [error,setError] = useState('');
+  const previousView=useRef('');
+  useEffect(()=>{const view=company+':'+page;if(previousView.current&&previousView.current!==view){document.getElementById('content')?.focus();}previousView.current=view;},[company,page]);
   const [scan,setScan]=useState<QrReference|null>(null);
   const [busy,setBusy] = useState(false);
   const memberships = me.data?.memberships ?? [];
@@ -97,10 +100,10 @@ function Workspace({localLogout}:{localLogout:()=>void}) {
     finally { setBusy(false); }
   }
   return <div className="access-shell"><a className="skip-link" href="#content">Gå til indhold</a><header className="access-header"><div className="auth-brand"><Boxes />Lagerstyring</div><button onClick={logout} disabled={busy}>Log ud</button></header>
-    <div className="access-body"><aside className="access-nav"><label>Virksomhed<select aria-label="Virksomhed" value={id ?? ''} onChange={e=>{setCompany(e.target.value);setScan(null);setTarget(null);setPage('Overblik');cache.removeQueries({queryKey:['members']});cache.removeQueries({queryKey:['roles']});}}>
+    <ConnectionStatus/><div className="access-body"><aside id="workspace-menu" tabIndex={-1} aria-label="Arbejdsområder" className="access-nav"><label>Virksomhed<select aria-label="Virksomhed" value={id ?? ''} onChange={e=>{setCompany(e.target.value);setScan(null);setTarget(null);setPage('Overblik');cache.removeQueries({queryKey:['members']});cache.removeQueries({queryKey:['roles']});}}>
       {!memberships.length && <option value="">Ingen virksomhed</option>}{memberships.map(m=><option key={m.company_id} value={m.company_id}>{m.name}</option>)}</select></label>
       {['Overblik',...(access.data?.permissions.some(p=>p.code==='reports.read')?['Rapporter']:[]),...(canInventoryRead&&access.data?.permissions.some(p=>p.code==='counts.read')?['Optælling']:[]),...(access.data?.permissions.some(p=>p.code==='pallets.read')?['Pallemellemværender']:[]),...(access.data?.permissions.some(p=>p.code==='shipments.read')?['Forsendelser']:[]),...(id?['Scan QR']:[]),...(canProductionRead?['Produktion']:[]),...(canInventoryRead?['Lager','Modtagelse','Lagerflytning','Reservationer']:[]),...(canInventoryRead&&canProductionRead?['Pallestyring']:[]),...(canMasterRead?[...Object.keys(itemPages),'Styklister og pakning','Lagerplaceringer',...Object.keys(masterdataPages)]:[]),'Min profil',...(canRead?['Adgang']:[])].map(name=><button key={name} aria-current={page===name?'page':undefined} onClick={()=>{setScan(null);setTarget(null);setPage(name);}}>{name}</button>)}</aside>
-    <main id="content" className="access-content"><h1>{page}</h1>{error && <div role="alert"><p>{error}</p><button onClick={localLogout}>Luk kun sessionen på denne enhed</button><p>Serverens logout er ikke bekræftet, hvis forbindelsen fejlede.</p></div>}{me.isPending && <p role="status">Henter dit arbejdsrum…</p>}{me.error && <p role="alert">{message(me.error)}</p>}{access.error && <p role="alert">{message(access.error)}</p>}
+    <main id="content" tabIndex={-1} className="access-content"><button className="workspace-menu-return" onClick={()=>document.getElementById('workspace-menu')?.focus()}>Gå til menu</button><h1>{page}</h1>{error && <div role="alert"><p>{error}</p><button onClick={localLogout}>Luk kun sessionen på denne enhed</button><p>Serverens logout er ikke bekræftet, hvis forbindelsen fejlede.</p></div>}{me.isPending && <p role="status">Henter dit arbejdsrum…</p>}{me.error && <p role="alert">{message(me.error)}</p>}{access.error && <p role="alert">{message(access.error)}</p>}
       {id&&page==='Scan QR'&&<QrWorkspace key={id} company={id} permissions={access.data?.permissions.map(p=>p.code)??[]} open={ref=>{setScan(ref);setPage({pallet:'Pallestyring',location:'Lagerplaceringer',order:'Produktion',machine:'Maskiner'}[ref.kind]);}}/>}
       {me.data && page==='Min profil' && <Profile me={me.data} />}
       {me.data && page==='Overblik' && <section className="auth-card"><h2>Hej{me.data.user.display_name ? `, ${me.data.user.display_name}` : ''}</h2><p>{id ? `Du er logget ind hos ${selected.name}.` : 'Du har endnu ingen aktiv virksomhedsadgang. Kontakt en administrator og oplys dit bruger-ID fra Min profil.'}</p><p>Vælg et arbejdsområde i menuen.</p></section>}

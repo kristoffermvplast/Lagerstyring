@@ -1,6 +1,6 @@
 # Project rules
 
-- Implement only the phase explicitly authorized by the user. Phase 22 (reports and exports) is authorized. Do not implement Phase 23 or later workflows.
+- Implement only the phase explicitly authorized by the user. Phase 23 (mobile and tablet usability) is authorized. Do not implement Phase 24 or later workflows.
 - React/TypeScript/Vite frontend; NestJS backend; Supabase PostgreSQL/Auth/Storage.
 - All business reads and writes go through NestJS. Never introduce browser Data API writes or privileged browser credentials.
 - No hardcoded business master data. Fixtures belong only in tests.

@@ -1,6 +1,6 @@
 # Lagerstyring
 
-Webbaseret lager- og produktionssystem. **Fase 1–22 er afsluttet. Fase 23 er ikke startet.**
+Webbaseret lager- og produktionssystem. **Fase 1–22 er afsluttet. Fase 23 er implementeret lokalt; CI og afprøvning med faktiske brugere afventer.**
 
 **Fase 1 er afsluttet og godkendt.** Se [det endelige Railway/Supabase-resultat](docs/phase-1-completion.md).
 
@@ -114,3 +114,5 @@ Implementeret og CI-verificeret på arbejdsbranchen i `afbd7c0`: 217 automatiske
 [Leverance og verifikation](docs/phase-21.md): rettighedsstyret overblik med kritiske advarsler, aktive produktioner, dagens modtagelser/forsendelser, kommende materialemangel og direkte handlinger. Personlige kvitteringer følger den konkrete problemversion; løsning afledes af kildedata. CI består på `4fd3db9`: 249 unit/API/database-tests, 18 PostgreSQL-samtidighedstests og 198 browsertests samt build/runtime/TLS. Hosted migration er kørt én gang, og `4fd3db9` er verificeret på main og aktiv i Railway. Readiness svarer 200; de to anonyme dashboard-ruter svarer 401. Brugerbekræftet `PHASE_21_READ_ONLY_VERIFICATION: PASS` dækker login/session, dashboard permissions/read, response scope, alert shape, virksomhedsisolation og session cleanup. `DASHBOARD_COMPLETENESS: PASS`. Fase 21 er afsluttet inden for det dokumenterede verifikationsomfang. Foto forbliver deaktiveret hosted. Fase 22 (rapporter og eksport) er implementeret og CI-verificeret på arbejdsgrenen; hosted migration, publicering og online-verifikation afventer.
 
 - [Fase 22: rapporter, sporbarhed og CSV-eksport](docs/phase-22.md)
+
+- [Fase 23: mobil-/tabletbetjening og brugerafprøvning](docs/phase-23.md)

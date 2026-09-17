@@ -63,3 +63,10 @@ test('location QR populates existing selector only after validation, with no wri
  await page.getByLabel('QR Maskinplacering',{exact:true}).fill(code('location'));await page.getByRole('button',{name:'Læs kode',exact:true}).click();await expect(page.getByLabel('Maskinplacering',{exact:true})).toHaveValue(id);
  expect(requests.every(r=>r.startsWith('GET '))).toBe(true);
 });
+
+test('failed scan lookup retries the same reference without rescanning or writes',async({page})=>{
+ await fixture(page);let attempts=0;
+ await page.route('**/api/companies/*/masterdata/machines/'+id,r=>{attempts++;return attempts===1?r.abort('connectionreset'):r.fulfill({json:{id,company_id:company,name:'Retry machine',active:true}});});
+ await page.getByLabel('Scan QR',{exact:true}).fill(code());await page.getByRole('button',{name:'Læs kode',exact:true}).click();await expect(page.getByRole('alert')).toContainText('Opslaget kunne ikke hentes');await expect(page.getByRole('button',{name:'Åbn registrering'})).toHaveCount(0);
+ await page.getByRole('button',{name:'Prøv QR-opslag igen'}).click();await expect(page.getByRole('heading',{name:'Retry machine'})).toBeVisible();expect(attempts).toBe(2);
+});

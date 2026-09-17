@@ -25,13 +25,13 @@ export function QrInput({company,kind,onRead,label='Scan QR'}:{company:string;ki
   }).catch(()=>{if(!cancelled){setError('Kameraet kunne ikke åbnes. Tillad kamera på HTTPS/localhost, eller brug kodefeltet.');setCamera(false);}});
   return()=>{cancelled=true;scanner?.destroy();document.removeEventListener('visibilitychange',hide);panel?.removeEventListener('toggle',collapse);};
  },[camera,company,kind]);
- return <div className="access-card"><label>{label}<input maxLength={160} autoComplete="off" value={value} onChange={e=>setValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();e.stopPropagation();accept(value);}}}/></label><button type="button" disabled={!value} onClick={()=>accept(value)}>Læs kode</button><button type="button" onClick={()=>{setError('');setCamera(v=>!v);}}>{camera?'Stop kamera':'Start kamera'}</button>{camera&&<video ref={video} muted playsInline style={{maxWidth:'100%',width:360}} aria-label="QR-kamera"/>}{error&&<p role="alert">{error}</p>}</div>;
+ return <div className="access-card"><label>{label}<input maxLength={160} autoComplete="off" autoCapitalize="none" spellCheck={false} enterKeyHint="go" value={value} onChange={e=>setValue(e.target.value)} onKeyDown={e=>{if(e.key==='Enter'){e.preventDefault();e.stopPropagation();accept(value);}}}/></label><button type="button" disabled={!value} onClick={()=>accept(value)}>Læs kode</button><button type="button" onClick={()=>{setError('');setCamera(v=>!v);}}>{camera?'Stop kamera':'Start kamera'}</button>{camera&&<video ref={video} muted playsInline style={{maxWidth:'100%',width:360}} aria-label="QR-kamera"/>}{error&&<p role="alert">{error}</p>}</div>;
 }
 
 export function QrWorkspace({company,permissions,open}:{company:string;permissions:string[];open:(ref:QrReference)=>void}){
- const [result,setResult]=useState<{ref:QrReference;label:string;active:boolean}|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);const generation=useRef(0);
+ const [result,setResult]=useState<{ref:QrReference;label:string;active:boolean}|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);const generation=useRef(0),lastRead=useRef<QrReference|null>(null);
  useEffect(()=>()=>{generation.current++;},[]);
- async function read(ref:QrReference){const version=++generation.current;setResult(null);setError('');setBusy(true);
+ async function read(ref:QrReference){lastRead.current=ref;const version=++generation.current;setResult(null);setError('');setBusy(true);
   try{
    const required=ref.kind==='pallet'?['inventory.read','production.read']:ref.kind==='order'?['production.read']:['masterdata.read'];
    if(!required.every(p=>permissions.includes(p)))throw new Error('Du har ikke adgang til denne type.');
@@ -40,5 +40,5 @@ export function QrWorkspace({company,permissions,open}:{company:string;permissio
    if(version===generation.current)setResult({ref,label:row.name??row.code??ref.id,active:row.active!==false});
   }catch(e){if(version===generation.current)setError(e instanceof Error?e.message:'Opslaget mislykkedes.');}finally{if(version===generation.current)setBusy(false);}
  }
- return <><p>Scan en palle, lagerplacering, produktionsordre eller maskine. Scanning ændrer ikke lageret.</p><QrInput company={company} onRead={ref=>void read(ref)}/>{busy&&<p role="status">Kontrollerer adgang og registrering…</p>}{error&&<p role="alert">{error}</p>}{result&&<section className="access-card"><h2>{result.label}</h2>{!result.active&&<p>Registreringen er inaktiv.</p>}<QrLabel company={company} kind={result.ref.kind} id={result.ref.id} label={result.label}/><button onClick={()=>open(result.ref)}>Åbn registrering</button></section>}</>;
+ return <><p>Scan en palle, lagerplacering, produktionsordre eller maskine. Scanning ændrer ikke lageret.</p><QrInput company={company} onRead={ref=>void read(ref)}/>{busy&&<p role="status">Kontrollerer adgang og registrering…</p>}{error&&<div role="alert"><p>{error}</p><button disabled={busy} onClick={()=>{if(lastRead.current)void read(lastRead.current);}}>Prøv QR-opslag igen</button></div>}{result&&<section className="access-card"><h2>{result.label}</h2>{!result.active&&<p>Registreringen er inaktiv.</p>}<QrLabel company={company} kind={result.ref.kind} id={result.ref.id} label={result.label}/><button onClick={()=>open(result.ref)}>Åbn registrering</button></section>}</>;
 }
