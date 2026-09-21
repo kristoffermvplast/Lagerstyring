@@ -6,7 +6,7 @@ import { PoolClient } from 'pg';
 const base = { code:z.string().trim().min(1).max(60), name:z.string().trim().min(1).max(160), active:z.boolean().default(true), notes:z.string().max(4000).default('') };
 const contact = { address:z.string().max(1000).default(''), contact_name:z.string().trim().max(120).default(''), phone:z.string().trim().max(60).default(''), email:z.union([z.literal(''),z.string().email().max(254)]).default('') };
 // Identifiers in SQL come only from this closed catalog, never from request strings.
-const catalogs = {
+export const catalogs = {
  customers:z.object({...base,...contact}).strict(),
  suppliers:z.object({...base,...contact,lead_time_days:z.number().int().min(0).max(3650).nullable().default(null)}).strict(),
  machines:z.object({...base,location_id:z.string().uuid().nullable().default(null),machine_type_id:z.string().uuid().nullable().default(null)}).strict(),

@@ -10,7 +10,7 @@ const reference = z.string().uuid().nullable().default(null);
 const text = (max: number) => z.string().max(max).default('');
 const kindSchema = z.enum(['product', 'material', 'packaging']);
 const quantities = ['minimum_stock', 'desired_stock', 'maximum_stock', 'reorder_level', 'standard_order_quantity', 'quantity_per_pallet'] as const;
-const inputSchema = z.object({
+export const inputSchema = z.object({
  code: z.string().trim().min(1).max(60), name: z.string().trim().min(1).max(160),
  active: z.boolean().default(true), description: text(4000), notes: text(4000),
  standard_location_id: reference, unit_id: reference, customer_id: reference, supplier_id: reference, product_group_id: reference,
@@ -32,7 +32,7 @@ function parse<T>(schema: z.ZodType<T>, value: unknown): T {
  const result = schema.safeParse(value); if (!result.success) throw new BadRequestException(); return result.data;
 }
 function scaled(value: string): bigint { const [integer, fraction = ''] = value.split('.'); return BigInt(integer! + fraction.padEnd(8, '0')); }
-function validate(input: z.infer<typeof inputSchema>, kind: string) {
+export function validate(input: z.infer<typeof inputSchema>, kind: string) {
  if (!input.unit_id && quantities.some(q => input[q] !== null)) throw new BadRequestException('Choose a unit first');
  if (input.cycle_time_seconds !== null && scaled(input.cycle_time_seconds) <= 0n) throw new BadRequestException();
  if (kind !== 'product' && (input.customer_id || input.standard_machine_id || input.cavities || input.cycle_time_seconds || input.production_notes)) throw new BadRequestException();

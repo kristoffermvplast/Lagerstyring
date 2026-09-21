@@ -333,4 +333,30 @@ describe.skipIf(!url)('real PostgreSQL concurrent inventory commands',()=>{
   expect(after.total).toBe(baseline.total+1);expect(after.totals).not.toEqual(baseline.totals);
  });
 
+ it('phase24 competing confirmations commit one import and retry returns its receipt',async()=>{
+  barrier=undefined;
+  const {ImportsController}=require('../apps/api/dist/imports.js'),imports=new ImportsController(service);
+  const preview=await imports.preview({actor},ids.a,'customers',{filename:'concurrent.csv',csv:'code;name\nIMPORT-RACE;Concurrent customer'});
+  synchronize();
+  const outcomes=await Promise.allSettled([1,2].map(()=>imports.confirm({actor},ids.a,'customers',preview.job_id,{confirm:true})));
+  barrier=undefined;
+  expect(outcomes.some(r=>r.status==='fulfilled')).toBe(true);
+  const retry=await imports.confirm({actor},ids.a,'customers',preview.job_id,{confirm:true});expect(retry.replayed).toBe(true);
+  expect((await pool.query("select count(*)::int n from app.customers where code='IMPORT-RACE'")).rows[0].n).toBe(1);
+ });
+ it('phase24 distinct opening jobs racing for one stock key never double the opening balance',async()=>{
+  barrier=undefined;
+  const {ImportsController}=require('../apps/api/dist/imports.js'),imports=new ImportsController(service);
+  const loc=await service.asActor(actor,ids.a,async(db:any)=>(await db.query("insert into app.locations(company_id,code,name) values($1,'IMPORT-LOC','Import location') returning id",[ids.a])).rows[0].id);
+  const text='item_code;owner_code;location_code;quantity\nM;OWN;IMPORT-LOC;';
+  const a=await imports.preview({actor},ids.a,'opening_stock',{filename:'a.csv',csv:text+'7'}),b=await imports.preview({actor},ids.a,'opening_stock',{filename:'b.csv',csv:text+'9'});
+  expect(a.errors).toEqual([]);expect(b.errors).toEqual([]);
+  synchronize();
+  const results=await Promise.allSettled([a,b].map(p=>imports.confirm({actor},ids.a,'opening_stock',p.job_id,{confirm:true})));
+  barrier=undefined;
+  expect(results.filter(r=>r.status==='fulfilled'&&r.value.receipt)).toHaveLength(1);
+  expect(['7.00000000','9.00000000']).toContain((await pool.query('select quantity from app.stock_balances where location_id=$1',[loc])).rows[0].quantity);
+  expect((await pool.query('select count(*)::int n from app.inventory_lines where location_id=$1',[loc])).rows[0].n).toBe(1);
+ });
+
 });

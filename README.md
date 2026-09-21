@@ -118,3 +118,7 @@ Implementeret og CI-verificeret på arbejdsbranchen i `afbd7c0`: 217 automatiske
 - [Fase 23: mobil-/tabletbetjening og brugerafprøvning](docs/phase-23.md)
 
 Fase 23 er afsluttet efter brugerafprøvning på Mac/iPhone: `access`-500 er `NOT_REPRODUCED` under efterfølgende normal brug, ikke erklæret rettet; diagnostikken bevares. Fysisk tablet er `NOT_RUN`, og tidligere fysisk QR-opslag genbruges. Se [afsluttende accept og begrænsninger](docs/phase-23.md). Krav til færre standardfelter og samlet senere UI/UX-forenkling er registreret dér.
+
+## Fase 24 — import
+
+[Implementering og verifikation](docs/phase-24.md): import af kunder, leverandører, varer, materialer og startbeholdninger med minimale CSV-skabeloner, forhåndsvisning, rækkefejl, dubletkontrol og atomisk bekræftelse. Startbeholdninger bruger den eksisterende lagerjournal. Excel-ark gemmes som CSV UTF-8; native XLSX-import er ikke implementeret. Arbejdsgren under verifikation; hosted migration og publicering er ikke gennemført. Foto forbliver deaktiveret hosted. Fase 25 er ikke startet.
