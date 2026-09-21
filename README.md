@@ -1,6 +1,6 @@
 # Lagerstyring
 
-Webbaseret lager- og produktionssystem. **Fase 1–22 er afsluttet. Fase 23 er implementeret lokalt; CI og afprøvning med faktiske brugere afventer.**
+Webbaseret lager- og produktionssystem. **Fase 1–23 er funktionelt afsluttet inden for det dokumenterede og brugeraccepterede testomfang. Fase 23-felt-/menurettelser og diagnostik er fortsat lokale, ikke publiceret. Fase 24 er ikke startet.**
 
 **Fase 1 er afsluttet og godkendt.** Se [det endelige Railway/Supabase-resultat](docs/phase-1-completion.md).
 
@@ -116,3 +116,5 @@ Implementeret og CI-verificeret på arbejdsbranchen i `afbd7c0`: 217 automatiske
 - [Fase 22: rapporter, sporbarhed og CSV-eksport](docs/phase-22.md)
 
 - [Fase 23: mobil-/tabletbetjening og brugerafprøvning](docs/phase-23.md)
+
+Fase 23 er afsluttet efter brugerafprøvning på Mac/iPhone: `access`-500 er `NOT_REPRODUCED` under efterfølgende normal brug, ikke erklæret rettet; diagnostikken bevares. Fysisk tablet er `NOT_RUN`, og tidligere fysisk QR-opslag genbruges. Se [afsluttende accept og begrænsninger](docs/phase-23.md). Krav til færre standardfelter og samlet senere UI/UX-forenkling er registreret dér.
