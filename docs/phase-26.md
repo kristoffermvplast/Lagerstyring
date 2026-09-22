@@ -41,3 +41,9 @@ Lokal implementering/test: 0 kr. Repository er offentligt, eksisterende runner e
 Main-publicering og eventuell automatisk Railway-deployment kræver særskilt vurdering efter 1 kr.-reglen (tidligere estimat 0–0,30 kr., worst-case 1–3 kr. for build/opstart/containeroverlap). Ingen main-publicering eller hosted ændringer er udført i denne fase.
 
 Foto forbliver deaktiveret hosted. UI/UX-forenklingskravene bevares: færre obligatoriske felter, kun nødvendige felter synlige som standard, valgfrie/skjulte avancerede felter hvor forsvarligt, enklere oprettelse og mere intuitiv navigation. Efter Fase 26 skal slutstatus gennemgås, før denne særskilte runde må startes.
+
+## Første native CI og målrettet recovery-rettelse
+
+CI `35759662258` på `64f9be9`: 305 almindelige tests, 21 samtidighedstests og fire af fem native driftsprøver består. Belastning: 120 kald / 10 arbejdere / pool 4, p95 42 ms, samlet 379 ms. Recovery standsede ved PostgreSQLs kontrol af den oprindelige grantor: målcluster var initialiseret med en anden bootstrap-administrator. Browser/runtime-trinene blev derfor ikke kørt i dette forsøg.
+
+Rettelse: begge disponible instanser initialiseres med samme bootstraprolle `postgres`. Kun den ene forventede `CREATE ROLE postgres;` udelades fra rolledumpen, fordi rollen allerede eksisterer; alle ALTER/grants bevares, og alle andre fejl stopper restore. Tomt mål og identiske rolletilhørsforhold inklusive grantor/ADMIN/INHERIT/SET kontrolleres eksplicit. Ingen hosted roller eller applikationsrettigheder ændres.

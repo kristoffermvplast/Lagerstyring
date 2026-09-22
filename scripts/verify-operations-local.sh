@@ -17,7 +17,7 @@ cleanup() {
 trap cleanup EXIT
 docker run -d --name phase26-postgres -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=phase26_source -p 127.0.0.1:55433:5432 postgres:17 >/dev/null
 created_source=true
-docker run -d --name phase26-restore -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_USER=restore_admin -e POSTGRES_DB=phase26_restored -p 127.0.0.1:55434:5432 postgres:17 >/dev/null
+docker run -d --name phase26-restore -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=phase26_restored -p 127.0.0.1:55434:5432 postgres:17 >/dev/null
 created_restore=true
 for name in phase26-postgres phase26-restore; do
   ready=false

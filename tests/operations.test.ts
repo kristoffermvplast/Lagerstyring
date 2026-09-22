@@ -107,18 +107,24 @@ it.skipIf(!url)('bounds concurrent HTTP load and proves actor isolation when fou
 },60000);
 it.skipIf(!url)('restores a real PostgreSQL archive, retains journals/ACL/RLS and resumes idempotent business reads',async()=>{
  const before=await snapshot();const started=performance.now();
+ const emptyTarget=new Pool({connectionString:'postgresql://postgres@127.0.0.1:55434/phase26_restored'});
+ try { expect((await emptyTarget.query("select count(*)::int n from pg_tables where schemaname not in ('pg_catalog','information_schema')")).rows[0].n).toBe(0); } finally { await emptyTarget.end(); }
  // Fixed dedicated local container; no shell interpolation, URLs or hosted credentials.
  const archive=execFileSync('docker',['exec','phase26-postgres','pg_dump','-U','postgres','-Fc','phase26_source'],{maxBuffer:16*1024*1024,timeout:30000});
  const roles=execFileSync('docker',['exec','phase26-postgres','pg_dumpall','-U','postgres','--roles-only','--no-role-passwords'],{maxBuffer:1024*1024,timeout:30000});
- execFileSync('docker',['exec','-i','phase26-restore','psql','-U','restore_admin','-d','phase26_restored','--set=ON_ERROR_STOP=1'],{input:roles,maxBuffer:1024*1024,timeout:30000});
- execFileSync('docker',['exec','-i','phase26-restore','pg_restore','-U','restore_admin','--exit-on-error','-d','phase26_restored'],{input:archive,maxBuffer:1024*1024,timeout:30000});
+ // Both clusters use the same bootstrap role. Skip only its already-existing CREATE; preserve ALTER and all grants.
+ const roleSql=roles.toString('utf8');expect(roleSql.split('\n').filter(line=>line==='CREATE ROLE postgres;')).toHaveLength(1);
+ execFileSync('docker',['exec','-i','phase26-restore','psql','-U','postgres','-d','phase26_restored','--set=ON_ERROR_STOP=1'],{input:roleSql.replace('CREATE ROLE postgres;\n',''),maxBuffer:1024*1024,timeout:30000});
+ execFileSync('docker',['exec','-i','phase26-restore','pg_restore','-U','postgres','--exit-on-error','-d','phase26_restored'],{input:archive,maxBuffer:1024*1024,timeout:30000});
  const restored=new Pool({connectionString:'postgresql://postgres@127.0.0.1:55434/phase26_restored'});
  const restoredRuntime=new Pool({connectionString:'postgresql://postgres@127.0.0.1:55434/phase26_restored',max:4,options:'-c role=app_backend'});
  const previous=service.pool;
  try{
   expect(await snapshot(restored)).toEqual(before);
   const catalog=async(p:any)=>(await p.query("select n.nspname,c.relname,c.relrowsecurity,c.relforcerowsecurity,c.relacl::text,pg_get_userbyid(c.relowner) owner from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname in ('app','app_private') order by 1,2")).rows;
-  expect(await catalog(restored)).toEqual(await catalog(db));service.pool=restoredRuntime;
+  expect(await catalog(restored)).toEqual(await catalog(db));
+  const memberships=async(p:any)=>(await p.query("select r.rolname role,m.rolname member,g.rolname grantor,a.admin_option,a.inherit_option,a.set_option from pg_auth_members a join pg_roles r on r.oid=a.roleid join pg_roles m on m.oid=a.member join pg_roles g on g.oid=a.grantor order by 1,2,3")).rows;
+  expect(await memberships(restored)).toEqual(await memberships(db));service.pool=restoredRuntime;
   expect((await ok(base()+'/reports/stock')).items).toHaveLength(2);
   expect((await call(base()+'/reports/stock','GET',undefined,other)).status).toBe(403);
   const original=(await restored.query("select id,job_id from app.import_receipts where kind='opening_stock'")).rows[0];
