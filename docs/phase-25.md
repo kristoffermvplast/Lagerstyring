@@ -2,6 +2,8 @@
 
 ## Scope og status
 
+**Afsluttet 2026-09-22** med brugerbekræftet `PHASE_25_READ_ONLY_VERIFICATION: PASS` inden for det nedenfor dokumenterede omfang. Tidligere afventende stoppunkter er historik og erstattes af den endelige verifikation nederst.
+
 Implementeret fra main `363e6e07bfd89129f59f1efe3f1d5e7213ff3a48` på `phase25-forecast`. Faseplanens acceptkriterium er, at behov og reservationer ikke tælles dobbelt. Læsebaseret, eksplicit ejerafgrænset scenarieberegning; ingen lagerposteringer eller nye databaseobjekter.
 
 API: `GET /api/companies/:companyId/forecast/options`, `POST /api/companies/:companyId/forecast/preview` (200; læsning trods POST). UI: **Prognose**, eksisterende formularlayout med vare, ejer og slutdato. Produktionsordrer, tilknyttede frie reservationer og forventede leverancer er valgfrie. Ingen redesignrunde.
@@ -46,3 +48,66 @@ Afsluttende UI/UX-krav bevares: færre obligatoriske felter, nødvendige oplysni
 ## Første CI og målrettet rettelse
 
 Arbejdsgrenen blev publiceret som `35495ddda5fd96b34dc3cc43b12dcbd6fd2d6f28`, identisk tree `e42c9ae58511413b1853274deb6758f565119040` med lokal `6eae5eb`. CI [35700939852](https://github.com/kristoffermvplast/Lagerstyring/actions/runs/35700939852): 302 unit/API/databasetests PASS, 21 PostgreSQL-samtidighedstests PASS, 234/240 browserprøver PASS. De seks fejlede kørsler er to nye forecast-cases i hver af tre viewports. Præcis label-locator fandt ikke vare-select, fordi Playwright medtager optiontekst fra det omsluttende label. Vare og lagerejer får eksplicitte, synlige-tekst-matchende aria-labels. Ingen beregnings-, database- eller andre workflowændringer. Runtime/TLS-trin blev sprunget over efter browserfejlen og afventer den korrigerede CI-kørsel.
+
+## Endeligt CI-resultat og stoppunkt
+
+2026-09-22: [CI 35701878822](https://github.com/kristoffermvplast/Lagerstyring/actions/runs/35701878822), job `106661568335`, **SUCCESS** på `804fc57872054827ddc2d3e01ef7ef380bee963f` på `phase25-forecast`.
+
+- 302 unit/API/databasetests PASS.
+- 21 PostgreSQL-samtidighedstests PASS i separat jobtrin. De samme 21 er sprunget over i det almindelige Vitest-trin; ingen dobbelttælling.
+- 240 browserprøver PASS, inklusive alle ni nye forecast-kørsler på desktop/tablet/mobil.
+- Begge workspace-typechecks/builds, backend runtime-image, diagnostikscript og strict TLS/CA-runtimekontrol PASS.
+- Remote branch/tree er læst tilbage: `804fc57872054827ddc2d3e01ef7ef380bee963f`, tree `05a6884f1a9fff802f33fec0923e2998f75fc082`, præcis samme indhold som lokal labelrettelse `89a191a`.
+- Main er kontrolleret uændret på `363e6e07bfd89129f59f1efe3f1d5e7213ff3a48`.
+
+Implementering og CI-verifikation er færdige inden for det dokumenterede scenariescope. **Hosted publicering og målrettet online-verifikation udestår**; ingen online-PASS eller fuld hosted afslutning påstås. Ingen migration kræves. Ingen ny lokal gentagelse af allerede bestået CI. Denne afsluttende dokumentationsopdatering gemmes kun lokalt, så en ekstra CI-kørsel ikke udløses.
+
+For eventuel senere main/Railway-publicering gælder et nyt økonomisk stoppunkt: forventet 0–0,30 kr., realistisk worst-case 1–3 kr. for én normal automatisk deployment, baseret på build/opstart og kort containeroverlap på eksisterende uændrede Railway-ressourcer. Estimatet er ikke en udbydergaranti; ingen sådan handling er udført eller godkendt her. Foto forbliver deaktiveret hosted. Fase 26 er ikke startet.
+
+## Hosted publicering og offentlig kontrol – 2026-09-22
+
+Brugeren godkendte konkret main-publicering af `804fc57`, én normal automatisk Railway-deployment og målrettet online-verifikation (forventet 0–0,30 kr., realistisk worst-case 1–3 kr.). Main blev fast-forwardet uden force til `804fc57872054827ddc2d3e01ef7ef380bee963f`; remote main er læst tilbage og verificeret. Lokale dokumentations-/verifier-commits blev ikke medtaget.
+
+Railway-forbindelsen verificerede automatisk deployment `9c7d5f12-0f39-4d04-9b8f-82b2c5802441`: branch main, præcis `804fc57872054827ddc2d3e01ef7ef380bee963f`, **SUCCESS** (2026-09-22T08:12:04.945Z). Ingen manuel deployment, migration, miljø-, ressource- eller konfigurationsændring. Fotoindstillinger er uændrede/deaktiverede hosted.
+
+Målrettede offentlige HTTPS-kontroller består:
+
+- `/api/health/live`: 200.
+- `/api/health/ready`: 200.
+- Forecast options GET uden token: 401, ikke 404.
+- Forecast preview POST med tom JSON uden token: 401, ikke 404; ingen beregning/skrivning gennemføres uden auth.
+
+**Autentificeret online-verifikation afventer operatørlogin.** Der er ingen brugeradgangskode/session i Work-sessionen. Intet endeligt `PHASE_25_READ_ONLY_VERIFICATION: PASS` påstås endnu.
+
+`scripts/verify-forecast.cjs` er klargjort lokalt: skjult indtastning af offentlig publishable key, e-mail, password, virksomhedsnavn og eksisterende isolationsvirksomheds-ID; real-login/session, fire kilderettigheder, options/scope, isolationsafvisning på begge endpoints, not-found, læsebaseret POST-preview med eksisterende vare/ejer, decimaler, formel og SHA-256 samt lokal sessionsoprydning. Ingen hosted fixtures, ordreændringer, reservationer eller lagerposteringer. Eventuel manglende eksisterende vare/ejer logges eksplicit som `FORECAST_EXISTING_RECORD_PREVIEW: NOT_RUN`; komplekse issue/return/reservation-scenarier dækkes af eksisterende CI og skabes ikke hosted.
+
+Tre nye målrettede verifier-tests PASS (success, afvisning ved scope/formelfejl med cleanup, tomt datagrundlag uden fixture); syntakskontrol PASS. De allerede beståede applikations-/CI-tests blev ikke genkørt manuelt. Main-push kan automatisk starte repositoryets uændrede CI. Script, tests og denne status er kun lokale følgefiler, ikke en ekstra deployment.
+
+Fase 25 kan først færdigmeldes hosted efter den autentificerede operatørkontrol. Fase 26 er ikke startet.
+
+## Endelig online-verifikation og afslutning – 2026-09-22
+
+Brugeren har bekræftet følgende slutresultat fra den autentificerede online-kontrol:
+
+`PHASE_25_READ_ONLY_VERIFICATION: PASS`
+
+- Login og session: PASS.
+- Forecast permissions: PASS.
+- Forecast options read: PASS.
+- Response scope/shape: PASS.
+- Virksomhedsisolation: PASS.
+- Not-found-adfærd: PASS.
+- Session cleanup: PASS.
+
+Forventede afgrænsninger bevares ordret:
+
+```text
+FORECAST_EXISTING_RECORD_PREVIEW: NOT_RUN (no existing item/owner pair; no fixture created)
+FORECAST_COMPLEX_SCENARIOS: NOT_RUN (no hosted fixtures; issue/return/reservation scenarios covered by CI)
+```
+
+Der er ikke oprettet hosted fixtures. Positiv previewberegning med eksisterende vare/ejer, tilhørende decimal-/formel-/hashkontrol og komplekse issue/return/reservation-scenarier påstås ikke gennemført online. Deres beregnings- og sikkerhedsdækning er den allerede dokumenterede lokale/CI-verifikation på `804fc57`. Online-resultatet er brugerbekræftet; ingen tests eller hosted kontroller er gentaget ved denne dokumentationsafslutning.
+
+**Fase 25 er afsluttet** på dette grundlag. Main og automatisk Railway-deployment på `804fc57` er tidligere verificeret som beskrevet ovenfor. Ingen migration kræves eller er kørt for Fase 25. Foto forbliver deaktiveret hosted. Ingen kode-, konfigurations- eller ressourceændringer, ekstra deployment eller eksterne tjenesteudgifter ved denne lokale dokumentationsopdatering. Afslutningsdokumentationen er gemt lokalt og endnu ikke publiceret til main.
+
+UI/UX-forenklingskravene bevares til den afsluttende UI/UX-fase. Fase 26 er ikke startet.
