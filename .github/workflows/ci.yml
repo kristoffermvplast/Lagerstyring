@@ -24,6 +24,8 @@ jobs:
             sleep 1
           done
           INVENTORY_TEST_DATABASE_URL=postgresql://postgres@127.0.0.1:55432/phase7_inventory_test npx vitest run tests/inventory-concurrency.test.ts
+      - name: Verify integrated operations, bounded load and recovery in disposable PostgreSQL
+        run: bash scripts/verify-operations-local.sh
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - name: Build backend runtime image

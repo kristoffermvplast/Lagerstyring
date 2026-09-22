@@ -1,6 +1,6 @@
 # Project rules
 
-- Implement only the phase explicitly authorized by the user. Phase 25 (forecasting foundation) is authorized. Do not implement Phase 26 or later workflows.
+- Implement only the phase explicitly authorized by the user. Phase 26 (integrated operational verification) is authorized. Do not start UI/UX redesign or later phases without separate approval.
 - React/TypeScript/Vite frontend; NestJS backend; Supabase PostgreSQL/Auth/Storage.
 - All business reads and writes go through NestJS. Never introduce browser Data API writes or privileged browser credentials.
 - No hardcoded business master data. Fixtures belong only in tests.
