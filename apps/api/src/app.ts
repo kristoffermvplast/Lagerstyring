@@ -1,3 +1,4 @@
+import {ForecastController} from './forecast';
 import {ImportsController} from './imports';
 import {ReportsController} from './reports';
 import {DashboardController} from './dashboard';
@@ -75,7 +76,7 @@ class AppModule {}
 export async function createApp(config: AppConfig, database = new DatabaseService(config)) {
   const app = await NestFactory.create<NestExpressApplication>({
     module: AppModule,
-    controllers: [ImportsController,ReportsController,DashboardController,StockCountsController,PalletAccountsController,ShipmentsController,ReservationsController,FinishedGoodsController,HandlingUnitsController,ProductionAnalysisController,ProductionWasteController,ProductionCloseController,ProductionRegistrationsController,MaterialIssuesController,ProductionOrdersController,TransfersController,ReceivingController,InventoryController,HealthController, AccessController, MasterdataController, ItemsController, ItemPhotosController, RecipesController, LocationsController],
+    controllers: [ForecastController,ImportsController,ReportsController,DashboardController,StockCountsController,PalletAccountsController,ShipmentsController,ReservationsController,FinishedGoodsController,HandlingUnitsController,ProductionAnalysisController,ProductionWasteController,ProductionCloseController,ProductionRegistrationsController,MaterialIssuesController,ProductionOrdersController,TransfersController,ReceivingController,InventoryController,HealthController, AccessController, MasterdataController, ItemsController, ItemPhotosController, RecipesController, LocationsController],
     providers: [{ provide: DatabaseService, useValue: database }, { provide: APP_CONFIG, useValue: config }, SupabaseIdentity, ItemPhotoStorage, { provide: APP_GUARD, useClass: AccessGuard }],
   }, { logger: config.NODE_ENV === 'test' ? false : ['error', 'warn', 'log'], bodyParser: false });
 
