@@ -42,3 +42,7 @@ Lokale ændringer/tests: 0 kr. Repository er verificeret offentligt; CI bruger `
 Main/Railway-publicering er ikke udført. Senere main-publicering vurderes særskilt efter 1 kr.-reglen. Ingen migration kræves eller køres. Foto forbliver deaktiveret hosted. Supabase-skillens changelog/RLS-dokumentation er kontrolleret; ingen nye Supabase-funktioner/adgangsændringer.
 
 Afsluttende UI/UX-krav bevares: færre obligatoriske felter, nødvendige oplysninger synlige som standard, skjulte/valgfrie avancerede felter, enklere oprettelsesflows og intuitiv navigation med mindre informationsmængde. Fase 26 er ikke startet.
+
+## Første CI og målrettet rettelse
+
+Arbejdsgrenen blev publiceret som `35495ddda5fd96b34dc3cc43b12dcbd6fd2d6f28`, identisk tree `e42c9ae58511413b1853274deb6758f565119040` med lokal `6eae5eb`. CI [35700939852](https://github.com/kristoffermvplast/Lagerstyring/actions/runs/35700939852): 302 unit/API/databasetests PASS, 21 PostgreSQL-samtidighedstests PASS, 234/240 browserprøver PASS. De seks fejlede kørsler er to nye forecast-cases i hver af tre viewports. Præcis label-locator fandt ikke vare-select, fordi Playwright medtager optiontekst fra det omsluttende label. Vare og lagerejer får eksplicitte, synlige-tekst-matchende aria-labels. Ingen beregnings-, database- eller andre workflowændringer. Runtime/TLS-trin blev sprunget over efter browserfejlen og afventer den korrigerede CI-kørsel.
