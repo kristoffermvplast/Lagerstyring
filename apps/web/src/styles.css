@@ -105,3 +105,6 @@ textarea{font:inherit;border:1px solid #cbd5e1;border-radius:8px;padding:10px;wi
 .form-guidance{display:none;font-size:13px;color:#526174}
 .access-content:has(form)>.form-guidance{display:block}
 .access-content input[aria-required=true]{border-left:3px solid #235b40}
+
+/* UI/UX stage 2: catalog filter selects must fit their flex/grid cells on mobile. */
+.master-toolbar label{grid-template-columns:minmax(0,1fr);min-width:130px}

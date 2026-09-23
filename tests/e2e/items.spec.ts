@@ -31,7 +31,7 @@ test('minimal product create edit deactivate and history on every viewport',asyn
  await page.getByLabel('Nummer',{exact:true}).fill('ITEM-1');await page.getByLabel('Navn',{exact:true}).fill('Product fixture');
  await expect(page.getByLabel('Minimumslager',{exact:true})).toBeDisabled();await page.getByRole('button',{name:'Gem',exact:true}).click();
  await expect(page.getByRole('cell',{name:'Product fixture',exact:true})).toBeVisible();await expect(page.getByText('Lagerenhed mangler',{exact:true})).toBeVisible();
- await page.getByRole('button',{name:'Redigér',exact:true}).click();await page.getByLabel('Navn',{exact:true}).fill('Changed fixture');await page.getByLabel('Aktiv',{exact:true}).uncheck();page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'Gem',exact:true}).click();
+ await page.getByRole('button',{name:'Redigér',exact:true}).click();await page.getByLabel('Navn',{exact:true}).fill('Changed fixture');await page.getByText('Flere oplysninger',{exact:true}).click();await page.getByLabel('Aktiv',{exact:true}).uncheck();page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'Gem',exact:true}).click();
  await expect(page.getByText('Inaktiv',{exact:true})).toBeVisible();await page.getByRole('button',{name:'Detaljer og historik'}).click();await expect(page.getByRole('heading',{name:'Changed fixture'})).toBeVisible();await expect(page.locator('details summary').filter({hasText:/Oprettet|Ændret/})).toHaveCount(2);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
 });
@@ -39,14 +39,14 @@ test('inline unit keeps material draft and decimal input stays exact',async({pag
  const rows=await fixture(page);await openWorkspace(page,'Materialer');await page.getByRole('button',{name:'Opret ny'}).click();
  await page.getByLabel('Nummer',{exact:true}).fill('MAT-1');await page.getByLabel('Navn',{exact:true}).fill('Material fixture');await page.getByRole('button',{name:'Opret lagerenhed',exact:true}).click();
  await page.getByLabel('Nummer / kode',{exact:true}).fill('MASS');await page.getByLabel('Navn',{exact:true}).last().fill('Mass');await page.getByLabel('Symbol',{exact:true}).fill('m');await page.getByLabel('Enhedstype',{exact:true}).selectOption('mass');await page.getByRole('button',{name:'Gem',exact:true}).last().click();
- await expect(page.getByLabel('Navn',{exact:true})).toHaveCount(1);await expect(page.getByLabel('Nummer',{exact:true})).toHaveValue('MAT-1');await expect(page.getByLabel('Lagerenhed',{exact:true})).not.toHaveValue('');await page.getByLabel('Minimumslager',{exact:true}).fill('0,00825001');await page.getByRole('button',{name:'Gem',exact:true}).click();await expect(page.getByRole('cell',{name:'Material fixture',exact:true})).toBeVisible();expect(rows[company+'material'][0].minimum_stock).toBe('0.00825001');
+ await expect(page.getByLabel('Navn',{exact:true})).toHaveCount(1);await expect(page.getByLabel('Nummer',{exact:true})).toHaveValue('MAT-1');await expect(page.getByLabel('Lagerenhed',{exact:true})).not.toHaveValue('');await page.getByText('Flere oplysninger',{exact:true}).click();await page.getByLabel('Minimumslager',{exact:true}).fill('0,00825001');await page.getByRole('button',{name:'Gem',exact:true}).click();await expect(page.getByRole('cell',{name:'Material fixture',exact:true})).toBeVisible();expect(rows[company+'material'][0].minimum_stock).toBe('0.00825001');
 });
 test('packaging is separate and company switch discards previous data and drafts',async({page})=>{
  await fixture(page);await openWorkspace(page,'Emballage');await page.getByRole('button',{name:'Opret ny'}).click();await page.getByLabel('Nummer',{exact:true}).fill('PACK');await page.getByLabel('Navn',{exact:true}).fill('Packaging A');await page.getByRole('button',{name:'Gem',exact:true}).click();await expect(page.getByRole('cell',{name:'Packaging A'})).toBeVisible();
  await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await openWorkspace(page,'Emballage');await expect(page.getByRole('cell',{name:'Packaging A'})).toHaveCount(0);await expect(page.getByText(/Ingen resultater/)).toBeVisible();
 });
 test('read-only user cannot open create forms',async({page})=>{
- await fixture(page,false);for(const name of ['Varer','Materialer','Emballage']) {await page.getByRole('button',{name,exact:true}).click();await expect(page.getByRole('button',{name:'Opret ny'})).toHaveCount(0);await expect(page.getByText(/Ingen resultater/)).toBeVisible();}
+ await fixture(page,false);for(const name of ['Varer','Materialer','Emballage']) {await openWorkspace(page,name);await expect(page.getByRole('button',{name:'Opret ny'})).toHaveCount(0);await expect(page.getByText(/Ingen resultater/)).toBeVisible();}
 });
 test('authorized photo upload displays the raster through the backend',async({page})=>{
  const rows=await fixture(page);let photo:any=null;
@@ -58,3 +58,18 @@ test('authorized photo upload displays the raster through the backend',async({pa
  await page.locator('input[type=file]').setInputFiles({name:'fixture.png',mimeType:'image/png',buffer:Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a1XcAAAAASUVORK5CYII=','base64')});
  await expect(page.getByRole('img',{name:'Foto af Photo fixture'})).toBeVisible();expect(photo.mime).toBe('image/png');
 });
+for(const [title,kind] of [['Varer','product'],['Materialer','material']]){
+ test('stage2 '+kind+' collapsed edit preserves hidden relations and exact values',async({page})=>{
+ const rows=await fixture(page);const id='50000000-0000-4000-8000-000000009999';
+ const hidden={description:'Bevar beskrivelse',color:'Blue',product_group_id:id,standard_location_id:null,minimum_stock:'0.00825001',desired_stock:'12.00000001',maximum_stock:'100',reorder_level:'2',standard_order_quantity:'10',quantity_per_pallet:'25',notes:'Hidden notes',active:false,...(kind==='product'?{customer_id:id,standard_machine_id:id,cavities:4,cycle_time_seconds:'1.00000001',production_notes:'Keep production'}:{supplier_id:id,supplier_code:'SUP-1',material_type_id:id,lead_time_days:12})};
+ rows[company+kind]=[{id,code:'EXISTING',name:'Existing',kind,unit_id:id,version:3,...hidden}];
+ await openWorkspace(page,title);await page.getByRole('button',{name:'Redigér',exact:true}).click();
+ await expect(page.getByLabel('Lagerenhed',{exact:true})).toBeVisible();await expect(page.getByLabel('Lagerenhed',{exact:true})).toBeDisabled();await expect(page.getByLabel('Noter',{exact:true})).not.toBeVisible();
+ await page.getByLabel('Navn',{exact:true}).fill('Renamed');await page.getByRole('button',{name:'Gem',exact:true}).click();await expect(page.getByRole('cell',{name:'Renamed',exact:true})).toBeVisible();
+ expect(rows[company+kind][0]).toMatchObject({...hidden,unit_id:id,name:'Renamed',version:4});
+ });
+ test('stage2 '+kind+' minimal active creation without unit',async({page})=>{
+ const rows=await fixture(page);await openWorkspace(page,title);await page.getByRole('button',{name:'Opret ny'}).click();await expect(page.getByLabel('Noter',{exact:true})).not.toBeVisible();await expect(page.getByText('Vi anbefaler at vælge lagerenhed nu.',{exact:false})).toBeVisible();
+ await page.getByLabel('Nummer',{exact:true}).fill('MIN');await page.getByLabel('Navn',{exact:true}).fill('Minimal');await page.getByRole('button',{name:'Gem',exact:true}).click();await expect(page.getByRole('cell',{name:'Minimal',exact:true})).toBeVisible();expect(rows[company+kind][0]).toMatchObject({active:true,unit_id:null,code:'MIN'});
+ });
+}

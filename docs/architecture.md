@@ -195,3 +195,7 @@ Fase 26 er **afsluttet 2026-09-23 inden for det brugeraccepterede omfang**. Fron
 ## UI/UX Etape 1 — frontendforenkling
 
 Se [implementering og målrettede tests](ux-stage-1.md). Grupperet navigation, fælles feltpræsentation, sammenfoldede listefiltre og et søgbart fælles referencefelt ændrer kun brugerfladen. De eksisterende API-kontrakter, adgangsbetingelser, virksomhedsafgrænsning og skrive-/genforsøgsmekanismer bevares. Domæneformularer og forudfyldning i Etape 2–4 er ikke igangsat.
+
+## UI/UX Etape 2 — stamdataformularer
+
+Se [Etape 2](ux-stage-2.md). Frontend bruger sammenfoldede sektioner med fortsat monterede felter. Draft-værdier, API-payloads, obligatoriske grundfelter, versionskontrol og servervalidering bevares. Ingen backend-/datamodelændring eller automatisk nummerering. Etape 3–4 er ikke igangsat.

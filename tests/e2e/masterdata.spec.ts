@@ -26,7 +26,7 @@ async function fixture(page:Page,write=true){
 test('customer creation, edit, deactivation, search and audit fit each viewport',async({page})=>{
  await fixture(page);await openWorkspace(page,'Kunder');await page.getByRole('button',{name:'Opret ny'}).click();
  await page.getByLabel('Nummer / kode',{exact:true}).fill('C-100');await page.getByLabel('Navn',{exact:true}).fill('Customer fixture');await page.getByRole('button',{name:'Gem',exact:true}).click();
- await expect(page.getByRole('cell',{name:'Customer fixture',exact:true})).toBeVisible();await page.getByRole('button',{name:'Redigér',exact:true}).click();await page.getByLabel('Navn',{exact:true}).fill('Updated fixture');await page.getByLabel('Aktiv',{exact:true}).uncheck();page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'Gem',exact:true}).click();
+ await expect(page.getByRole('cell',{name:'Customer fixture',exact:true})).toBeVisible();await page.getByRole('button',{name:'Redigér',exact:true}).click();await page.getByLabel('Navn',{exact:true}).fill('Updated fixture');await page.getByText('Flere oplysninger',{exact:true}).click();await page.getByLabel('Aktiv',{exact:true}).uncheck();page.once('dialog',d=>d.accept());await page.getByRole('button',{name:'Gem',exact:true}).click();
  await expect(page.getByText('Inaktiv',{exact:true})).toBeVisible();await page.getByRole('button',{name:'Detaljer og historik'}).click();await expect(page.getByRole('heading',{name:'Seneste 100 ændringer'})).toBeVisible();await expect(page.locator('.access-card summary')).toHaveCount(2);
  await page.getByLabel('Søg efter nummer eller navn').fill('missing');await expect(page.getByText(/Ingen resultater/)).toBeVisible();expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
 });
@@ -38,4 +38,28 @@ test('company switch unmounts drafts and does not show the previous company reco
 });
 test('creates a machine type inline while preserving the machine draft',async({page})=>{
  await fixture(page);await openWorkspace(page,'Maskiner');await page.getByRole('button',{name:'Opret ny'}).click();await page.getByLabel('Nummer / kode',{exact:true}).fill('M-1');await page.getByLabel('Navn',{exact:true}).fill('Machine fixture');await page.getByRole('button',{name:'Opret maskintype',exact:true}).click();await page.getByLabel('Nummer / kode',{exact:true}).last().fill('TYPE-1');await page.getByLabel('Navn',{exact:true}).last().fill('Type fixture');await page.getByRole('button',{name:'Gem',exact:true}).last().click();await expect(page.getByLabel('Nummer / kode',{exact:true})).toHaveCount(1);await expect(page.getByLabel('Nummer / kode',{exact:true})).toHaveValue('M-1');await expect(page.getByLabel('Maskintype',{exact:true})).not.toHaveValue('');await page.getByRole('button',{name:'Gem',exact:true}).click();await expect(page.getByRole('cell',{name:'Machine fixture'})).toBeVisible();
+});
+for(const [title,kind] of [['Kunder','customers'],['Leverandører','suppliers']]){
+ test('stage2 '+kind+' minimal create and hidden fields survive edits',async({page})=>{
+ const rows=await fixture(page);await openWorkspace(page,title);await page.getByRole('button',{name:'Opret ny'}).click();
+ await expect(page.getByLabel('E-mail',{exact:true})).not.toBeVisible();await expect(page.getByLabel('Aktiv',{exact:true})).toBeChecked();
+ await page.getByLabel('Nummer / kode',{exact:true}).fill('SIMPLE');await page.getByLabel('Navn',{exact:true}).fill('Minimal');await page.getByRole('button',{name:'Gem',exact:true}).click();
+ await expect(page.getByRole('cell',{name:'Minimal',exact:true})).toBeVisible();expect(rows[company+kind][0].active).toBe(true);
+ await page.getByRole('button',{name:'Redigér',exact:true}).click();await page.getByText('Flere oplysninger',{exact:true}).click();
+ for(const [label,value] of [['Adresse','Adresse 1'],['Kontaktperson','Kontakt'],['Telefon','12345678'],['E-mail','contact@example.test'],['Noter','Bevar noter']])await page.getByLabel(label,{exact:true}).fill(value);
+ if(kind==='suppliers')await page.getByLabel('Standardleveringstid (dage)').fill('12');
+ await page.getByRole('button',{name:'Gem',exact:true}).click();await expect(page.getByRole('button',{name:'Redigér',exact:true})).toBeVisible();
+ const before={...rows[company+kind][0]};await page.getByRole('button',{name:'Redigér',exact:true}).click();
+ await expect(page.getByLabel('E-mail',{exact:true})).not.toBeVisible();await page.getByLabel('Navn',{exact:true}).fill('Renamed');await page.getByRole('button',{name:'Gem',exact:true}).click();
+ await expect(page.getByRole('cell',{name:'Renamed',exact:true})).toBeVisible();expect(rows[company+kind][0]).toEqual({...before,name:'Renamed',version:before.version+1});
+ });
+}
+test('stage2 folded invalid email opens and server duplicate error preserves draft',async({page})=>{
+ await fixture(page);await openWorkspace(page,'Kunder');await page.getByRole('button',{name:'Opret ny'}).click();
+ await page.getByLabel('Nummer / kode',{exact:true}).fill('DUP');await page.getByLabel('Navn',{exact:true}).fill('Keep draft');
+ await page.getByText('Flere oplysninger',{exact:true}).click();await page.getByLabel('E-mail',{exact:true}).fill('invalid');await page.getByText('Flere oplysninger',{exact:true}).click();
+ await page.getByRole('button',{name:'Gem',exact:true}).click();await expect(page.getByLabel('E-mail',{exact:true})).toBeVisible();
+ await page.getByLabel('E-mail',{exact:true}).fill('valid@example.test');await page.getByText('Flere oplysninger',{exact:true}).click();
+ await page.route('**/api/companies/*/masterdata/customers',r=>r.fulfill({status:409,json:{message:'Nummer findes allerede'}}));
+ await page.getByRole('button',{name:'Gem',exact:true}).click();await expect(page.getByRole('alert')).toBeVisible();await expect(page.getByLabel('Nummer / kode',{exact:true})).toHaveValue('DUP');await expect(page.getByLabel('E-mail',{exact:true})).toHaveValue('valid@example.test');
 });
