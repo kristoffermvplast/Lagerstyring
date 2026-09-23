@@ -1,3 +1,5 @@
+import {chooseReference} from './ux-helpers';
+import {openWorkspace} from './ux-helpers';
 import {test,expect,Page} from '@playwright/test';
 const company='10000000-0000-4000-8000-000000000001',other='10000000-0000-4000-8000-000000000002';
 async function fixture(page:Page,adjust=true){
@@ -15,16 +17,16 @@ async function fixture(page:Page,adjust=true){
   return r.fulfill({json:{items,total:items.length}});
  });
  await page.addInitScript(s=>sessionStorage.setItem('lager-auth-session',JSON.stringify(s)),session);
- await page.goto('/');await page.getByRole('button',{name:'Lager',exact:true}).click();return{row,bodies};
+ await page.goto('/');await openWorkspace(page,'Lager');return{row,bodies};
 }
 test('shows ownership and physical stock; reader cannot adjust or edit owners',async({page})=>{
  await fixture(page,false);await expect(page.getByRole('cell',{name:'12.00000000 kg'})).toBeVisible();await expect(page.getByRole('button',{name:'Ny lagerkorrektion'})).toHaveCount(0);
  await page.getByRole('button',{name:'Ejere',exact:true}).click();await page.getByRole('button',{name:'Vis historik'}).click();await expect(page.getByRole('button',{name:'Gem ejer'})).toHaveCount(0);
- await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await page.getByRole('button',{name:'Lager',exact:true}).click();await expect(page.getByRole('cell',{name:'12.00000000 kg'})).toHaveCount(0);
+ await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await openWorkspace(page,'Lager');await expect(page.getByRole('cell',{name:'12.00000000 kg'})).toHaveCount(0);
 });
 test('confirms correction and retries identical body and key after failed response',async({page})=>{
  const {row,bodies}=await fixture(page);await page.getByRole('button',{name:'Ny lagerkorrektion'}).click();
- await page.getByLabel('Vare',{exact:true}).selectOption(row.id);await page.getByLabel('Ejer',{exact:true}).selectOption(row.id);await page.getByLabel('Placering',{exact:true}).selectOption(row.id);
+ await chooseReference(page,'Vare',row.id);await chooseReference(page,'Ejer',row.id);await page.getByLabel('Placering',{exact:true}).selectOption(row.id);
  await page.getByLabel('Mængdeændring').fill('1,00825');await page.getByLabel('Begrundelse',{exact:true}).fill('Counted stock');page.on('dialog',d=>d.accept());await page.getByRole('button',{name:'Bekræft lagerkorrektion'}).click();
  await expect(page.getByRole('alert')).toBeVisible();await expect(page.getByLabel('Mængdeændring')).toBeDisabled();await page.getByRole('button',{name:'Prøv samme registrering igen'}).click();await expect(page.getByRole('heading',{name:'Begrundet lagerkorrektion'})).toHaveCount(0);
  expect(bodies).toHaveLength(2);expect(bodies[0]).toEqual(bodies[1]);expect(bodies[0].lines[0].quantity).toBe('1.00825');

@@ -1,3 +1,4 @@
+import {openWorkspace} from './ux-helpers';
 import {test,expect,Page} from '@playwright/test';
 const company='10000000-0000-4000-8000-000000000001',other='10000000-0000-4000-8000-000000000002',id='20000000-0000-4000-8000-000000000001';
 const code=(kind='machine',c=company)=>`lager:v1:${c}:${kind}:${id}`;
@@ -42,10 +43,10 @@ test('camera starts only on request and releases tracks on navigation',async({pa
  });
  expect(await page.evaluate(()=>(window as any).qrCameraCalls)).toBe(0);
  await page.getByRole('button',{name:'Start kamera',exact:true}).click();await expect.poll(()=>page.evaluate(()=>(window as any).qrCameraCalls)).toBe(1);
- await page.getByRole('button',{name:'Overblik',exact:true}).click();await expect.poll(()=>page.evaluate(()=>(window as any).qrTestStream.getTracks().every((t:MediaStreamTrack)=>t.readyState==='ended'))).toBe(true);
+ await openWorkspace(page,'Overblik');await expect.poll(()=>page.evaluate(()=>(window as any).qrTestStream.getTracks().every((t:MediaStreamTrack)=>t.readyState==='ended'))).toBe(true);
 });
 test('scanner does not grant masterdata write controls',async({page})=>{
- const requests=await fixture(page);await page.getByRole('button',{name:'Maskiner',exact:true}).click();
+ const requests=await fixture(page);await openWorkspace(page,'Maskiner');
  // Read-only user can label/inspect but cannot open an editing or movement form.
  await expect(page.getByRole('button',{name:'Opret ny',exact:true})).toHaveCount(0);expect(requests.every(r=>r.startsWith('GET '))).toBe(true);
 });
@@ -53,7 +54,7 @@ test('location QR populates existing selector only after validation, with no wri
  const requests=await fixture(page);
  await page.route('**/api/companies/*/access',r=>r.fulfill({json:{permissions:['masterdata.read','masterdata.manage'].map(code=>({code}))}}));
  // Re-enter workspace so the authoritative permission query uses the updated fixture.
- await page.reload();await page.getByRole('button',{name:'Maskiner',exact:true}).click();await page.getByRole('button',{name:'Opret ny',exact:true}).click();
+ await page.reload();await openWorkspace(page,'Maskiner');await page.getByRole('button',{name:'Opret ny',exact:true}).click();
  await page.getByText('Scan maskinplacering',{exact:true}).click();
  await page.evaluate(()=>{const canvas=document.createElement('canvas');const stream=canvas.captureStream(5);(window as any).qrTestStream=stream;(window as any).qrCameraCalls=0;Object.defineProperty(navigator.mediaDevices,'getUserMedia',{configurable:true,value:async()=>{(window as any).qrCameraCalls++;return stream;}});});
  await page.getByRole('button',{name:'Start kamera',exact:true}).click();await expect.poll(()=>page.evaluate(()=>(window as any).qrCameraCalls)).toBe(1);

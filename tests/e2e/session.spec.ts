@@ -1,3 +1,4 @@
+import {openWorkspace} from './ux-helpers';
 import { test, expect, type Page } from '@playwright/test';
 
 // Only local Auth/API fixtures. These exercise the real browser SDK, not hosted Supabase.
@@ -78,7 +79,7 @@ test('failed server logout offers local closure that survives reload', async ({ 
 
 test('switching company removes previous company members and management controls', async ({ page }, testInfo) => {
   await fixture(page, { twoCompanies: true });
-  await page.getByRole('button', { name: 'Adgang', exact: true }).click();
+  await openWorkspace(page,'Adgang');
   await expect(page.getByText('Only company A member', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Tilføj medlem' })).toBeVisible();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);

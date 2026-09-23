@@ -1,3 +1,5 @@
+import {chooseReference} from './ux-helpers';
+import {openWorkspace} from './ux-helpers';
 import {test,expect,Page} from '@playwright/test';
 const company='10000000-0000-4000-8000-000000000001',other='10000000-0000-4000-8000-000000000002';
 async function fixture(page:Page,transfer=true){
@@ -20,15 +22,15 @@ async function fixture(page:Page,transfer=true){
   return r.fulfill({json:{items:[],total:0}});
  });
  await page.addInitScript(s=>sessionStorage.setItem('lager-auth-session',JSON.stringify(s)),session);
- await page.goto('/');await page.getByRole('button',{name:'Reservationer',exact:true}).click();return{row,bodies};
+ await page.goto('/');await openWorkspace(page,'Reservationer');return{row,bodies};
 }
 test('reader can list reservations but cannot reserve and company switch clears the page',async({page})=>{
  await fixture(page,false);await expect(page.getByText('Ingen reservationer fundet.')).toBeVisible();await expect(page.getByRole('button',{name:'Ny reservation'})).toHaveCount(0);
- await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await page.getByRole('button',{name:'Reservationer',exact:true}).click();await expect(page.getByText('Ingen reservationer fundet.')).toBeVisible();
+ await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await openWorkspace(page,'Reservationer');await expect(page.getByText('Ingen reservationer fundet.')).toBeVisible();
 });
 test('reserves through backend with confirmation and identical retry after uncertain response',async({page})=>{
  const {row,bodies}=await fixture(page);await page.getByRole('button',{name:'Ny reservation',exact:true}).click();
- await page.getByLabel('Vare',{exact:true}).selectOption(row.id);await page.getByLabel('Ejer',{exact:true}).selectOption(row.id);await page.getByLabel('Placering',{exact:true}).selectOption(row.id);
+ await chooseReference(page,'Vare',row.id);await chooseReference(page,'Ejer',row.id);await page.getByLabel('Placering',{exact:true}).selectOption(row.id);
  await page.getByLabel('Mængde',{exact:true}).fill('1,00825001');await page.getByLabel('Reference',{exact:true}).fill('Customer reference');await page.getByLabel('Begrundelse',{exact:true}).fill('Customer allocation');
  let confirmations=0;page.on('dialog',d=>{expect(d.message()).toContain('Fysisk lager ændres ikke');confirmations++;void d.accept();});await page.getByRole('button',{name:'Bekræft reservation'}).click();
  await expect(page.getByRole('alert')).toBeVisible();await expect(page.getByLabel('Mængde',{exact:true})).toBeDisabled();await page.getByRole('button',{name:'Prøv samme reservation igen'}).click();await expect(page.getByRole('heading',{name:'Ny reservation'})).toHaveCount(0);

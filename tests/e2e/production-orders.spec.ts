@@ -1,3 +1,5 @@
+import {chooseReference} from './ux-helpers';
+import {openWorkspace} from './ux-helpers';
 import {test,expect,Page} from '@playwright/test';
 const company='10000000-0000-4000-8000-000000000001',other='10000000-0000-4000-8000-000000000002',id='50000000-0000-4000-8000-000000000001';
 async function fixture(page:Page,manage=true){
@@ -26,13 +28,13 @@ async function fixture(page:Page,manage=true){
   return r.fulfill({json:{items:u.pathname.includes(other)?[]:[order],total:u.pathname.includes(other)?0:1}});
  });
  await page.addInitScript(s=>sessionStorage.setItem('lager-auth-session',JSON.stringify(s)),session);
- await page.goto('/');await page.getByRole('button',{name:'Produktion',exact:true}).click();return{bodies};
+ await page.goto('/');await openWorkspace(page,'Produktion');return{bodies};
 }
 test('production reader sees requirements and company-specific lists without write actions',async({page})=>{
  await fixture(page,false);await page.getByRole('button',{name:'Åbn ordre',exact:true}).click();await expect(page.getByRole('heading',{name:'Beregnet behov'})).toBeVisible();await expect(page.getByText('4.158',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Ny produktionsordre',exact:true})).toHaveCount(0);await expect(page.getByRole('button',{name:'Markér planlagt'})).toHaveCount(0);
- await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await page.getByRole('button',{name:'Produktion',exact:true}).click();await expect(page.getByText('Ingen produktionsordrer fundet.')).toBeVisible();
+ await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await openWorkspace(page,'Produktion');await expect(page.getByText('Ingen produktionsordrer fundet.')).toBeVisible();
 });
 test('loads defaults, retries identical creation, displays needs and confirms planning',async({page})=>{
- const{bodies}=await fixture(page);await page.getByRole('button',{name:'Ny produktionsordre',exact:true}).click();await page.getByLabel('Vare',{exact:true}).selectOption(id);await expect(page.getByLabel('Maskine',{exact:true})).toHaveValue(id);await page.getByLabel('Ordrenummer',{exact:true}).fill('PO-1');await page.getByLabel('Planlagt antal',{exact:true}).fill('504');await page.getByRole('button',{name:'Gem kladde',exact:true}).click();await expect(page.getByRole('alert')).toBeVisible();await expect(page.getByLabel('Planlagt antal',{exact:true})).toBeDisabled();await page.getByRole('button',{name:'Prøv samme anmodning igen'}).click();await expect(page.getByRole('heading',{name:'Beregnet behov'})).toBeVisible();expect(bodies[0]).toEqual(bodies[1]);expect(bodies[0].machine_id).toBe(id);expect(bodies[0].bom_revision_id).toBe(id);
+ const{bodies}=await fixture(page);await page.getByRole('button',{name:'Ny produktionsordre',exact:true}).click();await chooseReference(page,'Vare',id);await expect(page.getByLabel('Maskine',{exact:true})).toHaveValue(id);await page.getByLabel('Ordrenummer',{exact:true}).fill('PO-1');await page.getByLabel('Planlagt antal',{exact:true}).fill('504');await page.getByRole('button',{name:'Gem kladde',exact:true}).click();await expect(page.getByRole('alert')).toBeVisible();await expect(page.getByLabel('Planlagt antal',{exact:true})).toBeDisabled();await page.getByRole('button',{name:'Prøv samme anmodning igen'}).click();await expect(page.getByRole('heading',{name:'Beregnet behov'})).toBeVisible();expect(bodies[0]).toEqual(bodies[1]);expect(bodies[0].machine_id).toBe(id);expect(bodies[0].bom_revision_id).toBe(id);
  page.once('dialog',d=>{expect(d.message()).toContain('Lageret ændres ikke');void d.accept();});await page.getByRole('button',{name:'Markér planlagt',exact:true}).click();await expect(page.getByRole('button',{name:'Markér klar',exact:true})).toBeVisible();expect(bodies[2]).toEqual({version:1,status:'planned'});await page.getByRole('button',{name:'Vis Kanban'}).click();await expect(page.getByRole('heading',{name:'Planlagt',exact:true})).toBeVisible();
 });

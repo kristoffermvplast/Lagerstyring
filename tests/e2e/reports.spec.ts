@@ -1,3 +1,4 @@
+import {openWorkspace} from './ux-helpers';
 import {test,expect,Page} from '@playwright/test';
 const company='10000000-0000-4000-8000-000000000001',other='10000000-0000-4000-8000-000000000002',id='50000000-0000-4000-8000-000000000001';
 async function fixture(page:Page,exporting=false){
@@ -17,7 +18,7 @@ async function fixture(page:Page,exporting=false){
   return r.fulfill({json:{company_id:c,report:kind,as_of:row.occurred_at,total:c===other?0:26,items:c===other?[]:[row],totals:c===other?[]:[{unit_id:id,unit:'kg',quantity:'30.00000001',reserved_quantity:'2.00000000',available_quantity:'28.00000001'}]}});
  });
  await page.route(/\/api\/companies\/[^/]+\/inventory\//,r=>r.fulfill({json:r.request().url().includes('/entries/'+id)?{id,reason:'Exact report journal',posted_at:'2026-09-16T12:00:00Z',kind:'correction',lines:[]}:{items:[],total:0}}));
- await page.addInitScript(s=>sessionStorage.setItem('lager-auth-session',JSON.stringify(s)),session);await page.goto('/');await page.getByRole('button',{name:'Rapporter',exact:true}).click();await expect(page.getByText('REPORT · First page')).toBeVisible();
+ await page.addInitScript(s=>sessionStorage.setItem('lager-auth-session',JSON.stringify(s)),session);await page.goto('/');await openWorkspace(page,'Rapporter');await expect(page.getByText('REPORT · First page')).toBeVisible();
  return{reads,writes,fail:()=>{fail=true;}};
 }
 test('source permissions constrain reports; applied filters and pages retain full totals',async({page})=>{
@@ -28,7 +29,7 @@ test('source permissions constrain reports; applied filters and pages retain ful
 test('stock links to exact journal filters and source entry; changing company clears report data',async({page})=>{
  const f=await fixture(page);await page.getByRole('button',{name:'Se lagerjournal'}).click();await expect(page.getByLabel('Rapporttype')).toHaveValue('inventory');await expect(page.getByRole('button',{name:'Åbn journalpost'})).toBeVisible();for(const k of ['item_id','owner_id','location_id'])expect(f.reads.at(-1)?.searchParams.get(k)).toBe(id);
  await page.getByRole('button',{name:'Åbn journalpost'}).click();await expect(page.getByRole('heading',{name:'Exact report journal'})).toBeVisible();
- await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await page.getByRole('button',{name:'Rapporter',exact:true}).click();await expect(page.getByText('Ingen rækker matcher filtrene.')).toBeVisible();await expect(page.getByText('REPORT · First page')).toHaveCount(0);expect(f.reads.at(-1)?.searchParams.has('item_id')).toBe(false);
+ await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await openWorkspace(page,'Rapporter');await expect(page.getByText('Ingen rækker matcher filtrene.')).toBeVisible();await expect(page.getByText('REPORT · First page')).toHaveCount(0);expect(f.reads.at(-1)?.searchParams.has('item_id')).toBe(false);
 });
 test('CSV exports applied filters instead of unsaved input or current page and shows generation receipt',async({page})=>{
  const f=await fixture(page,true);await page.getByLabel('Søg varenummer, navn eller reference').fill('SAVED');await page.getByRole('button',{name:'Anvend rapportfiltre'}).click();await expect.poll(()=>f.reads.at(-1)?.searchParams.get('q')).toBe('SAVED');await page.getByRole('button',{name:'Næste rapportside'}).click();await expect(page.getByText('REPORT · Second page')).toBeVisible();await page.getByLabel('Søg varenummer, navn eller reference').fill('UNSAVED');

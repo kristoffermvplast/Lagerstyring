@@ -1,3 +1,4 @@
+import {openWorkspace} from './ux-helpers';
 import { test, expect, Page } from '@playwright/test';
 const company='10000000-0000-4000-8000-000000000001', other='10000000-0000-4000-8000-000000000002';
 async function fixture(page:Page,manage=true) {
@@ -41,20 +42,20 @@ async function fixture(page:Page,manage=true) {
  await page.goto('/');await expect(page.getByRole('heading',{name:'Velkommen tilbage'})).toBeVisible();await page.evaluate(s=>sessionStorage.setItem('lager-auth-session',JSON.stringify(s)),session);await page.reload();await expect(page.getByRole('heading',{name:'Overblik',exact:true})).toBeVisible();return rows;
 }
 test('creates hierarchy, navigates breadcrumbs, edits with history and switches company',async({page})=>{
- await fixture(page);await page.getByRole('button',{name:'Lagerplaceringer',exact:true}).click();
+ await fixture(page);await openWorkspace(page,'Lagerplaceringer');
  await page.getByRole('button',{name:'Opret placering',exact:true}).click();await page.getByLabel('Placeringskode',{exact:true}).fill('ROOT');await page.getByLabel('Placeringsnavn',{exact:true}).fill('Root fixture');await page.getByRole('button',{name:'Gem placering',exact:true}).click();
  await page.getByRole('button',{name:'Underplaceringer (0)',exact:true}).click();await expect(page.getByRole('navigation',{name:'Placeringssti'})).toContainText('ROOT');
  await page.getByRole('button',{name:'Opret placering',exact:true}).click();await expect(page.getByLabel('Overordnet placering',{exact:true})).not.toHaveValue('');await page.getByLabel('Placeringskode',{exact:true}).fill('CHILD');await page.getByLabel('Placeringsnavn',{exact:true}).fill('Child fixture');await page.getByRole('button',{name:'Gem placering',exact:true}).click();
  await expect(page.getByRole('cell',{name:'Child fixture',exact:true})).toBeVisible();await page.getByRole('button',{name:'Redigér',exact:true}).click();await expect(page.getByLabel('Overordnet placering',{exact:true}).locator('option').filter({hasText:'CHILD'})).toHaveCount(0);await page.getByLabel('Placeringsnavn',{exact:true}).fill('Changed child');await page.getByRole('button',{name:'Gem placering',exact:true}).click();
  await page.getByRole('button',{name:'Detaljer og historik',exact:true}).click();await expect(page.getByRole('heading',{name:'Changed child'})).toBeVisible();await expect(page.locator('details summary')).toHaveCount(2);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
- await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await page.getByRole('button',{name:'Lagerplaceringer',exact:true}).click();await expect(page.getByRole('cell',{name:'Changed child'})).toHaveCount(0);
+ await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await openWorkspace(page,'Lagerplaceringer');await expect(page.getByRole('cell',{name:'Changed child'})).toHaveCount(0);
 });
 test('inline location creation preserves product draft and selects the new location',async({page})=>{
- const rows=await fixture(page);await page.getByRole('button',{name:'Varer',exact:true}).click();await page.getByRole('button',{name:'Opret ny'}).click();await page.getByLabel('Nummer',{exact:true}).fill('P');await page.getByLabel('Navn',{exact:true}).fill('Product draft');
+ const rows=await fixture(page);await openWorkspace(page,'Varer');await page.getByRole('button',{name:'Opret ny'}).click();await page.getByLabel('Nummer',{exact:true}).fill('P');await page.getByLabel('Navn',{exact:true}).fill('Product draft');
  await page.getByRole('button',{name:'Opret standardlagerplacering',exact:true}).click();const dialog=page.getByRole('dialog',{name:'Opret placering',exact:true});await dialog.getByLabel('Placeringskode',{exact:true}).fill('S');await dialog.getByLabel('Placeringsnavn',{exact:true}).fill('Storage');await dialog.getByRole('button',{name:'Gem placering'}).click();
  await expect(dialog).toHaveCount(0);await expect(page.getByLabel('Navn',{exact:true})).toHaveValue('Product draft');expect(rows[company+'product']).toHaveLength(0);await expect(page.getByLabel('Standardlagerplacering',{exact:true})).not.toHaveValue('');await page.getByRole('button',{name:'Gem',exact:true}).click();expect(rows[company+'product'][0].standard_location_id).toBe(rows[company+'locations'][0].id);
 });
 test('reader can navigate but cannot create locations',async({page})=>{
- await fixture(page,false);await page.getByRole('button',{name:'Lagerplaceringer',exact:true}).click();await expect(page.getByRole('button',{name:'Opret placering',exact:true})).toHaveCount(0);await expect(page.getByRole('button',{name:'Vis alle placeringer'})).toBeVisible();
+ await fixture(page,false);await openWorkspace(page,'Lagerplaceringer');await expect(page.getByRole('button',{name:'Opret placering',exact:true})).toHaveCount(0);await expect(page.getByRole('button',{name:'Vis alle placeringer'})).toBeVisible();
 });

@@ -1,3 +1,4 @@
+import {openWorkspace} from './ux-helpers';
 import {test,expect,Page} from '@playwright/test';
 const company='10000000-0000-4000-8000-000000000001',other='10000000-0000-4000-8000-000000000002',job='50000000-0000-4000-8000-000000000001';
 async function setup(page:Page,manage=true){
@@ -17,7 +18,7 @@ async function setup(page:Page,manage=true){
   return r.fulfill({json:{company_id:c,kind,errors:[],receipt:{id:'receipt',result:[{row:2,id:'customer'}]}}});
  });
  await page.addInitScript(s=>sessionStorage.setItem('lager-auth-session',JSON.stringify(s)),session);await page.goto('/');
- if(manage)await page.getByRole('button',{name:'Import',exact:true}).click();
+ if(manage)await openWorkspace(page,'Import');
  return {confirms,previews};
 }
 test('preview shows rows without committing, retries same job after a lost response',async({page})=>{

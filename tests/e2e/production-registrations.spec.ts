@@ -1,3 +1,4 @@
+import {openWorkspace} from './ux-helpers';
 import {test,expect,Page} from '@playwright/test';
 const company='10000000-0000-4000-8000-000000000001',other='10000000-0000-4000-8000-000000000002';
 async function fixture(page:Page,transfer=true){
@@ -29,7 +30,7 @@ async function fixture(page:Page,transfer=true){
   return r.fulfill({json:u.pathname.endsWith('/'+row.id)?order:{items:[order],total:1}});
  });
  await page.addInitScript(s=>sessionStorage.setItem('lager-auth-session',JSON.stringify(s)),session);
- await page.goto('/');await page.getByRole('button',{name:'Produktion',exact:true}).click();await page.getByRole('button',{name:'Åbn ordre',exact:true}).click();return{row,bodies};
+ await page.goto('/');await openWorkspace(page,'Produktion');await page.getByRole('button',{name:'Åbn ordre',exact:true}).click();return{row,bodies};
 }
 test('production reader sees totals and history without record controls',async({page})=>{
  await fixture(page,false);await expect(page.getByText('Ingen produktion registreret.')).toBeVisible();await expect(page.getByText(/Overproduktion/)).toBeVisible();await expect(page.getByRole('button',{name:'Registrér gode emner',exact:true})).toHaveCount(0);

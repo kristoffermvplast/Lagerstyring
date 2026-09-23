@@ -1,3 +1,4 @@
+import {openWorkspace} from './ux-helpers';
 import {test,expect} from '@playwright/test';
 const user='20000000-0000-4000-8000-000000000001';const company='10000000-0000-4000-8000-000000000001';
 // Browser contracts use explicit local fixtures; API/RLS are covered separately by real NestJS + PGlite.
@@ -16,7 +17,7 @@ test('login, profile, no cross-tenant UI data and logout',async({page})=>{
  await expect(page.getByRole('heading',{name:'Overblik',exact:true})).toBeVisible();
  await expect(page.getByRole('button',{name:'Adgang',exact:true})).toHaveCount(0);
  await expect(page.getByLabel('Virksomhed',{exact:true})).toHaveValue(company);
- await page.getByRole('button',{name:'Min profil',exact:true}).click();await expect(page.getByLabel('Dit navn')).toHaveValue('Test operator');
+ await openWorkspace(page,'Min profil');await expect(page.getByLabel('Dit navn')).toHaveValue('Test operator');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize()!.width);
  await page.getByRole('button',{name:'Log ud',exact:true}).click();await expect(page.getByRole('heading',{name:'Velkommen tilbage'})).toBeVisible();
  expect(await page.evaluate(()=>sessionStorage.getItem('lager-auth-session'))).toBeNull();

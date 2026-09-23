@@ -1,3 +1,5 @@
+import {chooseReference} from './ux-helpers';
+import {openWorkspace} from './ux-helpers';
 import {test,expect,Page} from '@playwright/test';
 const company='10000000-0000-4000-8000-000000000001',other='10000000-0000-4000-8000-000000000002';
 async function fixture(page:Page,receive=true){
@@ -20,15 +22,15 @@ async function fixture(page:Page,receive=true){
   return r.fulfill({json:{items:[],total:0}});
  });
  await page.addInitScript(s=>sessionStorage.setItem('lager-auth-session',JSON.stringify(s)),session);
- await page.goto('/');await page.getByRole('button',{name:'Modtagelse',exact:true}).click();return{row,bodies};
+ await page.goto('/');await openWorkspace(page,'Modtagelse');return{row,bodies};
 }
 test('read-only user sees receipts without receiving action',async({page})=>{
  await fixture(page,false);await expect(page.getByText('Ingen modtagelser fundet.')).toBeVisible();await expect(page.getByRole('button',{name:'Ny modtagelse'})).toHaveCount(0);
- await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await page.getByRole('button',{name:'Modtagelse',exact:true}).click();await expect(page.getByText('Ingen modtagelser fundet.')).toBeVisible();
+ await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await openWorkspace(page,'Modtagelse');await expect(page.getByText('Ingen modtagelser fundet.')).toBeVisible();
 });
 test('receives exact decimal difference and retries the same immutable request',async({page})=>{
  const {row,bodies}=await fixture(page);await page.getByRole('button',{name:'Ny modtagelse'}).click();
- await page.getByLabel('Vare',{exact:true}).selectOption(row.id);await page.getByLabel('Ejer',{exact:true}).selectOption(row.id);
+ await chooseReference(page,'Vare',row.id);await chooseReference(page,'Ejer',row.id);
  await expect(page.getByText('Lagerenhed: kg')).toBeVisible();await expect(page.getByLabel('Placering',{exact:true})).toHaveValue(row.id);await expect(page.getByLabel('Leverandør',{exact:true})).toHaveValue(row.id);
  await page.getByLabel('Forventet mængde').fill('10,00825001');await page.getByLabel('Modtaget mængde').fill('8,00000001');
  await expect(page.getByText('Difference: -2.00825000 kg · Afvigelse')).toBeVisible();

@@ -1,3 +1,4 @@
+import {openWorkspace} from './ux-helpers';
 import {test,expect,Page} from '@playwright/test';
 const company='10000000-0000-4000-8000-000000000001',other='10000000-0000-4000-8000-000000000002';
 async function fixture(page:Page,transfer=true){
@@ -20,11 +21,11 @@ async function fixture(page:Page,transfer=true){
   return r.fulfill({json:{items:[],total:0}});
  });
  await page.addInitScript(s=>sessionStorage.setItem('lager-auth-session',JSON.stringify(s)),session);
- await page.goto('/');await page.getByRole('button',{name:'Lagerflytning',exact:true}).click();return{row,bodies};
+ await page.goto('/');await openWorkspace(page,'Lagerflytning');return{row,bodies};
 }
 test('reader can list transfers but cannot create one',async({page})=>{
  await fixture(page,false);await expect(page.getByText('Ingen lagerflytninger fundet.')).toBeVisible();await expect(page.getByRole('button',{name:'Ny lagerflytning'})).toHaveCount(0);
- await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await page.getByRole('button',{name:'Lagerflytning',exact:true}).click();await expect(page.getByText('Ingen lagerflytninger fundet.')).toBeVisible();
+ await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await openWorkspace(page,'Lagerflytning');await expect(page.getByText('Ingen lagerflytninger fundet.')).toBeVisible();
 });
 test('moves a selected owner/location balance and retries identical request after uncertain response',async({page})=>{
  const {row,bodies}=await fixture(page);await page.getByRole('button',{name:'Ny lagerflytning',exact:true}).click();

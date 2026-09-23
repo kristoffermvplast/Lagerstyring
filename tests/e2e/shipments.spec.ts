@@ -1,3 +1,5 @@
+import {chooseReference} from './ux-helpers';
+import {openWorkspace} from './ux-helpers';
 import {test,expect,Page} from '@playwright/test';
 const company='10000000-0000-4000-8000-000000000001',other='10000000-0000-4000-8000-000000000002';
 async function fixture(page:Page,transfer=true){
@@ -22,17 +24,17 @@ async function fixture(page:Page,transfer=true){
  });
  await page.route(/\/api\/companies\/[^/]+\/recipes/,r=>r.fulfill({json:[]}));
  await page.addInitScript(s=>sessionStorage.setItem('lager-auth-session',JSON.stringify(s)),session);
- await page.goto('/');await page.getByRole('button',{name:'Forsendelser',exact:true}).click();return{row,bodies};
+ await page.goto('/');await openWorkspace(page,'Forsendelser');return{row,bodies};
 }
 
 test('read-only shipment access hides creation and company switch clears state',async({page})=>{
  await fixture(page,false);await expect(page.getByText('Ingen forsendelser fundet.')).toBeVisible();await expect(page.getByRole('button',{name:'Ny forsendelse'})).toHaveCount(0);
- await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await page.getByRole('button',{name:'Forsendelser',exact:true}).click();await expect(page.getByText('Ingen forsendelser fundet.')).toBeVisible();
+ await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await openWorkspace(page,'Forsendelser');await expect(page.getByText('Ingen forsendelser fundet.')).toBeVisible();
 });
 test('draft creation uses backend and identical payload when retrying an uncertain response',async({page})=>{
  const {row,bodies}=await fixture(page);await page.getByRole('button',{name:'Ny forsendelse',exact:true}).click();
- await page.getByLabel('Forsendelsesnummer',{exact:true}).fill('SHIP-TEST');await page.getByLabel('Kunde',{exact:true}).selectOption(row.id);await page.getByLabel('Forsendelsesdato',{exact:true}).fill('2026-09-16');
- await page.getByLabel('Vare',{exact:true}).selectOption(row.id);await page.getByLabel('Ejer',{exact:true}).selectOption(row.id);await page.getByLabel('Placering',{exact:true}).selectOption(row.id);
+ await page.getByLabel('Forsendelsesnummer',{exact:true}).fill('SHIP-TEST');await chooseReference(page,'Kunde',row.id);await page.getByLabel('Forsendelsesdato',{exact:true}).fill('2026-09-16');
+ await chooseReference(page,'Vare',row.id);await chooseReference(page,'Ejer',row.id);await page.getByLabel('Placering',{exact:true}).selectOption(row.id);
  await page.getByLabel('Mængde',{exact:true}).fill('1,00825001');await page.getByLabel('Begrundelse',{exact:true}).fill('Customer shipment');
  await page.getByRole('button',{name:'Gem kladde'}).click();await expect(page.getByRole('alert')).toBeVisible();await expect(page.getByLabel('Mængde',{exact:true})).toBeDisabled();
  // Do not fabricate a persisted detail after the retry; close is sufficient for this request-boundary test.

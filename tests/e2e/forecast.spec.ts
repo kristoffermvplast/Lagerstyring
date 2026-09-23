@@ -1,3 +1,5 @@
+import {chooseReference} from './ux-helpers';
+import {openWorkspace} from './ux-helpers';
 import {test,expect,Page} from '@playwright/test';
 const company='10000000-0000-4000-8000-000000000001',other='10000000-0000-4000-8000-000000000002',item='50000000-0000-4000-8000-000000000001',owner='50000000-0000-4000-8000-000000000002',order='50000000-0000-4000-8000-000000000003',reservation='50000000-0000-4000-8000-000000000004';
 async function fixture(page:Page,allowed=true){
@@ -14,15 +16,15 @@ async function fixture(page:Page,allowed=true){
 }
 test('requires all source permissions before showing forecast navigation',async({page})=>{await fixture(page,false);await expect(page.getByRole('button',{name:'Lager',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Prognose',exact:true})).toHaveCount(0);});
 test('calculates explicit production/reservation choices and downloads traceable evidence',async({page})=>{
- const f=await fixture(page);await page.getByRole('button',{name:'Prognose',exact:true}).click();await page.getByLabel('Vare',{exact:true}).selectOption(item);await page.getByLabel('Lagerejer').selectOption(owner);
+ const f=await fixture(page);await openWorkspace(page,'Prognose');await chooseReference(page,'Vare',item);await page.getByLabel('Lagerejer').selectOption(owner);
  await page.getByText('Produktionsbehov og reservationer',{exact:true}).click();await page.getByLabel('ORDER-1',{exact:true}).check();await page.getByLabel('RES-1 · 2',{exact:true}).check();await page.getByRole('button',{name:'Beregn prognose',exact:true}).click();
  await expect(page.getByRole('region',{name:'Prognoseresultat'})).toContainText('Forventet disponibelt: 3 kg');expect(f.requests[0]).toMatchObject({item_id:item,owner_id:owner,production_order_ids:[order],production_reservation_ids:[reservation],arrivals:[]});
  const download=page.waitForEvent('download');await page.getByRole('button',{name:'Hent beregningsgrundlag'}).click();expect((await download).suggestedFilename()).toBe('prognose-'+ 'a'.repeat(12)+'.json');
  await page.getByLabel('ORDER-1',{exact:true}).uncheck();await expect(page.getByRole('region',{name:'Prognoseresultat'})).toHaveCount(0);
 });
 test('keeps optional arrivals separate, hides stale results on failure and resets when changing company',async({page})=>{
- const f=await fixture(page);await page.getByRole('button',{name:'Prognose',exact:true}).click();await page.getByLabel('Vare',{exact:true}).selectOption(item);await page.getByLabel('Lagerejer').selectOption(owner);
+ const f=await fixture(page);await openWorkspace(page,'Prognose');await chooseReference(page,'Vare',item);await page.getByLabel('Lagerejer').selectOption(owner);
  await page.getByText('Forventede leverancer (valgfrit)',{exact:true}).click();await page.getByRole('button',{name:'Tilføj forventet leverance'}).click();await page.getByLabel('Leveringsreference').fill('INBOUND');await page.getByLabel('Forventet mængde').fill('2.00000001');await page.getByRole('button',{name:'Beregn prognose',exact:true}).click();await expect(page.getByRole('region',{name:'Prognoseresultat'})).toBeVisible();expect(f.requests[0].arrivals[0].quantity).toBe('2.00000001');
  f.fail();await page.getByRole('button',{name:'Beregn prognose',exact:true}).click();await expect(page.getByRole('alert')).toBeVisible();await expect(page.getByRole('button',{name:'Hent beregningsgrundlag'})).toHaveCount(0);
- await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await page.getByRole('button',{name:'Prognose',exact:true}).click();await expect(page.getByLabel('Vare',{exact:true})).toHaveValue('');await expect(page.getByLabel('Lagerejer')).toHaveValue('');await expect(page.getByLabel('Leveringsreference')).toHaveCount(0);
+ await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await openWorkspace(page,'Prognose');await expect(page.getByLabel('Vare',{exact:true})).toHaveValue('');await expect(page.getByLabel('Lagerejer')).toHaveValue('');await expect(page.getByLabel('Leveringsreference')).toHaveCount(0);
 });

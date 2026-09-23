@@ -1,3 +1,4 @@
+import {openWorkspace} from './ux-helpers';
 import {test,expect,Page} from '@playwright/test';
 const company='10000000-0000-4000-8000-000000000001',other='10000000-0000-4000-8000-000000000002',id='50000000-0000-4000-8000-000000000001';
 async function fixture(page:Page,write=true,stale=false){
@@ -12,11 +13,11 @@ async function fixture(page:Page,write=true,stale=false){
   if(r.request().method()==='POST'){bodies.push(r.request().postDataJSON());return r.fulfill({status:bodies.length===1?503:201,json:bodies.length===1?{message:'Unavailable'}:c});}
   return r.fulfill({json:r.request().url().includes('/'+id)?c:{items:r.request().url().includes(other)?[]:[c],total:r.request().url().includes(other)?0:1}});
  });
- await page.addInitScript(s=>sessionStorage.setItem('lager-auth-session',JSON.stringify(s)),session);await page.goto('/');await page.getByRole('button',{name:'Optælling',exact:true}).click();return bodies;
+ await page.addInitScript(s=>sessionStorage.setItem('lager-auth-session',JSON.stringify(s)),session);await page.goto('/');await openWorkspace(page,'Optælling');return bodies;
 }
 test('reader sees counts and company switch clears the previous detail',async({page})=>{
  await fixture(page,false);await page.getByRole('button',{name:'Vis optælling'}).click();await expect(page.getByText('Udgangspunkt: 10')).toBeVisible();await expect(page.getByRole('button',{name:'Godkend optælling',exact:true})).toHaveCount(0);await expect(page.getByRole('button',{name:'Ny optælling'})).toHaveCount(0);
- await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await page.getByRole('button',{name:'Optælling',exact:true}).click();await expect(page.getByText('Ingen optællinger fundet.')).toBeVisible();await expect(page.getByText('Udgangspunkt: 10')).toHaveCount(0);
+ await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await openWorkspace(page,'Optælling');await expect(page.getByText('Ingen optællinger fundet.')).toBeVisible();await expect(page.getByText('Udgangspunkt: 10')).toHaveCount(0);
 });
 test('stale count explains recount and offers cancellation without approval',async({page})=>{
  await fixture(page,true,true);await page.getByRole('button',{name:'Vis optælling'}).click();await expect(page.getByRole('alert')).toContainText('tæl igen');await expect(page.getByRole('button',{name:'Godkend optælling',exact:true})).toHaveCount(0);await expect(page.getByRole('button',{name:'Annullér optælling',exact:true})).toBeVisible();await expect(page.getByText('Kundeordre · 9')).toBeVisible();

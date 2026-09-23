@@ -1,3 +1,4 @@
+import {openWorkspace} from './ux-helpers';
 import {test,expect,Page} from '@playwright/test';
 const company='10000000-0000-4000-8000-000000000001',other='10000000-0000-4000-8000-000000000002',id='50000000-0000-4000-8000-000000000001';
 async function fixture(page:Page,write=true,limited=false){
@@ -21,7 +22,7 @@ async function fixture(page:Page,write=true,limited=false){
 test('read-only dashboard leads to exact count and filters stock; company switch clears prior data',async({page})=>{
  await fixture(page,false);await expect(page.getByRole('button',{name:'Kvittér som set'})).toHaveCount(0);
  await page.getByRole('button',{name:'Åbn optælling',exact:true}).click();await expect(page.getByRole('heading',{name:'Optælling · Annulleret'})).toBeVisible();
- await page.getByRole('button',{name:'Overblik',exact:true}).click();await page.getByRole('button',{name:'Åbn lager',exact:true}).click();await expect(page.getByRole('searchbox')).toHaveValue('DASH');
+ await openWorkspace(page,'Overblik');await page.getByRole('button',{name:'Åbn lager',exact:true}).click();await expect(page.getByRole('searchbox')).toHaveValue('DASH');
  await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await expect(page.getByRole('heading',{name:'Kritiske advarsler · 0'})).toBeVisible();await expect(page.getByText('Optælling kræver gentælling')).toHaveCount(0);
 });
 test('uncertain acknowledgement retries identical version and moves alert to acknowledged',async({page})=>{

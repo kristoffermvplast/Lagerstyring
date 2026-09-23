@@ -1,3 +1,5 @@
+import {chooseReference} from './ux-helpers';
+import {openWorkspace} from './ux-helpers';
 import { test, expect, Page } from '@playwright/test';
 const company='10000000-0000-4000-8000-000000000001', other='10000000-0000-4000-8000-000000000002';
 async function baseFixture(page:Page,manage=true) {
@@ -46,7 +48,7 @@ async function recipeFixture(page:Page,manage=true){
   }
   Object.assign(record,body.data,{version:record.version+1});return route.fulfill({json:record});
  });
- await page.getByRole('button',{name:'Styklister og pakning',exact:true}).click();await page.getByLabel('Vare',{exact:true}).selectOption(product);
+ await openWorkspace(page,'Styklister og pakning');await chooseReference(page,'Vare',product);
  return{requests,recipes,component,box,pallet};
 }
 test('creates immutable BOM versions using decimal strings and preserves previous snapshot',async({page})=>{
@@ -63,7 +65,7 @@ test('builds nested packing and previews full and partial pallets without invent
  expect(f.requests.find(x=>x.data?.lines).data.lines.map((l:any)=>[l.level,l.quantity])).toEqual([[0,'12'],[1,'42']]);
 });
 test('read-only rights and company switch hide mutations and discard previous product',async({page})=>{
- await recipeFixture(page,false);await expect(page.getByRole('button',{name:'Opret opsætning'})).toHaveCount(0);await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await page.getByRole('button',{name:'Styklister og pakning',exact:true}).click();await expect(page.getByLabel('Vare',{exact:true})).toHaveValue('');await expect(page.getByRole('heading',{name:'Beregn behov'})).toHaveCount(0);
+ await recipeFixture(page,false);await expect(page.getByRole('button',{name:'Opret opsætning'})).toHaveCount(0);await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await openWorkspace(page,'Styklister og pakning');await expect(page.getByLabel('Vare',{exact:true})).toHaveValue('');await expect(page.getByRole('heading',{name:'Beregn behov'})).toHaveCount(0);
 });
 test('inline creation preserves the BOM draft and does not submit the parent form',async({page})=>{
  const f=await recipeFixture(page);await page.getByLabel('Navn',{exact:true}).fill('Inline recipe');await page.getByRole('button',{name:'Opret opsætning'}).click();await page.getByRole('button',{name:'Ny version',exact:true}).click();await page.getByLabel('Basis i varens lagerenhed').fill('12');await page.getByRole('button',{name:'Tilføj linje'}).click();await page.getByRole('button',{name:'Opret komponent 1'}).click();const dialog=page.getByRole('dialog',{name:'Opret stamdata'});await expect(dialog).toBeVisible();await dialog.getByLabel('Nummer',{exact:true}).fill('NEW');await dialog.getByLabel('Navn',{exact:true}).fill('New component');await dialog.getByRole('button',{name:'Gem',exact:true}).click();await expect(dialog).toHaveCount(0);await expect(page.getByLabel('Basis i varens lagerenhed')).toHaveValue('12');await expect(page.getByLabel('Komponent 1',{exact:true})).not.toHaveValue('');expect(f.requests.filter(x=>x.data?.lines)).toHaveLength(0);

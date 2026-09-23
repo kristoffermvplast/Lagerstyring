@@ -1,3 +1,5 @@
+import {chooseReference} from './ux-helpers';
+import {openWorkspace} from './ux-helpers';
 import {test,expect,Page} from '@playwright/test';
 const company='10000000-0000-4000-8000-000000000001',other='10000000-0000-4000-8000-000000000002';
 async function fixture(page:Page,receive=true){
@@ -20,7 +22,7 @@ async function fixture(page:Page,receive=true){
   return r.fulfill({json:{items:[],total:0}});
  });
  await page.addInitScript(s=>sessionStorage.setItem('lager-auth-session',JSON.stringify(s)),session);
- await page.goto('/');await page.getByRole('button',{name:'Modtagelse',exact:true}).click();return{row,bodies};
+ await page.goto('/');await openWorkspace(page,'Modtagelse');return{row,bodies};
 }
 test('touch navigation stays bounded and keyboard focus follows page and company changes',async({page})=>{
  await fixture(page);await expect(page.locator('#content')).toBeFocused();
@@ -28,7 +30,7 @@ test('touch navigation stays bounded and keyboard focus follows page and company
   const nav=await page.locator('#workspace-menu').boundingBox();expect(nav!.height).toBeLessThanOrEqual(page.viewportSize()!.height*.35+1);
   await page.getByRole('button',{name:'Gå til menu',exact:true}).click();await expect(page.locator('#workspace-menu')).toBeFocused();
  }
- await page.getByRole('button',{name:'Lager',exact:true}).click();await expect(page.locator('#content')).toBeFocused();
+ await openWorkspace(page,'Lager');await expect(page.locator('#content')).toBeFocused();
  await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await expect(page.getByRole('heading',{name:'Overblik',exact:true})).toBeVisible();await expect(page.locator('#content')).toBeFocused();
 });
 test('narrow form supports decimal entry and no document overflow in portrait and landscape',async({page})=>{
@@ -46,7 +48,7 @@ test('lost receipt response keeps exact retry payload and reconnect never resend
   const body=r.request().postDataJSON();requests.push(body);posted.add(body.idempotency_key);
   if(requests.length===1)return r.abort('connectionreset');return r.fulfill({status:201,json:{id:'receipt'}});
  });
- await page.getByRole('button',{name:'Ny modtagelse'}).click();await page.getByLabel('Vare',{exact:true}).selectOption(row.id);await page.getByLabel('Ejer',{exact:true}).selectOption(row.id);await expect(page.getByText('Lagerenhed: kg')).toBeVisible();await expect(page.getByLabel('Placering',{exact:true})).toHaveValue(row.id);await page.getByLabel('Modtaget mængde').fill('8,00000001');page.on('dialog',d=>void d.accept());
+ await page.getByRole('button',{name:'Ny modtagelse'}).click();await chooseReference(page,'Vare',row.id);await chooseReference(page,'Ejer',row.id);await expect(page.getByText('Lagerenhed: kg')).toBeVisible();await expect(page.getByLabel('Placering',{exact:true})).toHaveValue(row.id);await page.getByLabel('Modtaget mængde').fill('8,00000001');page.on('dialog',d=>void d.accept());
  await page.getByRole('button',{name:'Bekræft modtagelse'}).click();await expect(page.getByRole('alert')).toContainText('Handlingen kan være gemt');await expect(page.getByLabel('Modtaget mængde')).toBeDisabled();expect(requests).toHaveLength(1);
  await page.evaluate(()=>window.dispatchEvent(new Event('offline')));await expect(page.getByText('Enheden er offline.',{exact:false})).toBeVisible();await page.evaluate(()=>window.dispatchEvent(new Event('online')));await expect(page.getByText('Enheden melder netværk igen.',{exact:false})).toBeVisible();expect(requests).toHaveLength(1);
  await page.getByRole('button',{name:'Prøv samme modtagelse igen'}).click();await expect(page.getByText('Modtagelsen er bogført på lageret.')).toBeVisible();expect(requests).toHaveLength(2);expect(requests[0]).toEqual(requests[1]);expect(posted.size).toBe(1);

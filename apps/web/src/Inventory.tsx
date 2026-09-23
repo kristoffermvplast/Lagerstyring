@@ -1,3 +1,4 @@
+import {SearchSelect} from './SearchSelect';
 import {useState} from 'react';
 import {useQuery,useQueryClient} from '@tanstack/react-query';
 import {accessApi} from './auth-client';
@@ -7,7 +8,7 @@ type List={items:Row[];total:number};
 const msg=(e:unknown)=>e instanceof Error?e.message:'Handlingen kunne ikke gennemføres.';
 export function Picker({path,label,value,change,optional=false}:{optional?:boolean;path:string;label:string;value:string;change:(s:string)=>void}){
  const[q,setQ]=useState('');const list=useQuery({queryKey:['inventory-picker',path,q],queryFn:()=>accessApi<List>(path+'?limit=100&q='+encodeURIComponent(q)),retry:false});
- return <label>{label}<input aria-label={'Søg '+label} type="search" value={q} onChange={e=>setQ(e.target.value)}/><select aria-label={label} required={!optional} value={value} onChange={e=>change(e.target.value)}><option value="">Vælg</option>{list.data?.items.map(x=><option key={x.id} value={x.id}>{x.code} · {x.name}{x.active?'':' (inaktiv)'}</option>)}</select>{list.error&&<span role="alert">{msg(list.error)}</span>}<small>Søg for at afgrænse de første 100 resultater.</small></label>;
+ return <SearchSelect key={path} label={label} value={value} change={change} query={q} search={setQ} items={list.data?.items??[]} pending={list.isPending} error={list.error?msg(list.error):''} retry={()=>void list.refetch()} optional={optional}/>;
 }
 export function Inventory({initialEntryId='',initialQuery='',company,canAdjust,canMasterRead}: {initialEntryId?:string;initialQuery?:string;company:string;canAdjust:boolean;canMasterRead:boolean}){
  const base=`/companies/${company}`,prefix=base+'/inventory',cache=useQueryClient();

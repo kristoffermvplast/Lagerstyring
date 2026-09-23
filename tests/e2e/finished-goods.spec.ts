@@ -1,3 +1,5 @@
+import {chooseReference} from './ux-helpers';
+import {openWorkspace} from './ux-helpers';
 import {test,expect,Page} from '@playwright/test';
 const company='10000000-0000-4000-8000-000000000001',other='10000000-0000-4000-8000-000000000002';
 async function fixture(page:Page,transfer=true){
@@ -39,7 +41,7 @@ async function fixture(page:Page,transfer=true){
   return r.fulfill({json:u.pathname.endsWith('/'+row.id)?order:{items:[order],total:1}});
  });
  await page.addInitScript(s=>sessionStorage.setItem('lager-auth-session',JSON.stringify(s)),session);
- await page.goto('/');await page.getByRole('button',{name:'Produktion',exact:true}).click();await page.getByRole('button',{name:'Åbn ordre',exact:true}).click();return{row,bodies};
+ await page.goto('/');await openWorkspace(page,'Produktion');await page.getByRole('button',{name:'Åbn ordre',exact:true}).click();return{row,bodies};
 }
 
 
@@ -47,7 +49,7 @@ test('reader sees delivered and remaining quantities without write controls',asy
  await fixture(page,false);await expect(page.getByText(/Registreret godt: 500/)).toBeVisible();await expect(page.getByRole('button',{name:'Bekræft lageraflevering',exact:true})).toHaveCount(0);await expect(page.getByRole('button',{name:'Modpostér aflevering',exact:true})).toHaveCount(0);
 });
 test('delivery preserves exact command after an uncertain response',async({page})=>{
- const {row,bodies}=await fixture(page);await page.getByLabel('Antal til lager',{exact:true}).fill('100');await page.getByLabel('Færdigvarernes ejer',{exact:true}).selectOption(row.id);await page.getByLabel('Færdigvareplacering',{exact:true}).selectOption(row.id);await page.getByLabel('Produktionsdato',{exact:true}).fill('2026-09-01');page.on('dialog',d=>void d.accept());await page.getByRole('button',{name:'Bekræft lageraflevering',exact:true}).click();await expect(page.getByLabel('Antal til lager',{exact:true})).toBeDisabled();await page.getByRole('button',{name:'Prøv samme aflevering igen',exact:true}).click();await expect(page.getByLabel('Antal til lager',{exact:true})).toHaveValue('');expect(bodies).toHaveLength(2);expect(bodies[0]).toEqual(bodies[1]);expect(bodies[0].quantity).toBe('100');
+ const {row,bodies}=await fixture(page);await page.getByLabel('Antal til lager',{exact:true}).fill('100');await chooseReference(page,'Færdigvarernes ejer',row.id);await page.getByLabel('Færdigvareplacering',{exact:true}).selectOption(row.id);await page.getByLabel('Produktionsdato',{exact:true}).fill('2026-09-01');page.on('dialog',d=>void d.accept());await page.getByRole('button',{name:'Bekræft lageraflevering',exact:true}).click();await expect(page.getByLabel('Antal til lager',{exact:true})).toBeDisabled();await page.getByRole('button',{name:'Prøv samme aflevering igen',exact:true}).click();await expect(page.getByLabel('Antal til lager',{exact:true})).toHaveValue('');expect(bodies).toHaveLength(2);expect(bodies[0]).toEqual(bodies[1]);expect(bodies[0].quantity).toBe('100');
 });
 test('output reversal requires reason and preserves retry identity',async({page})=>{
  const {bodies}=await fixture(page);page.on('dialog',d=>void d.accept('Incorrect output'));await page.getByRole('button',{name:'Modpostér aflevering',exact:true}).click();await expect(page.getByRole('button',{name:'Modpostér aflevering',exact:true})).toBeDisabled();await page.getByRole('button',{name:'Prøv samme aflevering igen',exact:true}).click();await expect(page.getByRole('button',{name:'Modpostér aflevering',exact:true})).toBeEnabled();expect(bodies[0]).toEqual(bodies[1]);
@@ -61,5 +63,5 @@ test('pallet navigation shows identified stock and retries a whole-pallet move',
   if(new URL(r.request().url()).pathname.endsWith('/moves'))return r.fulfill({json:{items:[]}});
   return r.fulfill({json:{total:1,items:[{id:row.id,company_id:company,code:'PAL-TEST',active:true,quantity:'100',location_id:row.id,current_location:{name:'Shelf'},order_id:row.id,snapshot:{order_code:'PO-TEST',product:{name:'Product'},owner:{name:'Owner'},unit:{symbol:'stk.'}}}]}});
  });
- await page.getByRole('button',{name:'Pallestyring',exact:true}).click();await expect(page.getByText(/PAL-TEST/)).toBeVisible();await page.getByRole('button',{name:'Vis pallehistorik / flyt',exact:true}).click();await page.getByLabel('Pallens nye placering',{exact:true}).selectOption(row.id);await page.getByLabel('Flyttekommentar',{exact:true}).fill('Move complete pallet');page.on('dialog',d=>void d.accept());await page.getByRole('button',{name:'Flyt hele pallen',exact:true}).click();await expect(page.getByLabel('Flyttekommentar',{exact:true})).toBeDisabled().catch(async e=>{throw new Error(String(e)+'; page errors: '+JSON.stringify(pageErrors)+'; fixture page: '+await page.locator('body').innerText());});await page.getByRole('button',{name:'Prøv samme palleflytning igen',exact:true}).click();await expect(page.getByLabel('Flyttekommentar',{exact:true})).toHaveValue('');expect(bodies).toHaveLength(2);expect(bodies[0]).toEqual(bodies[1]);
+ await openWorkspace(page,'Pallestyring');await expect(page.getByText(/PAL-TEST/)).toBeVisible();await page.getByRole('button',{name:'Vis pallehistorik / flyt',exact:true}).click();await page.getByLabel('Pallens nye placering',{exact:true}).selectOption(row.id);await page.getByLabel('Flyttekommentar',{exact:true}).fill('Move complete pallet');page.on('dialog',d=>void d.accept());await page.getByRole('button',{name:'Flyt hele pallen',exact:true}).click();await expect(page.getByLabel('Flyttekommentar',{exact:true})).toBeDisabled().catch(async e=>{throw new Error(String(e)+'; page errors: '+JSON.stringify(pageErrors)+'; fixture page: '+await page.locator('body').innerText());});await page.getByRole('button',{name:'Prøv samme palleflytning igen',exact:true}).click();await expect(page.getByLabel('Flyttekommentar',{exact:true})).toHaveValue('');expect(bodies).toHaveLength(2);expect(bodies[0]).toEqual(bodies[1]);
 });
