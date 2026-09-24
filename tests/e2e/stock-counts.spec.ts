@@ -27,3 +27,7 @@ test('approval confirms exact difference and retries identical payload after unc
  page.on('dialog',d=>{expect(d.message()).toContain('difference -2 kg');expect(d.message()).toContain('frigives ikke automatisk');dialogs++;void d.accept();});
  await page.getByRole('button',{name:'Godkend optælling',exact:true}).click();await expect(page.getByRole('alert')).toBeVisible();await expect(page.getByLabel('Begrundelse · Godkend optælling',{exact:true})).toBeDisabled();await page.getByRole('button',{name:'Prøv samme handling igen · Godkend optælling',exact:true}).click();await expect.poll(()=>bodies.length).toBe(2);expect(bodies[0]).toEqual(bodies[1]);expect(dialogs).toBe(1);
 });
+
+test('stage3 counted review keeps approval visible and recount under more information',async({page})=>{
+ await fixture(page);await page.getByRole('button',{name:'Vis optælling'}).click();await expect(page.getByLabel('Optalt antal',{exact:true})).not.toBeVisible();await expect(page.getByLabel('Begrundelse · Godkend optælling',{exact:true})).toBeVisible();await page.getByText('Flere oplysninger',{exact:true}).click();await expect(page.getByLabel('Optalt antal',{exact:true})).toBeVisible();
+});

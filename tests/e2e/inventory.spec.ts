@@ -26,8 +26,17 @@ test('shows ownership and physical stock; reader cannot adjust or edit owners',a
 });
 test('confirms correction and retries identical body and key after failed response',async({page})=>{
  const {row,bodies}=await fixture(page);await page.getByRole('button',{name:'Ny lagerkorrektion'}).click();
- await chooseReference(page,'Vare',row.id);await chooseReference(page,'Ejer',row.id);await page.getByLabel('Placering',{exact:true}).selectOption(row.id);
+ await chooseReference(page,'Vare',row.id);await page.getByRole('button',{name:'Vælg ejer og placering manuelt'}).click();await chooseReference(page,'Ejer',row.id);await page.getByLabel('Placering',{exact:true}).selectOption(row.id);
  await page.getByLabel('Mængdeændring').fill('1,00825');await page.getByLabel('Begrundelse',{exact:true}).fill('Counted stock');page.on('dialog',d=>d.accept());await page.getByRole('button',{name:'Bekræft lagerkorrektion'}).click();
  await expect(page.getByRole('alert')).toBeVisible();await expect(page.getByLabel('Mængdeændring')).toBeDisabled();await page.getByRole('button',{name:'Prøv samme registrering igen'}).click();await expect(page.getByRole('heading',{name:'Begrundet lagerkorrektion'})).toHaveCount(0);
  expect(bodies).toHaveLength(2);expect(bodies[0]).toEqual(bodies[1]);expect(bodies[0].lines[0].quantity).toBe('1.00825');
+});
+
+test('stage3 multiple owners and locations require a choice and preserve exact partial quantities',async({page})=>{
+ const {row,bodies}=await fixture(page);const ownerB='50000000-0000-4000-8000-000000000002',placeB='60000000-0000-4000-8000-000000000002';
+ const balance=(owner_id:string,location_id:string)=>({item_id:row.id,owner_id,location_id,quantity:'12.00000001',available_quantity:'2.00000001',snapshot:{item:{code:'MAT',name:'Materiale'},owner:{name:owner_id===row.id?'Ejer A':'Ejer B'},location:{name:location_id===row.id?'Lager A':'Lager B'},unit:{symbol:'kg'}}});
+ await page.route('**/inventory/balances?*',r=>r.fulfill({json:r.request().url().includes(other)?{items:[],total:0}:{items:[balance(row.id,row.id),balance(ownerB,row.id),balance(ownerB,placeB)],total:3}}));
+ await page.getByRole('button',{name:'Ny lagerkorrektion'}).click();await chooseReference(page,'Vare',row.id);await expect(page.getByLabel('Vælg beholdning',{exact:true})).toHaveValue('');await page.getByLabel('Vælg beholdning',{exact:true}).selectOption(ownerB+':'+placeB);await expect(page.getByRole('status').filter({hasText:'Valgt: Ejer B · Lager B'})).toBeVisible();
+ await page.getByLabel('Mængdeændring').fill('-1,00000001');await page.getByLabel('Begrundelse',{exact:true}).fill('Kontrolleret optælling');page.on('dialog',d=>d.accept());await page.getByRole('button',{name:'Bekræft lagerkorrektion'}).click();await expect(page.getByRole('alert')).toBeVisible();expect(bodies[0].lines[0]).toEqual({item_id:row.id,owner_id:ownerB,location_id:placeB,quantity:'-1.00000001'});
+ await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await openWorkspace(page,'Lager');await expect(page.getByRole('heading',{name:'Begrundet lagerkorrektion'})).toHaveCount(0);await expect(page.getByText('Ingen registreringer fundet.')).toBeVisible();expect(bodies).toHaveLength(1);
 });

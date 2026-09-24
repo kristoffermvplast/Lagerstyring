@@ -34,7 +34,7 @@ test('read-only shipment access hides creation and company switch clears state',
 test('draft creation uses backend and identical payload when retrying an uncertain response',async({page})=>{
  const {row,bodies}=await fixture(page);await page.getByRole('button',{name:'Ny forsendelse',exact:true}).click();
  await page.getByLabel('Forsendelsesnummer',{exact:true}).fill('SHIP-TEST');await chooseReference(page,'Kunde',row.id);await page.getByLabel('Forsendelsesdato',{exact:true}).fill('2026-09-16');
- await chooseReference(page,'Vare',row.id);await chooseReference(page,'Ejer',row.id);await page.getByLabel('Placering',{exact:true}).selectOption(row.id);
+ await chooseReference(page,'Vare',row.id);await page.getByRole('button',{name:'Vælg ejer og placering manuelt'}).click();await chooseReference(page,'Ejer',row.id);await page.getByLabel('Placering',{exact:true}).selectOption(row.id);
  await page.getByLabel('Mængde',{exact:true}).fill('1,00825001');await page.getByLabel('Begrundelse',{exact:true}).fill('Customer shipment');
  await page.getByRole('button',{name:'Gem kladde'}).click();await expect(page.getByRole('alert')).toBeVisible();await expect(page.getByLabel('Mængde',{exact:true})).toBeDisabled();
  // Do not fabricate a persisted detail after the retry; close is sufficient for this request-boundary test.
@@ -46,4 +46,11 @@ test('dispatch explicitly confirms stock reduction and retries the same command'
  await page.route(/\/api\/companies\/[^/]+\/shipments/,async r=>{if(r.request().method()==='POST'){cmds.push(r.request().postDataJSON());if(cmds.length===1)return r.fulfill({status:503,json:{message:'Unavailable'}});row.status='dispatched';row.version++;return r.fulfill({status:201,json:row});}return r.fulfill({json:r.request().url().includes(id)?row:{items:[row],total:1}});});
  await page.getByLabel('Søg forsendelse').fill('SHIP');await page.getByRole('button',{name:'Vis forsendelse'}).click();await page.getByLabel('Begrundelse for statusændring').fill('Truck departed');
  let confirmations=0;page.on('dialog',d=>{expect(d.message()).toContain('Fysisk lager reduceres');confirmations++;void d.accept();});await page.getByRole('button',{name:'Afsend forsendelse',exact:true}).click();await expect(page.getByRole('alert')).toBeVisible();await page.getByRole('button',{name:'Prøv samme kommando igen'}).click();await expect(page.getByRole('heading',{name:'SHIP-READY · Afsendt'})).toBeVisible();expect(cmds).toHaveLength(2);expect(cmds[0]).toEqual(cmds[1]);expect(confirmations).toBe(1);
+});
+
+test('stage3 shipment stock selection fills identity and item change clears context',async({page})=>{
+ const {row,bodies}=await fixture(page);await page.getByRole('button',{name:'Ny forsendelse',exact:true}).click();await page.getByLabel('Forsendelsesnummer').fill('PART');await chooseReference(page,'Kunde',row.id);await page.getByLabel('Forsendelsesdato').fill('2026-09-24');await chooseReference(page,'Vare',row.id);
+ await expect(page.getByLabel('Vælg beholdning',{exact:true})).toHaveValue('');await page.getByLabel('Vælg beholdning',{exact:true}).selectOption({index:1});
+ await page.getByRole('combobox',{name:'Varetype',exact:true}).selectOption('material');await expect(page.getByLabel('Vælg beholdning',{exact:true})).toHaveValue('');await expect(page.getByLabel('Vare (valgt værdi)',{exact:true})).toHaveValue('');
+ await chooseReference(page,'Vare',row.id);await page.getByLabel('Vælg beholdning',{exact:true}).selectOption({index:1});await page.getByLabel('Mængde',{exact:true}).fill('0,00000001');await expect(page.getByLabel('Ordreference')).not.toBeVisible();await page.getByLabel('Begrundelse',{exact:true}).fill('Delmængde');await page.getByRole('button',{name:'Gem kladde',exact:true}).click();await expect.poll(()=>bodies.length).toBe(1);expect(bodies[0].data.lines[0]).toMatchObject({item_id:row.id,owner_id:row.id,location_id:'60000000-0000-4000-8000-000000000001',quantity:'0.00000001'});
 });

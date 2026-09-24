@@ -199,3 +199,7 @@ Se [implementering og målrettede tests](ux-stage-1.md). Grupperet navigation, f
 ## UI/UX Etape 2 — stamdataformularer
 
 Se [Etape 2](ux-stage-2.md). Frontend bruger sammenfoldede sektioner med fortsat monterede felter. Draft-værdier, API-payloads, obligatoriske grundfelter, versionskontrol og servervalidering bevares. Ingen backend-/datamodelændring eller automatisk nummerering. Etape 3–4 er ikke igangsat.
+
+## UI/UX Etape 3 — lagerhandlinger
+
+Se [genimplementering og målrettet verifikation](ux-stage-3.md). Frontend samler ejer/placering via eksisterende beholdningsopslag. Kun entydige og validerede standarder anvendes; manuelle valg har forrang. Sekundære felter forbliver monteret under “Flere oplysninger”. Skrivekontrakter, bekræftelser, decimaler, idempotens, virksomhedsafgrænsning og serverregler er uændrede. QR-opslag bogfører aldrig. Ingen backend-, database- eller hosted ændring. Etape 4 er ikke startet.

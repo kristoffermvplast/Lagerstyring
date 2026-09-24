@@ -34,3 +34,10 @@ test('moves a selected owner/location balance and retries identical request afte
  await expect(page.getByRole('alert')).toBeVisible();await expect(page.getByLabel('Mængde',{exact:true})).toBeDisabled();await page.getByRole('button',{name:'Prøv samme flytning igen'}).click();await expect(page.getByText('Lagerflytningen er bogført.')).toBeVisible();
  expect(bodies).toHaveLength(2);expect(bodies[0]).toEqual(bodies[1]);expect(bodies[0].quantity).toBe('1.00825001');expect(bodies[0].owner_id).toBe(row.id);expect(bodies[0].from_location_id).not.toBe(bodies[0].to_location_id);expect(confirmations).toBe(1);
 });
+
+test('stage3 double press is blocked and insufficient stale stock stays failed with identical retry',async({page})=>{
+ const {row}=await fixture(page);const bodies:any[]=[];let release:()=>void=()=>{};const gate=new Promise<void>(r=>release=r);
+ await page.route('**/transfers',async r=>{if(r.request().method()!=='POST')return r.fulfill({json:{items:[],total:0}});bodies.push(r.request().postDataJSON());if(bodies.length===1)await gate;return r.fulfill({status:409,json:{message:'Utilstrækkelig beholdning eller forældet valg'}});});
+ await page.getByRole('button',{name:'Ny lagerflytning',exact:true}).click();await page.getByLabel('Fra beholdning',{exact:true}).selectOption({index:1});await page.getByLabel('Tilplacering',{exact:true}).selectOption(row.id);await page.getByLabel('Mængde',{exact:true}).fill('20');page.on('dialog',d=>d.accept());await page.getByRole('button',{name:'Bekræft lagerflytning',exact:true}).click();await expect.poll(()=>bodies.length).toBe(1);
+ const retry=page.getByRole('button',{name:'Prøv samme flytning igen'});await expect(retry).toBeDisabled();await retry.evaluate((el:HTMLButtonElement)=>el.click());expect(bodies).toHaveLength(1);release();await expect(page.getByRole('alert')).toBeVisible();await expect(page.getByText('Lagerflytningen er bogført.')).toHaveCount(0);await retry.click();await expect.poll(()=>bodies.length).toBe(2);expect(bodies[0]).toEqual(bodies[1]);
+});
