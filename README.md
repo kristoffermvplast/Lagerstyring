@@ -140,3 +140,5 @@ Fase 26 er **afsluttet 2026-09-23 inden for det brugeraccepterede omfang**. Fron
 [Etape 2 — enkel oprettelse af stamdata](docs/ux-stage-2.md) er implementeret lokalt på `ux-stage2`. Kun kunder, leverandører, varer og materialer er forenklet. Etape 2 er publiceret på `198c326`.
 
 [Etape 3 — lagerhandlinger med færre gentagne valg](docs/ux-stage-3.md) er genimplementeret fra `198c326` på den lokale gren `ux-stage3-rebuilt`. Samlet beholdningsvalg, kontrollerede standardværdier og færre synlige felter. Ingen publicering til main; Etape 4 er ikke startet.
+
+[Etape 4 — produktion som tydelige arbejdsopgaver](docs/ux-stage-4.md) er implementeret lokalt på `ux-stage4-production` fra `4a5b918`. Én synlig produktionsopgave ad gangen, færre standardfelter og bevarede kommandoer/regler. 60 unikke målrettede browserprøver og frontend-build består. Ingen publicering til main eller hosted ændringer.

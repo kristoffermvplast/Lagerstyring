@@ -28,7 +28,7 @@ async function fixture(page:Page,transfer=true){
   return r.fulfill({json:u.pathname.endsWith('/'+row.id)?order:{items:[order],total:1}});
  });
  await page.addInitScript(s=>sessionStorage.setItem('lager-auth-session',JSON.stringify(s)),session);
- await page.goto('/');await openWorkspace(page,'Produktion');await page.getByRole('button',{name:'Åbn ordre',exact:true}).click();return{row,bodies};
+ await page.goto('/');await openWorkspace(page,'Produktion');await page.getByRole('button',{name:'Åbn ordre',exact:true}).click();await page.getByRole('button',{name:'Udlever materiale',exact:true}).click();return{row,bodies};
 }
 test('material reader sees journal but cannot issue',async({page})=>{
  await fixture(page,false);await expect(page.getByText('Ingen materialeflytninger registreret.')).toBeVisible();await expect(page.getByRole('button',{name:'Send materiale til produktion',exact:true})).toHaveCount(0);

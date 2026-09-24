@@ -30,13 +30,18 @@ async function fixture(page:Page,transfer=true){
   return r.fulfill({json:u.pathname.endsWith('/'+row.id)?order:{items:[order],total:1}});
  });
  await page.addInitScript(s=>sessionStorage.setItem('lager-auth-session',JSON.stringify(s)),session);
- await page.goto('/');await openWorkspace(page,'Produktion');await page.getByRole('button',{name:'Åbn ordre',exact:true}).click();return{row,bodies};
+ await page.goto('/');await openWorkspace(page,'Produktion');await page.getByRole('button',{name:'Åbn ordre',exact:true}).click();await page.getByRole('button',{name:'Registrér produktion',exact:true}).click();return{row,bodies};
 }
 test('production reader sees totals and history without record controls',async({page})=>{
  await fixture(page,false);await expect(page.getByText('Ingen produktion registreret.')).toBeVisible();await expect(page.getByText(/Overproduktion/)).toBeVisible();await expect(page.getByRole('button',{name:'Registrér gode emner',exact:true})).toHaveCount(0);
 });
 test('operator registers increments and retries identical payload after uncertain response',async({page})=>{
- const {bodies}=await fixture(page);await page.getByLabel('Nye gode emner',{exact:true}).fill('5');await page.getByLabel('Antal kasser (valgfrit)',{exact:true}).fill('1');
+ const {bodies}=await fixture(page);await page.getByLabel('Nye gode emner',{exact:true}).fill('5');await page.getByText('Flere oplysninger',{exact:true}).click();await page.getByLabel('Antal kasser (valgfrit)',{exact:true}).fill('1');
  page.on('dialog',d=>void d.accept());await page.getByRole('button',{name:'Registrér gode emner',exact:true}).click();await expect(page.getByLabel('Nye gode emner',{exact:true})).toBeDisabled();await page.getByRole('button',{name:'Prøv samme registrering igen',exact:true}).click();
  await expect(page.getByLabel('Nye gode emner',{exact:true})).toHaveValue('');expect(bodies).toHaveLength(2);expect(bodies[0]).toEqual(bodies[1]);expect(bodies[0].quantity).toBe('5');expect(bodies[0].boxes).toBe(1);
+});
+
+test('stage4 task switching retains an uncertain registration and its exact retry',async({page})=>{
+ const {bodies}=await fixture(page);await page.getByLabel('Nye gode emner',{exact:true}).fill('2,5');page.on('dialog',d=>void d.accept());await page.getByRole('button',{name:'Registrér gode emner',exact:true}).click();await expect(page.getByRole('button',{name:'Prøv samme registrering igen'})).toBeVisible();
+ await page.getByRole('button',{name:'Ordre og klargøring',exact:true}).click();await expect(page.getByLabel('Nye gode emner',{exact:true})).not.toBeVisible();await page.getByRole('button',{name:'Registrér produktion',exact:true}).click();await expect(page.getByLabel('Nye gode emner',{exact:true})).toBeDisabled();await expect(page.getByLabel('Nye gode emner',{exact:true})).toHaveValue('2,5');await page.getByRole('button',{name:'Prøv samme registrering igen'}).click();await expect(page.getByLabel('Nye gode emner',{exact:true})).toHaveValue('');expect(bodies[0]).toEqual(bodies[1]);expect(bodies[0].quantity).toBe('2.5');
 });

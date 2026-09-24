@@ -41,7 +41,7 @@ async function fixture(page:Page,transfer=true){
   return r.fulfill({json:u.pathname.endsWith('/'+row.id)?order:{items:[order],total:1}});
  });
  await page.addInitScript(s=>sessionStorage.setItem('lager-auth-session',JSON.stringify(s)),session);
- await page.goto('/');await openWorkspace(page,'Produktion');await page.getByRole('button',{name:'Åbn ordre',exact:true}).click();return{row,bodies};
+ await page.goto('/');await openWorkspace(page,'Produktion');await page.getByRole('button',{name:'Åbn ordre',exact:true}).click();await page.getByRole('button',{name:'Aflever til lager',exact:true}).click();return{row,bodies};
 }
 
 
@@ -49,7 +49,7 @@ test('reader sees delivered and remaining quantities without write controls',asy
  await fixture(page,false);await expect(page.getByText(/Registreret godt: 500/)).toBeVisible();await expect(page.getByRole('button',{name:'Bekræft lageraflevering',exact:true})).toHaveCount(0);await expect(page.getByRole('button',{name:'Modpostér aflevering',exact:true})).toHaveCount(0);
 });
 test('delivery preserves exact command after an uncertain response',async({page})=>{
- const {row,bodies}=await fixture(page);await page.getByLabel('Antal til lager',{exact:true}).fill('100');await chooseReference(page,'Færdigvarernes ejer',row.id);await page.getByLabel('Færdigvareplacering',{exact:true}).selectOption(row.id);await page.getByLabel('Produktionsdato',{exact:true}).fill('2026-09-01');page.on('dialog',d=>void d.accept());await page.getByRole('button',{name:'Bekræft lageraflevering',exact:true}).click();await expect(page.getByLabel('Antal til lager',{exact:true})).toBeDisabled();await page.getByRole('button',{name:'Prøv samme aflevering igen',exact:true}).click();await expect(page.getByLabel('Antal til lager',{exact:true})).toHaveValue('');expect(bodies).toHaveLength(2);expect(bodies[0]).toEqual(bodies[1]);expect(bodies[0].quantity).toBe('100');
+ const {row,bodies}=await fixture(page);await page.getByLabel('Antal til lager',{exact:true}).fill('100');await chooseReference(page,'Færdigvarernes ejer',row.id);await page.getByLabel('Færdigvareplacering',{exact:true}).selectOption(row.id);await page.getByText('Flere oplysninger',{exact:true}).click();await page.getByLabel('Produktionsdato',{exact:true}).fill('2026-09-01');page.on('dialog',d=>void d.accept());await page.getByRole('button',{name:'Bekræft lageraflevering',exact:true}).click();await expect(page.getByLabel('Antal til lager',{exact:true})).toBeDisabled();await page.getByRole('button',{name:'Prøv samme aflevering igen',exact:true}).click();await expect(page.getByLabel('Antal til lager',{exact:true})).toHaveValue('');expect(bodies).toHaveLength(2);expect(bodies[0]).toEqual(bodies[1]);expect(bodies[0].quantity).toBe('100');
 });
 test('output reversal requires reason and preserves retry identity',async({page})=>{
  const {bodies}=await fixture(page);page.on('dialog',d=>void d.accept('Incorrect output'));await page.getByRole('button',{name:'Modpostér aflevering',exact:true}).click();await expect(page.getByRole('button',{name:'Modpostér aflevering',exact:true})).toBeDisabled();await page.getByRole('button',{name:'Prøv samme aflevering igen',exact:true}).click();await expect(page.getByRole('button',{name:'Modpostér aflevering',exact:true})).toBeEnabled();expect(bodies[0]).toEqual(bodies[1]);

@@ -32,7 +32,7 @@ async function fixture(page:Page,transfer=true){
   return r.fulfill({json:u.pathname.endsWith('/'+row.id)?order:{items:[order],total:1}});
  });
  await page.addInitScript(s=>sessionStorage.setItem('lager-auth-session',JSON.stringify(s)),session);
- await page.goto('/');await openWorkspace(page,'Produktion');await page.getByRole('button',{name:'Åbn ordre',exact:true}).click();return{row,bodies};
+ await page.goto('/');await openWorkspace(page,'Produktion');await page.getByRole('button',{name:'Åbn ordre',exact:true}).click();await page.getByRole('button',{name:'Retur og afslutning',exact:true}).click();return{row,bodies};
 }
 
 test('reader can inspect reconciliation without return or completion buttons',async({page})=>{
@@ -44,6 +44,6 @@ test('closure confirms reviewed quantities and retains one command on uncertain 
  await expect(page.getByText(/Produktionen er afsluttet og låst/)).toBeVisible();expect(bodies).toHaveLength(2);expect(bodies[0]).toEqual(bodies[1]);expect(bodies[0].confirm_materials).toBe(true);expect(bodies[0].review_token).toBe('a'.repeat(32));
 });
 test('return uses original issue and preserves retry identity',async({page})=>{
- const {row,bodies}=await fixture(page);await page.getByLabel('Udlevering til retur',{exact:true}).selectOption(row.id);await page.getByRole('combobox',{name:'Returplacering',exact:true}).selectOption(row.id);await page.getByLabel('Returmængde',{exact:true}).fill('1');await page.getByLabel('Returkommentar',{exact:true}).fill('Unused material');
+ const {row,bodies}=await fixture(page);await page.getByText('Returnér ubrugt materiale',{exact:true}).click();await page.getByLabel('Udlevering til retur',{exact:true}).selectOption(row.id);await page.getByRole('combobox',{name:'Returplacering',exact:true}).selectOption(row.id);await page.getByLabel('Returmængde',{exact:true}).fill('1');await page.getByLabel('Returkommentar',{exact:true}).fill('Unused material');
  page.on('dialog',d=>void d.accept());await page.getByRole('button',{name:'Returnér materiale',exact:true}).click();await expect(page.getByLabel('Returmængde',{exact:true})).toBeDisabled();await page.getByRole('button',{name:'Prøv samme handling igen',exact:true}).click();await expect(page.getByLabel('Returmængde',{exact:true})).toHaveValue('');expect(bodies).toHaveLength(2);expect(bodies[0]).toEqual(bodies[1]);expect(bodies[0].issue_id).toBe(row.id);
 });

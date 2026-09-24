@@ -203,3 +203,7 @@ Se [Etape 2](ux-stage-2.md). Frontend bruger sammenfoldede sektioner med fortsat
 ## UI/UX Etape 3 — lagerhandlinger
 
 Se [genimplementering og målrettet verifikation](ux-stage-3.md). Frontend samler ejer/placering via eksisterende beholdningsopslag. Kun entydige og validerede standarder anvendes; manuelle valg har forrang. Sekundære felter forbliver monteret under “Flere oplysninger”. Skrivekontrakter, bekræftelser, decimaler, idempotens, virksomhedsafgrænsning og serverregler er uændrede. QR-opslag bogfører aldrig. Ingen backend-, database- eller hosted ændring. Etape 4 er ikke startet.
+
+## UI/UX Etape 4 — produktionsopgaver
+
+Se [implementering og verifikation](ux-stage-4.md). Produktionsopgaver vises enkeltvis, mens komponenterne forbliver monteret for at bevare kladder og idempotente genforsøg. Status, problemmarkering og advarsler er fælles. Serverstandarder og samtlige skrivekontrakter bevares; gode emner og fysisk lageraflevering er fortsat separate handlinger. Ingen backend-/schemaændringer. Lokal leverance; ingen publicering.
