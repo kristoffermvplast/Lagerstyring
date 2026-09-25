@@ -9,7 +9,7 @@ export function SearchSelect({label,value,change,query,search,items,pending,erro
  const caption=selected?`${selected.code} · ${selected.name}`:value?'Valgt registrering':'';
  function choose(option:Option){setInvalid(false);remembered.current=option;change(option.id);setOpen(false);setIndex(-1);input.current?.focus();}
  return <div className="search-select" onBlur={e=>{if(!e.currentTarget.contains(e.relatedTarget))setOpen(false);}}>
- <label htmlFor={id}>{label}</label>{!optional&&<small>Påkrævet</small>}
+ <label htmlFor={id}>{label}</label>{!optional&&<span className="required-star" aria-hidden="true">*</span>}
  <input id={id} ref={input} role="combobox" autoComplete="off" aria-expanded={open} aria-controls={id+'-options'} aria-autocomplete="list" aria-activedescendant={open&&!pending&&!error&&items[index]?id+'-'+index:undefined} aria-required={!optional} value={open?query:caption}
  onFocus={()=>{setOpen(true);setIndex(-1);}} onChange={e=>{search(e.target.value);setOpen(true);setIndex(-1);}}
  onKeyDown={e=>{if(e.key==='Escape'){setOpen(false);setIndex(-1);}if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();setOpen(true);setIndex(n=>Math.max(0,Math.min(items.length-1,n+(e.key==='ArrowDown'?1:-1))));}if(e.key==='Enter'&&open){e.preventDefault();if(items[index])choose(items[index]);}}}/>

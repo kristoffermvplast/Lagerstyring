@@ -207,3 +207,9 @@ Se [genimplementering og målrettet verifikation](ux-stage-3.md). Frontend samle
 ## UI/UX Etape 4 — produktionsopgaver
 
 Se [implementering og verifikation](ux-stage-4.md). Produktionsopgaver vises enkeltvis, mens komponenterne forbliver monteret for at bevare kladder og idempotente genforsøg. Status, problemmarkering og advarsler er fælles. Serverstandarder og samtlige skrivekontrakter bevares; gode emner og fysisk lageraflevering er fortsat separate handlinger. Ingen backend-/schemaændringer. Lokal leverance; ingen publicering.
+
+## Visuel grundstruktur — separat redesignrunde
+
+Se [visuel etape 1](visual-stage-1.md). React-layoutet genbruger eksisterende permissions, navigation og API-data; `VisualPrimitives` og tokenbaseret CSS ændrer præsentation. Mobilmenuen ligger i dokumentflowet, og genveje udfører kun navigation. Ingen ændringer i API-kontrakter, backend, datamodel, validering, audit eller virksomhedsgrænser. Ingen nye tjenester eller hosted ændringer.
+
+Poleringsrunden på `visual-stage1-foundation` afgrænser liste-/formularvisning med præsentationsklasser og bevarer komponent-/filtertilstand samt eksisterende API-kald og validering. Mobilnavigation og dekorative feltmarkeringer ændrer ikke rettigheder eller skrivekontrakter. Se [kontroller og screenshots](visual-stage-1.md#godkendt-visuel-poleringsrunde--2026-09-25).

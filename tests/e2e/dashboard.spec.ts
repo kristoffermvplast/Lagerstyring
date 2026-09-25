@@ -23,7 +23,7 @@ test('read-only dashboard leads to exact count and filters stock; company switch
  await fixture(page,false);await expect(page.getByRole('button',{name:'Kvittér som set'})).toHaveCount(0);
  await page.getByRole('button',{name:'Åbn optælling',exact:true}).click();await expect(page.getByRole('heading',{name:'Optælling · Annulleret'})).toBeVisible();
  await openWorkspace(page,'Overblik');await page.getByRole('button',{name:'Åbn lager',exact:true}).click();await expect(page.getByRole('searchbox')).toHaveValue('DASH');
- await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await expect(page.getByRole('heading',{name:'Kritiske advarsler · 0'})).toBeVisible();await expect(page.getByText('Optælling kræver gentælling')).toHaveCount(0);
+ const menu=page.getByRole('button',{name:'Menu',exact:true});if(await menu.isVisible())await menu.click();await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);await expect(page.getByText('Ingen åbne advarsler i det viste udsnit.')).toBeVisible();await expect(page.getByText('Optælling kræver gentælling')).toHaveCount(0);
 });
 test('uncertain acknowledgement retries identical version and moves alert to acknowledged',async({page})=>{
  const {bodies}=await fixture(page);const article=page.getByRole('article').filter({has:page.getByRole('heading',{name:'Optælling kræver gentælling'})});await article.getByRole('button',{name:'Kvittér som set'}).click();await expect(article.getByRole('alert')).toBeVisible();await article.getByRole('button',{name:'Kvittér som set'}).click();await expect(page.getByRole('heading',{name:'Kvitteret af dig · 1'})).toBeVisible();expect(bodies).toHaveLength(2);expect(bodies[0]).toEqual(bodies[1]);

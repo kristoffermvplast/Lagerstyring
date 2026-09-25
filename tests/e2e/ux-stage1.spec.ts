@@ -26,15 +26,18 @@ async function fixture(page:Page,receive=true){
 }
 test('grouped navigation keeps QR direct, hides unavailable areas and follows company changes',async({page})=>{
  await fixture(page);
+ const toggle=page.getByRole('button',{name:'Menu',exact:true});if(await toggle.isVisible())await toggle.click();
  await expect(page.getByRole('button',{name:'Lager — menu'})).toHaveAttribute('aria-expanded','true');
  await expect(page.getByRole('button',{name:'Stamdata — menu'})).toHaveAttribute('aria-expanded','false');
  await expect(page.getByRole('button',{name:'Scan QR',exact:true})).toBeVisible();
  await expect(page.getByRole('button',{name:'Produktion',exact:true,includeHidden:true})).toHaveCount(0);
  await openWorkspace(page,'Kunder');await expect(page.locator('#content')).toBeFocused();
+ if(await toggle.isVisible())await toggle.click();
  await expect(page.getByRole('button',{name:'Kunder',exact:true})).toHaveAttribute('aria-current','page');
  await page.getByLabel('Virksomhed',{exact:true}).selectOption(other);
  await expect(page.getByRole('heading',{name:'Overblik',exact:true})).toBeVisible();
- await expect(page.getByRole('button',{name:'Overblik — menu'})).toHaveAttribute('aria-expanded','true');
+ if(await toggle.isVisible())await toggle.click();
+ await expect(page.getByRole('button',{name:'Overblik',exact:true})).toHaveAttribute('aria-current','page');
 });
 test('catalog filters remain effective when folded and required controls have visible borders',async({page})=>{
  await fixture(page);await openWorkspace(page,'Kunder');
@@ -70,6 +73,8 @@ test('reference search distinguishes failure, empty results and keyboard selecti
 test('search text without a selection cannot submit a receipt',async({page})=>{
  const {row,bodies}=await fixture(page);await page.getByRole('button',{name:'Ny modtagelse'}).click();
  await chooseReference(page,'Vare',row.id);
+ await expect(page.getByLabel('Ejer (valgt værdi)',{exact:true})).toHaveValue(row.id);
+ await page.getByRole('button',{name:'Ryd ejer'}).click();
  await page.getByRole('combobox',{name:'Ejer',exact:true}).fill('Not a selected owner');
  await page.getByLabel('Modtaget mængde').fill('1');
  await page.getByRole('button',{name:'Bekræft modtagelse'}).click();

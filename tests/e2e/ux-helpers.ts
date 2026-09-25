@@ -1,5 +1,7 @@
 import {type Page} from '@playwright/test';
 export async function openWorkspace(page:Page,name:string){
+ const menuToggle=page.getByRole('button',{name:'Menu',exact:true});
+ if(await menuToggle.isVisible() && await menuToggle.getAttribute('aria-expanded')==='false')await menuToggle.click();
  const button=page.locator('#workspace-menu').getByRole('button',{name,exact:true,includeHidden:true});
  if(!await button.isVisible())await button.locator('xpath=ancestor::section').getByRole('button',{expanded:false}).click();
  await button.click();

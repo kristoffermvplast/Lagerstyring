@@ -142,3 +142,9 @@ Fase 26 er **afsluttet 2026-09-23 inden for det brugeraccepterede omfang**. Fron
 [Etape 3 — lagerhandlinger med færre gentagne valg](docs/ux-stage-3.md) er genimplementeret fra `198c326` på den lokale gren `ux-stage3-rebuilt`. Samlet beholdningsvalg, kontrollerede standardværdier og færre synlige felter. Ingen publicering til main; Etape 4 er ikke startet.
 
 [Etape 4 — produktion som tydelige arbejdsopgaver](docs/ux-stage-4.md) er implementeret lokalt på `ux-stage4-production` fra `4a5b918`. Én synlig produktionsopgave ad gangen, færre standardfelter og bevarede kommandoer/regler. 60 unikke målrettede browserprøver og frontend-build består. Ingen publicering til main eller hosted ændringer.
+
+## Visuel redesignrunde — etape 1
+
+[Fælles visuel grundstruktur](docs/visual-stage-1.md) er implementeret lokalt fra `88bf5eb` på `visual-stage1-foundation`, med `lagersystem1.png` som designmål. Mørk desktopmenu, mobilbundnavigation, blå handlinger, ny forside og fælles formular-/kortdesign. Backend og datamodel er uændrede. Ikke publiceret til `main`.
+
+Den godkendte [visuelle poleringsrunde](docs/visual-stage-1.md#godkendt-visuel-poleringsrunde--2026-09-25) er udført på samme arbejdsgren: kompakt menu/dashboard, fokuserede formularer og fire mobile hovedpunkter. Målrettede tests og syv nye screenshots er dokumenteret. Fortsat ingen publicering eller hosted ændringer.
